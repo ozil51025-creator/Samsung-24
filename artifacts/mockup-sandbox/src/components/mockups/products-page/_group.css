@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --background: 43 43% 94%;
+  --foreground: 160 29% 15%;
+  --border: 42 19% 80%;
+  --input: 42 19% 80%;
+  --ring: 158 47% 36%;
+  --card: 46 44% 98%;
+  --card-foreground: 160 29% 15%;
+  --popover: 46 44% 98%;
+  --popover-foreground: 160 29% 15%;
+  --primary: 158 47% 31%;
+  --primary-foreground: 46 44% 98%;
+  --secondary: 39 28% 87%;
+  --secondary-foreground: 160 29% 15%;
+  --muted: 41 25% 89%;
+  --muted-foreground: 158 13% 39%;
+  --accent: 22 72% 60%;
+  --accent-foreground: 160 29% 15%;
+  --destructive: 0 66% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --sidebar: 43 43% 94%;
+  --sidebar-foreground: 160 29% 15%;
+  --sidebar-border: 42 19% 80%;
+  --sidebar-primary: 158 47% 31%;
+  --sidebar-primary-foreground: 46 44% 98%;
+  --sidebar-accent: 39 28% 87%;
+  --sidebar-ring: 158 47% 36%;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Syne', sans-serif;
+  --app-font-mono: 'DM Mono', monospace;
+  --radius: 0.85rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: 210 34% 12%;
+  --foreground: 188 24% 92%;
+  --border: 208 24% 27%;
+  --input: 208 24% 27%;
+  --ring: 187 72% 53%;
+  --card: 210 30% 16%;
+  --card-foreground: 188 24% 92%;
+  --popover: 210 30% 16%;
+  --popover-foreground: 188 24% 92%;
+  --primary: 187 72% 53%;
+  --primary-foreground: 211 45% 12%;
+  --secondary: 208 27% 23%;
+  --secondary-foreground: 188 24% 92%;
+  --muted: 208 25% 22%;
+  --muted-foreground: 204 17% 67%;
+  --accent: 207 28% 24%;
+  --accent-foreground: 188 24% 92%;
+  --destructive: 0 58% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --sidebar: 210 34% 14%;
+  --sidebar-foreground: 188 24% 92%;
+  --sidebar-border: 208 24% 27%;
+  --sidebar-primary: 187 72% 53%;
+  --sidebar-primary-foreground: 211 45% 12%;
+  --sidebar-accent: 207 28% 24%;
+  --sidebar-ring: 187 72% 53%;
+}
+
+.shop-shell {
+  background:
+    radial-gradient(ellipse at 84% 3%, rgba(215, 127, 73, 0.13), transparent 27rem),
+    radial-gradient(ellipse at 9% 42%, rgba(76, 127, 98, 0.09), transparent 29rem),
+    #f4f0e7;
+}
+
+.products-shell {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.52), transparent 32rem),
+    linear-gradient(180deg, #d3eaf3 0%, #c4e2ee 100%);
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #295f4b 0%, #173f31 100%);
+}
+
+.member-bottom-nav {
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  width: min(520px, calc(100vw - 24px));
+}
+
+.products-bottom-nav {
+  bottom: 0;
+  width: min(100%, 520px);
+  border-radius: 0;
+  border-color: #99bfce;
+  background: rgba(177, 215, 229, 0.97);
+  box-shadow: 0 -10px 28px rgba(19, 46, 63, 0.13);
+}
+
+.product-row {
+  animation: rise-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.price-figure {
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.product-photo-placeholder {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.88), rgba(230, 246, 251, 0.36) 66%, transparent 67%);
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

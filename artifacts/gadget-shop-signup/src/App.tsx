@@ -6,8 +6,10 @@ import { shadcn } from '@clerk/themes';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
+import { ProductsCatalog } from '@/components/products-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, BadgeCheck, CreditCard, Gift, LayoutDashboard, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const queryClient = new QueryClient();
@@ -15,8 +17,8 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const products = [
-  20_000, 50_000, 75_000, 100_000, 150_000, 200_000,
-  250_000, 320_000, 500_000, 750_000, 1_000_000, 2_000_000,
+  30_000, 50_000, 115_000, 250_000, 370_000, 250_000,
+  775_000, 1_650_000, 3_000_000, 5_000_000, 8_000_000, 12_000_000,
 ];
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
 
@@ -160,7 +162,7 @@ function Home() {
           </div>
           <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
             {products.map((price, index) => (
-              <article key={price} className="product-row rounded-[15px] border border-[#dedbce] bg-[#fffdf7]/80 p-4 transition-colors hover:border-[#9eae9a] sm:p-5" style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}>
+              <article key={`${index}-${price}`} className="product-row rounded-[15px] border border-[#dedbce] bg-[#fffdf7]/80 p-4 transition-colors hover:border-[#9eae9a] sm:p-5" style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}>
                 <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#819080]">Product {index + 1}</p>
                 <p className="price-figure mt-3 text-[clamp(1.1rem,2.3vw,1.55rem)] font-medium tracking-[-.07em] text-[#294637]"><span className="mr-1 text-[11px] tracking-normal text-[#728073]">UGX</span>{money.format(price)}</p>
               </article>
@@ -202,6 +204,8 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   const [, setLocation] = useLocation();
   const activePage = memberNav.find((item) => item.href === active);
   const isOverview = active === '/overview';
+  const isReferral = active === '/referral';
+  const isProducts = active === '/products';
   useEffect(() => {
     const previousTitle = document.title;
     const descriptionTag = document.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -226,36 +230,36 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   return (
     <>
       <Show when="signed-in">
-        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : 'shop-shell'}`}>
+        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
-            <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : 'border-[#d8d4c7]'}`}>
+            <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
               <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Rewards Program overview"><Brand small inverse={isOverview} /></Link>
               <div className="flex items-center gap-3">
                 <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{isLoaded ? user?.firstName ?? user?.primaryEmailAddress?.emailAddress : 'Loading account'}</span>
-                <button type="button" onClick={() => signOut({ redirectUrl: basePath || '/' })} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">Sign out</button>
+                <button type="button" onClick={() => signOut({ redirectUrl: basePath || '/' })} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">Sign out</button>
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
                 {memberNav.map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
+                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
               </nav>
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
-              {!isOverview && <div className="mb-7">
+              {!isOverview && !isReferral && <div className="mb-7">
                 <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
               {children}
             </div>
-            {!isOverview && <footer className="border-t border-[#d8d4c7] py-4 text-[11px] leading-5 text-[#758078]">
+            {!isOverview && <footer className={`border-t py-4 text-[11px] leading-5 ${isReferral ? 'border-[#e1e4e6] text-[#788087]' : isProducts ? 'border-[#9bbfce] text-[#547181]' : 'border-[#d8d4c7] text-[#758078]'}`}>
               Rewards Program · Uganda · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
-          <nav className="member-bottom-nav fixed bottom-3 left-1/2 z-50 grid w-[min(calc(100%-1.5rem),520px)] -translate-x-1/2 grid-cols-5 gap-1 rounded-[22px] border border-white/10 bg-[#12171d]/95 p-2 shadow-[0_14px_44px_rgba(0,0,0,.45)] backdrop-blur-xl md:hidden" aria-label="Member navigation">
+          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-5 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),520px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
             {memberNav.map(({ href, shortLabel, icon: Icon }) => (
-              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white'}`}>
+              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${isProducts ? (active === href ? 'text-[#142438]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : (active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
                 <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-white text-[#10151a]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
                 <span className="max-w-full truncate text-[9px] font-semibold leading-none">{shortLabel}</span>
               </Link>
@@ -317,6 +321,8 @@ function OverviewPage() {
             </article>
           </div>
 
+          <OverviewWalletPanel />
+
           <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-[460px] text-[11px] leading-5 text-white/45">Purchases are not accepted here. Pending amounts are informational only and do not represent an available balance.</p>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#e9b975] px-5 text-[12px] font-bold text-[#211d18] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" data-testid="link-overview-browse">
@@ -331,18 +337,7 @@ function OverviewPage() {
 
 function ProductsPage() {
   return <MemberFrame active="/products">
-    <div className="mb-5 flex flex-col justify-between gap-3 rounded-[18px] border border-[#ddcdbb] bg-[#f4eadb] p-5 sm:flex-row sm:items-center sm:px-6">
-      <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#9a6749]">Sale prices · Uganda</p><p className="mt-1 text-[13px] leading-5 text-[#625e53]">The catalog shows price tiers only; product names and specifications are not available.</p></div>
-      <span className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#d9bda5] bg-[#fff9ef] px-3 py-2 text-[10px] font-bold uppercase tracking-[.08em] text-[#8d6347]"><LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Checkout unavailable</span>
-    </div>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      {products.map((price, index) => <article key={price} className="product-row flex min-h-[158px] flex-col justify-between rounded-[18px] border border-[#dedbce] bg-[#fffdf7]/90 p-5 transition-colors hover:border-[#9eae9a]" style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}>
-        <div><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#819080]">Product {index + 1}</p><p className="price-figure mt-3 text-[24px] font-medium tracking-[-.07em] text-[#294637]"><span className="mr-1 text-[11px] tracking-normal text-[#728073]">UGX</span>{money.format(price)}</p></div>
-        <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#ece8dc] pt-3"><span className="text-[11px] text-[#778177]">Sale price only</span><button type="button" disabled aria-describedby="purchase-unavailable" className="inline-flex h-9 cursor-not-allowed items-center gap-2 rounded-full border border-[#d8d4c7] bg-[#f0eee6] px-3.5 text-[11px] font-semibold text-[#92968a]"><CreditCard className="h-3.5 w-3.5" aria-hidden="true" /> Purchase</button></div>
-      </article>)}
-    </div>
-    <p id="purchase-unavailable" className="sr-only">Purchases are unavailable because no checkout integration is connected.</p>
-    <p className="mt-5 rounded-[14px] border border-[#d8d4c7] bg-[#eeece2] px-4 py-3 text-[12px] leading-5 text-[#657168]">Purchase controls are disabled. No checkout integration is connected, and this page does not accept payments.</p>
+    <ProductsCatalog prices={products} formatPrice={(price) => money.format(price)} />
   </MemberFrame>;
 }
 
@@ -359,22 +354,72 @@ function PurchasedProductsPage() {
 }
 
 function ReferralPage() {
+  const stats = [
+    { label: 'Total team', value: 'Not tracked', icon: UsersRound },
+    { label: 'Product purchases', value: 'Not tracked', icon: ShoppingBag },
+    { label: 'Commissions', value: 'Not active', icon: LockKeyhole },
+  ];
+
   return <MemberFrame active="/referral">
-    <section className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-      <div className="rounded-[23px] border border-[#355944] bg-[#244735] p-6 text-[#f8f3e5] sm:p-8">
-        <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#e4a16f] text-[#253b30]"><UsersRound className="h-5 w-5" aria-hidden="true" /></span>
-        <p className="mt-6 text-[10px] font-bold uppercase tracking-[.16em] text-[#b9cdb4]">Referral program</p>
-        <h2 className="mt-2 font-[Syne] text-[27px] font-semibold leading-tight tracking-[-.045em]">Not active yet.</h2>
-        <p className="mt-3 text-[13px] leading-6 text-[#d6dfd0]">Referral tracking and commissions are not active. There is no referral link or reward to share.</p>
-      </div>
-      <div className="rounded-[23px] border border-[#dedbce] bg-[#fffdf7]/90 p-6 sm:p-8">
-        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#75816f]">What this means</p>
-        <div className="mt-5 space-y-4">
-          <div className="flex gap-3"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#d27e52]" /><p className="text-[13px] leading-6 text-[#657168]">No invitations or referral activity are recorded here.</p></div>
-          <div className="flex gap-3"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#d27e52]" /><p className="text-[13px] leading-6 text-[#657168]">Commission amounts and eligibility rules have not been configured.</p></div>
-          <div className="flex gap-3"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#d27e52]" /><p className="text-[13px] leading-6 text-[#657168]">No referral rewards or payout balance are available.</p></div>
+    <section className="mx-auto max-w-[920px] space-y-5" data-testid="page-referral">
+      <header className="flex items-center justify-between gap-4 rounded-[17px] border border-[#e7e9eb] bg-white px-4 py-3 shadow-[0_3px_12px_rgba(25,31,37,.04)]">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fff0e2] text-[#9b4b14]"><UsersRound className="h-5 w-5" aria-hidden="true" /></span>
+          <h1 className="truncate font-[Syne] text-[15px] font-bold tracking-[-.03em] text-[#25292d]">Team &amp; Referrals</h1>
         </div>
-      </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e8eaec] bg-[#fafbfb] text-[#68727a]" title="Notifications are unavailable">
+          <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+        </span>
+      </header>
+
+      <section className="rounded-[24px] bg-gradient-to-br from-[#a84b0d] via-[#98420d] to-[#312720] p-4 text-white shadow-[0_14px_30px_rgba(89,47,18,.2)] sm:p-7">
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#ffd48e]">Community · product rewards</p>
+        <h2 className="mt-2 max-w-[640px] font-[Syne] text-[24px] font-bold leading-[1.12] tracking-[-.045em] sm:text-[32px]">3-Tier Team Downline &amp; Rewards</h2>
+        <p className="mt-3 max-w-[640px] text-[13px] leading-6 text-white/80">Invite friends to explore the Samsung gadget catalog. Referral tracking and commissions are not active yet.</p>
+      </section>
+
+      <section className="rounded-[24px] border border-[#e5e7e9] bg-white p-4 shadow-[0_5px_16px_rgba(20,28,36,.06)] sm:p-6" aria-labelledby="referral-code-title">
+        <h2 id="referral-code-title" className="text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral code</h2>
+        <div className="mt-2 flex min-h-12 items-center justify-between gap-3 rounded-[16px] border border-[#e7e8e7] bg-[#fafaf9] px-4">
+          <span className="text-[14px] font-semibold tracking-[.06em] text-[#747b80]">Not generated</span>
+          <span className="rounded-full bg-[#fff3df] px-3 py-1 text-[10px] font-bold uppercase tracking-[.05em] text-[#95500f]">Pending</span>
+        </div>
+        <h3 className="mt-5 text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral link</h3>
+        <div className="mt-2 truncate rounded-[14px] border border-[#e7e8e7] bg-[#fafaf9] px-4 py-3 font-mono text-[11px] text-[#7c8184]">Unavailable until referral tracking is configured</div>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button type="button" disabled title="Referral codes are not active" aria-describedby="referral-actions-note" className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-[14px] bg-[#9e4b12]/55 px-3 text-[12px] font-bold text-white/90"><Copy className="h-4 w-4" aria-hidden="true" /> Copy link</button>
+          <button type="button" disabled title="Referral codes are not active" aria-describedby="referral-actions-note" className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-[14px] border border-[#e5e6e7] bg-[#f6f6f5] px-3 text-[12px] font-bold text-[#858b8f]"><Share2 className="h-4 w-4" aria-hidden="true" /> Share link</button>
+        </div>
+        <p id="referral-actions-note" className="mt-3 text-[11px] leading-5 text-[#81868a]">A code and shareable link will appear once tracking and eligibility rules are configured.</p>
+      </section>
+
+      <section aria-labelledby="team-performance-title">
+        <h2 id="team-performance-title" className="mb-3 px-1 text-[12px] font-bold uppercase tracking-[.09em] text-[#737a7f]">Overall team performance</h2>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {stats.map(({ label, value, icon: Icon }) => (
+            <article key={label} className="min-w-0 rounded-[18px] border border-[#e5e7e9] bg-white px-2.5 py-4 text-center shadow-[0_3px_10px_rgba(25,31,37,.04)] sm:px-4">
+              <Icon className="mx-auto h-4 w-4 text-[#9b4a13]" aria-hidden="true" />
+              <p className="mt-2 text-[9px] font-bold uppercase tracking-[.04em] text-[#81878b] sm:text-[10px]">{label}</p>
+              <p className="mt-2 break-words font-[Syne] text-[12px] font-bold leading-tight text-[#25292c] sm:text-[15px]">{value}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="downline-title">
+        <h2 id="downline-title" className="mb-3 px-1 text-[12px] font-bold uppercase tracking-[.09em] text-[#737a7f]">3-tier downline breakdown</h2>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {[1, 2, 3].map((level) => (
+            <article key={level} className="min-w-0 rounded-[17px] border border-[#e5e7e9] bg-white p-3 shadow-[0_3px_10px_rgba(25,31,37,.04)] sm:p-4">
+              <p className="text-[9px] font-bold uppercase tracking-[.06em] text-[#8b9094] sm:text-[10px]">Level {level}</p>
+              <p className="mt-2 font-[Syne] text-[13px] font-bold leading-tight text-[#25292c] sm:text-[15px]">Not active</p>
+              <p className="mt-2 text-[9px] leading-4 text-[#858a8e] sm:text-[10px]">No confirmed referral activity is tracked.</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <p className="rounded-[16px] border border-[#ead6c1] bg-[#fff8ef] px-4 py-3 text-[11px] leading-5 text-[#765b47]">Referral rewards remain inactive until the qualifying purchase, calculation basis, and payout terms are confirmed.</p>
     </section>
   </MemberFrame>;
 }
