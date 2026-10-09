@@ -1,0 +1,1 @@
+- [Store identity](store-identity.md) — This is a Samsung-gadget shop and should use the user's own branding.
