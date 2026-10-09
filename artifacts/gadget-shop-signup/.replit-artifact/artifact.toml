@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Gadget Shop Signup"
+description = "A custom-branded customer registration experience for an independent electronics shop selling Samsung gadgets. Not affiliated with or presented as an official Samsung storefront."
+version = "1.0.0"
+id = "artifacts/gadget-shop-signup"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22717
+
+[services.development]
+run = "pnpm --filter @workspace/gadget-shop-signup run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gadget-shop-signup", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/gadget-shop-signup/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22717"
+BASE_PATH = "/"
