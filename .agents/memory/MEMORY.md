@@ -1,1 +1,1 @@
-- [Store identity](store-identity.md) — This is a Samsung-gadget shop and should use the user's own branding.
+- [Investment site scope](store-identity.md) — Use the user's own branding for an investment site centered on daily earnings.

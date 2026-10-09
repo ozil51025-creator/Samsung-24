@@ -1,10 +1,10 @@
 ---
-name: Store identity
-description: The product and branding constraints for the gadget-shop website.
+name: Investment site scope
+description: The user's product direction and branding for this website.
 ---
 
-For this project, the site is for Samsung gadgets and should use the user's own branding.
+For this project, the user wants an investment website with daily earnings and their own branding.
 
-**Why:** The user specified both the product category and branding direction.
+**Why:** The user corrected the initial Samsung-gadget direction and clarified the intended service.
 
-**How to apply:** Keep Samsung as the product manufacturer and use the user's store identity rather than copying the reference site's brand.
+**How to apply:** Use the user's brand rather than the reference site's identity. Do not invent returns or guarantees; ask for the actual investment, earnings calculation, risks, and terms before making financial claims.
