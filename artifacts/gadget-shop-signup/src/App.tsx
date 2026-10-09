@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
 import { ProductsCatalog } from '@/components/products-catalog';
+import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
 import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
@@ -16,10 +17,6 @@ const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-const products = [
-  30_000, 50_000, 115_000, 250_000, 370_000, 250_000,
-  775_000, 1_650_000, 3_000_000, 5_000_000, 8_000_000, 12_000_000,
-];
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
 
 function stripBase(path: string) {
@@ -112,12 +109,12 @@ function Home() {
               Product sales rewards
             </div>
             <h1 className="font-[Syne] text-[clamp(2.8rem,7vw,5.9rem)] font-bold leading-[.98] tracking-[-.075em] text-[#243b31]">
-              Real products.
+              Samsung gadget ideas.
               <br />
-              <span className="text-[#3e7658]">Clear prices.</span>
+              <span className="text-[#3e7658]">UGX price tiers.</span>
             </h1>
             <p className="mt-6 max-w-[490px] text-[15px] leading-7 text-[#647168] sm:text-[17px] sm:leading-8">
-              Create an account for updates about a rewards program connected to real product sales in Uganda.
+              Browse suggested Samsung gadgets across your UGX price tiers. Exact models, condition and availability still need confirmation.
             </p>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Link href="/sign-up" className="group inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-[#315f49] px-7 text-[14px] font-bold text-[#fffdf7] shadow-[0_9px_20px_rgba(49,95,73,.17)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] focus-visible:ring-offset-2" data-testid="link-create-account">
@@ -156,15 +153,25 @@ function Home() {
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Uganda · UGX</p>
-              <h2 id="prices-title" className="mt-2 font-[Syne] text-[30px] font-bold tracking-[-.055em] text-[#243b31] sm:text-[38px]">Product price tiers</h2>
+              <h2 id="prices-title" className="mt-2 font-[Syne] text-[30px] font-bold tracking-[-.055em] text-[#243b31] sm:text-[38px]">Suggested product tiers</h2>
             </div>
-            <p className="max-w-[400px] text-[12px] leading-5 text-[#70796f]">These are sale prices only. Product details and reward calculations are not provided here.</p>
+            <p className="max-w-[400px] text-[12px] leading-5 text-[#70796f]">Daily and hourly figures are user-provided estimates, not verified or guaranteed returns. No payouts are active; confirm exact models and availability before listing.</p>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-            {products.map((price, index) => (
-              <article key={`${index}-${price}`} className="product-row rounded-[15px] border border-[#dedbce] bg-[#fffdf7]/80 p-4 transition-colors hover:border-[#9eae9a] sm:p-5" style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#819080]">Product {index + 1}</p>
-                <p className="price-figure mt-3 text-[clamp(1.1rem,2.3vw,1.55rem)] font-medium tracking-[-.07em] text-[#294637]"><span className="mr-1 text-[11px] tracking-normal text-[#728073]">UGX</span>{money.format(price)}</p>
+            {productCatalog.map((product, index) => (
+              <article key={product.id} className="product-row rounded-[15px] border border-[#dedbce] bg-[#fffdf7]/80 p-4 transition-colors hover:border-[#9eae9a] sm:p-5" style={{ animationDelay: `${Math.min(index * 35, 350)}ms` }}>
+                <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#819080]">{product.name}</p>
+                <p className="price-figure mt-3 text-[clamp(1.1rem,2.3vw,1.55rem)] font-medium tracking-[-.07em] text-[#294637]"><span className="mr-1 text-[11px] tracking-normal text-[#728073]">UGX</span>{money.format(product.price)}</p>
+                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#ece8dc] pt-2 text-[9px] text-[#647168]">
+                  <div>
+                    <p>Daily · 25%</p>
+                    <p className="price-figure mt-1 font-semibold text-[#294637]">UGX {money.format(product.daily)}</p>
+                  </div>
+                  <div>
+                    <p>Hourly · 1.0417%</p>
+                    <p className="price-figure mt-1 font-semibold text-[#294637]">UGX {money.format(product.hourly)}</p>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
@@ -337,7 +344,7 @@ function OverviewPage() {
 
 function ProductsPage() {
   return <MemberFrame active="/products">
-    <ProductsCatalog prices={products} formatPrice={(price) => money.format(price)} />
+    <ProductsCatalog products={productCatalog} formatPrice={(price) => money.format(price)} />
   </MemberFrame>;
 }
 
