@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Phone number and password account operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,106 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: registerPhoneAccount
+      tags: [auth]
+      summary: Register a Ugandan phone-number account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/RegisterPhoneAccountInput"
+      responses:
+        "201":
+          description: Account created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "400":
+          description: Invalid registration details or referral code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Account could not be created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many registration attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: loginPhoneAccount
+      tags: [auth]
+      summary: Sign in with a Ugandan phone number and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhonePasswordInput"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Phone number or password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many sign-in attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logoutPhoneAccount
+      tags: [auth]
+      summary: Sign out and revoke the current session
+      responses:
+        "204":
+          description: Session revoked
+        "403":
+          description: Request origin was not accepted
+  /auth/me:
+    get:
+      operationId: getCurrentPhoneAccount
+      tags: [auth]
+      summary: Get the current signed-in account
+      responses:
+        "200":
+          description: Current account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +135,74 @@ components:
           type: string
       required:
         - status
+    PhonePasswordInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber, password]
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 8
+          maxLength: 32
+          description: Ugandan mobile number in local or international format
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          description: Account password; never returned by the API
+    RegisterPhoneAccountInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber, password]
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 8
+          maxLength: 32
+          description: Ugandan mobile number in local or international format
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          description: Account password; never returned by the API
+        referralCode:
+          type: string
+          minLength: 10
+          maxLength: 10
+          pattern: "^[A-Z2-9]{10}$"
+          description: Optional referral code from the signup link
+    PhoneAccount:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt, referralCode]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          pattern: "^\\+2567[0-9]{8}$"
+        createdAt:
+          type: string
+          format: date-time
+        referralCode:
+          type: string
+          minLength: 10
+          maxLength: 10
+          pattern: "^[A-Z2-9]{10}$"
+          description: Unique, persistent referral code for this account
+    PhoneAccountResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/PhoneAccount"
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
 

@@ -1,8 +1,5 @@
-import { type ReactNode, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ClerkProvider, Show, SignIn, SignUp, useClerk, useUser } from '@clerk/react';
-import { publishableKeyFromHost } from '@clerk/react/internal';
-import { shadcn } from '@clerk/themes';
+import { type ReactNode, useEffect, useState } from 'react';
+import { AuthProvider, getAuthErrorMessage, useAuth } from '@/auth/auth-context';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -13,64 +10,8 @@ import NotFound from '@/pages/not-found';
 import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
-const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
-
-function stripBase(path: string) {
-  return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path;
-}
-
-const clerkAppearance = {
-  theme: shadcn,
-  cssLayerName: 'clerk',
-  options: {
-    logoPlacement: 'inside' as const,
-    logoLinkUrl: basePath || '/',
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
-  },
-  variables: {
-    colorPrimary: '#315f49',
-    colorForeground: '#243b31',
-    colorMutedForeground: '#6e796f',
-    colorDanger: '#a84435',
-    colorBackground: '#fffdf7',
-    colorInput: '#fbf8ef',
-    colorInputForeground: '#243b31',
-    colorNeutral: '#dfddcf',
-    fontFamily: 'DM Sans, sans-serif',
-    borderRadius: '0.75rem',
-  },
-  elements: {
-    rootBox: 'w-full flex justify-center',
-    cardBox: 'bg-[#fffdf7] rounded-[22px] w-full max-w-[440px] overflow-hidden border border-[#dedbce] shadow-[0_22px_60px_rgba(36,59,49,0.10)]',
-    card: '!shadow-none !border-0 !bg-transparent !rounded-none',
-    footer: '!shadow-none !border-0 !bg-transparent !rounded-none',
-    headerTitle: 'text-[#243b31] font-semibold tracking-[-0.03em]',
-    headerSubtitle: 'text-[#6e796f]',
-    socialButtonsBlockButtonText: 'text-[#243b31] font-medium',
-    formFieldLabel: 'text-[#31483c] font-medium',
-    footerActionLink: 'text-[#315f49] font-semibold hover:text-[#214936]',
-    footerActionText: 'text-[#6e796f]',
-    dividerText: 'text-[#7d847a]',
-    identityPreviewEditButton: 'text-[#315f49]',
-    formFieldSuccessText: 'text-[#315f49]',
-    alertText: 'text-[#8b302c]',
-    logoBox: 'mb-4',
-    logoImage: 'max-h-9',
-    socialButtonsBlockButton: 'border-[#dedbce] bg-white hover:bg-[#f7f4eb]',
-    formButtonPrimary: 'bg-[#315f49] hover:bg-[#244b38] text-white shadow-none',
-    formFieldInput: 'border-[#dedbce] bg-[#fbf8ef] text-[#243b31] focus:border-[#315f49]',
-    footerAction: 'border-t border-[#ece8dc]',
-    dividerLine: 'bg-[#dedbce]',
-    alert: 'border-[#f1d8d5] bg-[#fff8f7]',
-    otpCodeFieldInput: 'border-[#dedbce] text-[#243b31]',
-    formFieldRow: 'gap-1.5',
-    main: 'gap-5',
-  },
-};
 
 function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: boolean }) {
   return (
@@ -120,7 +61,7 @@ function Home() {
               <Link href="/sign-up" className="group inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-[#315f49] px-7 text-[14px] font-bold text-[#fffdf7] shadow-[0_9px_20px_rgba(49,95,73,.17)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] focus-visible:ring-offset-2" data-testid="link-create-account">
                 Create an account <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Link>
-              <span className="inline-flex items-center gap-2 text-[12px] text-[#6c786d]"><LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Email and password signup</span>
+              <span className="inline-flex items-center gap-2 text-[12px] text-[#6c786d]"><LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Ugandan phone and password</span>
             </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 border-t border-[#d8d4c7] pt-5 text-[12px] font-medium text-[#53675b]">
               <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#477553]" aria-hidden="true" /> Account signup only</span>
@@ -194,7 +135,9 @@ function Home() {
 }
 
 function HomeRedirect() {
-  return <><Show when="signed-in"><Redirect to="/overview" /></Show><Show when="signed-out"><Home /></Show></>;
+  const { user, status } = useAuth();
+  if (status === 'loading') return <Home />;
+  return user ? <Redirect to="/overview" /> : <Home />;
 }
 
 const memberNav = [
@@ -206,13 +149,26 @@ const memberNav = [
 ];
 
 function MemberFrame({ active, children }: { active: string; children: ReactNode }) {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { user, status, signOut } = useAuth();
   const [, setLocation] = useLocation();
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
   const activePage = memberNav.find((item) => item.href === active);
   const isOverview = active === '/overview';
   const isReferral = active === '/referral';
   const isProducts = active === '/products';
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      await signOut();
+      setLocation('/');
+    } catch (error) {
+      setSignOutError(getAuthErrorMessage(error, 'Could not sign you out. Try again.'));
+    } finally {
+      setSigningOut(false);
+    }
+  };
   useEffect(() => {
     const previousTitle = document.title;
     const descriptionTag = document.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -234,16 +190,23 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
       if (ogDescriptionTag && previousOgDescription) ogDescriptionTag.content = previousOgDescription;
     };
   }, [activePage?.label]);
+  if (status === 'loading') {
+    return <main className="shop-shell min-h-[100dvh] p-6 text-center text-sm text-[#657168]" role="status">Checking your account…</main>;
+  }
+  if (status === 'error') {
+    return <main className="shop-shell min-h-[100dvh] p-6 text-center text-sm text-[#657168]"><p>We couldn’t check your account right now.</p><Link href="/sign-in" className="mt-3 inline-block font-semibold text-[#315f49]">Try signing in</Link></main>;
+  }
+  if (!user) return <Redirect to="/sign-in" />;
+
   return (
     <>
-      <Show when="signed-in">
         <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
             <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
               <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Rewards Program overview"><Brand small inverse={isOverview} /></Link>
               <div className="flex items-center gap-3">
-                <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{isLoaded ? user?.firstName ?? user?.primaryEmailAddress?.emailAddress : 'Loading account'}</span>
-                <button type="button" onClick={() => signOut({ redirectUrl: basePath || '/' })} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">Sign out</button>
+                 <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
+                 <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
                 {memberNav.map(({ href, label, icon: Icon }) => (
@@ -251,7 +214,8 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
-              </nav>
+             </nav>
+             {signOutError && <p className="w-full text-right text-[11px] text-red-500" role="alert">{signOutError}</p>}
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
               {!isOverview && !isReferral && <div className="mb-7">
@@ -273,14 +237,12 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
             ))}
           </nav>
         </main>
-      </Show>
-      <Show when="signed-out"><Redirect to="/sign-in" /></Show>
     </>
   );
 }
 
 function OverviewPage() {
-  const { user, isLoaded } = useUser();
+  const { user } = useAuth();
   return <MemberFrame active="/overview">
     <section className="overview-dashboard relative mx-auto max-w-[850px]" aria-labelledby="overview-title">
       <div className="overview-aura pointer-events-none absolute -inset-x-8 -inset-y-5 -z-10 rounded-[42px]" aria-hidden="true" />
@@ -292,7 +254,7 @@ function OverviewPage() {
             Rewards Program · Uganda
           </div>
           <h1 id="overview-title" data-testid="text-overview-welcome" className="mt-4 max-w-[670px] font-[Syne] text-[clamp(1.9rem,6vw,3.15rem)] font-semibold leading-[1.12] tracking-[-.055em] text-white">
-            {isLoaded ? `Welcome${user?.firstName ? `, ${user.firstName}` : ''} —` : 'Welcome —'} explore your gadget rewards.
+            Welcome — explore your gadget rewards.
           </h1>
           <p className="mt-3 max-w-[620px] text-[13px] leading-6 text-white/65 sm:text-[14px]">
             Your member overview for product price tiers and program updates. All listed amounts are in UGX.
@@ -361,11 +323,46 @@ function PurchasedProductsPage() {
 }
 
 function ReferralPage() {
+  const { user } = useAuth();
+  const [referralNotice, setReferralNotice] = useState('');
   const stats = [
-    { label: 'Total team', value: 'Not tracked', icon: UsersRound },
+    { label: 'Total team', value: 'Not shown', icon: UsersRound },
     { label: 'Product purchases', value: 'Not tracked', icon: ShoppingBag },
     { label: 'Commissions', value: 'Not active', icon: LockKeyhole },
   ];
+
+  const referralLink = user?.referralCode
+    ? `${window.location.origin}${basePath}/sign-up?ref=${encodeURIComponent(user.referralCode)}`
+    : '';
+
+  async function copyReferralLink() {
+    if (!referralLink) return;
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setReferralNotice('Referral link copied.');
+    } catch {
+      setReferralNotice('Copy unavailable. Select and copy the referral link above.');
+    }
+  }
+
+  async function shareReferralLink() {
+    if (!user?.referralCode || !referralLink) return;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Join the Rewards Program',
+          text: `Register using my referral code ${user.referralCode}.`,
+          url: referralLink,
+        });
+        setReferralNotice('Referral link shared.');
+      } else {
+        await navigator.clipboard.writeText(referralLink);
+        setReferralNotice('Sharing is unavailable. Referral link copied instead.');
+      }
+    } catch {
+      setReferralNotice('Could not share the referral link. You can copy it above.');
+    }
+  }
 
   return <MemberFrame active="/referral">
     <section className="mx-auto max-w-[920px] space-y-5" data-testid="page-referral">
@@ -382,22 +379,22 @@ function ReferralPage() {
       <section className="rounded-[24px] bg-gradient-to-br from-[#a84b0d] via-[#98420d] to-[#312720] p-4 text-white shadow-[0_14px_30px_rgba(89,47,18,.2)] sm:p-7">
         <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#ffd48e]">Community · product rewards</p>
         <h2 className="mt-2 max-w-[640px] font-[Syne] text-[24px] font-bold leading-[1.12] tracking-[-.045em] sm:text-[32px]">3-Tier Team Downline &amp; Rewards</h2>
-        <p className="mt-3 max-w-[640px] text-[13px] leading-6 text-white/80">Invite friends to explore the Samsung gadget catalog. Referral tracking and commissions are not active yet.</p>
+        <p className="mt-3 max-w-[640px] text-[13px] leading-6 text-white/80">Invite friends to explore the Samsung gadget catalog. Signups through your link record who invited them; commissions are not active yet.</p>
       </section>
 
       <section className="rounded-[24px] border border-[#e5e7e9] bg-white p-4 shadow-[0_5px_16px_rgba(20,28,36,.06)] sm:p-6" aria-labelledby="referral-code-title">
         <h2 id="referral-code-title" className="text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral code</h2>
         <div className="mt-2 flex min-h-12 items-center justify-between gap-3 rounded-[16px] border border-[#e7e8e7] bg-[#fafaf9] px-4">
-          <span className="text-[14px] font-semibold tracking-[.06em] text-[#747b80]">Not generated</span>
-          <span className="rounded-full bg-[#fff3df] px-3 py-1 text-[10px] font-bold uppercase tracking-[.05em] text-[#95500f]">Pending</span>
+          <span className="font-mono text-[14px] font-bold tracking-[.12em] text-[#25292d]">{user?.referralCode ?? 'Generating…'}</span>
+          <span className="rounded-full bg-[#e7f2e8] px-3 py-1 text-[10px] font-bold uppercase tracking-[.05em] text-[#356746]">Generated</span>
         </div>
         <h3 className="mt-5 text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral link</h3>
-        <div className="mt-2 truncate rounded-[14px] border border-[#e7e8e7] bg-[#fafaf9] px-4 py-3 font-mono text-[11px] text-[#7c8184]">Unavailable until referral tracking is configured</div>
+        <div className="mt-2 truncate rounded-[14px] border border-[#e7e8e7] bg-[#fafaf9] px-4 py-3 font-mono text-[11px] text-[#697178]" title={referralLink}>{referralLink || 'Preparing your referral link…'}</div>
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <button type="button" disabled title="Referral codes are not active" aria-describedby="referral-actions-note" className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-[14px] bg-[#9e4b12]/55 px-3 text-[12px] font-bold text-white/90"><Copy className="h-4 w-4" aria-hidden="true" /> Copy link</button>
-          <button type="button" disabled title="Referral codes are not active" aria-describedby="referral-actions-note" className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-[14px] border border-[#e5e6e7] bg-[#f6f6f5] px-3 text-[12px] font-bold text-[#858b8f]"><Share2 className="h-4 w-4" aria-hidden="true" /> Share link</button>
+          <button type="button" onClick={copyReferralLink} disabled={!referralLink} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-[#9e4b12] px-3 text-[12px] font-bold text-white hover:bg-[#813c0d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9e4b12] disabled:cursor-not-allowed disabled:opacity-55"><Copy className="h-4 w-4" aria-hidden="true" /> Copy link</button>
+          <button type="button" onClick={shareReferralLink} disabled={!referralLink} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#e5e6e7] bg-[#f6f6f5] px-3 text-[12px] font-bold text-[#343a3f] hover:bg-[#eeefed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9e4b12] disabled:cursor-not-allowed disabled:opacity-55"><Share2 className="h-4 w-4" aria-hidden="true" /> Share link</button>
         </div>
-        <p id="referral-actions-note" className="mt-3 text-[11px] leading-5 text-[#81868a]">A code and shareable link will appear once tracking and eligibility rules are configured.</p>
+        <p className="mt-3 min-h-5 text-[11px] leading-5 text-[#81868a]" role="status" aria-live="polite">{referralNotice}</p>
       </section>
 
       <section aria-labelledby="team-performance-title">
@@ -419,8 +416,8 @@ function ReferralPage() {
           {[1, 2, 3].map((level) => (
             <article key={level} className="min-w-0 rounded-[17px] border border-[#e5e7e9] bg-white p-3 shadow-[0_3px_10px_rgba(25,31,37,.04)] sm:p-4">
               <p className="text-[9px] font-bold uppercase tracking-[.06em] text-[#8b9094] sm:text-[10px]">Level {level}</p>
-              <p className="mt-2 font-[Syne] text-[13px] font-bold leading-tight text-[#25292c] sm:text-[15px]">Not active</p>
-              <p className="mt-2 text-[9px] leading-4 text-[#858a8e] sm:text-[10px]">No confirmed referral activity is tracked.</p>
+              <p className="mt-2 font-[Syne] text-[13px] font-bold leading-tight text-[#25292c] sm:text-[15px]">Not shown</p>
+              <p className="mt-2 text-[9px] leading-4 text-[#858a8e] sm:text-[10px]">Referral team counts are not displayed yet.</p>
             </article>
           ))}
         </div>
@@ -432,32 +429,27 @@ function ReferralPage() {
 }
 
 function AccountPage() {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
-  const displayName = user?.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Name not provided';
-  const email = user?.primaryEmailAddress?.emailAddress ?? 'No primary email on this account';
+  const { user } = useAuth();
   return <MemberFrame active="/account">
-    {!isLoaded ? <section aria-label="Loading account details" className="grid gap-3"><div className="h-24 animate-pulse rounded-[20px] bg-[#e8e6da]" /><div className="h-40 animate-pulse rounded-[20px] bg-[#e8e6da]" /></section> : (
       <section className="grid gap-5 lg:grid-cols-[.75fr_1.25fr]">
         <div className="rounded-[22px] border border-[#355944] bg-[#244735] p-6 text-[#f8f3e5] sm:p-8">
           <span className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#e4a16f] text-[#253b30]"><UserRound className="h-6 w-6" aria-hidden="true" /></span>
           <p className="mt-6 text-[10px] font-bold uppercase tracking-[.16em] text-[#b9cdb4]">Signed-in profile</p>
-          <h2 className="mt-2 break-words font-[Syne] text-[25px] font-semibold leading-tight tracking-[-.04em]">{displayName}</h2>
-          <p className="mt-2 break-all text-[12px] text-[#d6dfd0]">{email}</p>
-          {user?.username && <p className="mt-3 text-[11px] text-[#b9cdb4]">@{user.username}</p>}
+          <h2 className="mt-2 break-words font-[Syne] text-[25px] font-semibold leading-tight tracking-[-.04em]">Your account</h2>
+          <p className="mt-2 break-all text-[13px] text-[#d6dfd0]">{user?.phoneNumber}</p>
+          <span className="mt-4 inline-flex rounded-full border border-[#e3b67a]/30 bg-[#e3b67a]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#f0c98e]">Phone not verified</span>
         </div>
         <div className="rounded-[22px] border border-[#dedbce] bg-[#fffdf7]/90 p-6 sm:p-8">
           <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#75816f]">Account details</p>
           <dl className="mt-5 divide-y divide-[#ece8dc]">
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Full name</dt><dd className="break-words text-[13px] text-[#294637]">{displayName}</dd></div>
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Email</dt><dd className="break-all text-[13px] text-[#294637]">{email}</dd></div>
-            {user?.username && <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Username</dt><dd className="text-[13px] text-[#294637]">{user.username}</dd></div>}
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Account status</dt><dd className="text-[13px] text-[#294637]">Signed in with Clerk</dd></div>
+            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Phone number</dt><dd className="break-all text-[13px] text-[#294637]">{user?.phoneNumber}</dd></div>
+            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Verification</dt><dd className="text-[13px] text-[#294637]">Not verified by SMS</dd></div>
+            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Sign-in method</dt><dd className="text-[13px] text-[#294637]">Phone number and password</dd></div>
+            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Password recovery</dt><dd className="text-[13px] leading-5 text-[#294637]">Contact an administrator. There is no email or SMS reset.</dd></div>
+            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Account created</dt><dd className="text-[13px] text-[#294637]">{user?.createdAt ? new Intl.DateTimeFormat('en-UG', { dateStyle: 'medium' }).format(new Date(user.createdAt)) : '—'}</dd></div>
           </dl>
-          <button type="button" onClick={() => signOut({ redirectUrl: basePath || '/' })} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-[#c9cbbb] px-5 text-[12px] font-bold text-[#34513f] hover:border-[#315f49] hover:bg-[#f1f1e8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]">Sign out</button>
         </div>
       </section>
-    )}
   </MemberFrame>;
 }
 
@@ -470,23 +462,139 @@ function AuthFrame({ children }: { children: ReactNode }) {
           <aside className="hidden max-w-sm lg:block">
             <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
             <h1 className="mt-4 font-[Syne] text-[42px] font-bold leading-[1.03] tracking-[-.07em] text-[#243b31]">A clear place to start.</h1>
-            <p className="mt-4 text-[14px] leading-7 text-[#657168]">Create or access your account with email and password. Reward amounts and payout rules are not active or configured yet.</p>
+            <p className="mt-4 text-[14px] leading-7 text-[#657168]">Create or access your account with a Ugandan phone number and password. The number is not verified, and password resets require administrator help.</p>
             <Link href="/" className="mt-7 inline-flex items-center gap-2 text-[13px] font-semibold text-[#315f49] hover:text-[#244b38]">View product price tiers <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
           </aside>
           <div className="w-full">{children}</div>
         </div>
-        <footer className="border-t border-[#d8d4c7] pt-4 text-center text-[11px] text-[#758078] sm:text-left">Signup and account access only. Rewards are not active.</footer>
+        <footer className="border-t border-[#d8d4c7] pt-4 text-center text-[11px] text-[#758078] sm:text-left">Phone and password account access. No email or SMS is collected; password resets require an administrator.</footer>
       </div>
     </main>
   );
 }
 
+function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
+  const { user, status, signIn, register } = useAuth();
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('ref') ?? params.get('referralCode') ?? '').trim().toUpperCase().slice(0, 10);
+  });
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const isSignUp = mode === 'sign-up';
+
+  if (user) return <Redirect to="/overview" />;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      if (isSignUp) {
+        const code = referralCode.trim().toUpperCase();
+        await register({
+          phoneNumber,
+          password,
+          ...(code ? { referralCode: code } : {}),
+        });
+      } else {
+        await signIn({ phoneNumber, password });
+      }
+    } catch (reason) {
+      setError(getAuthErrorMessage(
+        reason,
+        isSignUp ? 'Could not create your account. Check your details and try again.' : 'Invalid phone number or password.',
+      ));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return <AuthFrame>
+    <section className="mx-auto w-full max-w-[480px] rounded-[24px] border border-[#dedbce] bg-[#fffdf7] p-5 shadow-[0_22px_60px_rgba(36,59,49,.1)] sm:p-8">
+      <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
+      <h2 className="mt-2 font-[Syne] text-[28px] font-bold tracking-[-.05em] text-[#243b31]">{isSignUp ? 'Create your account' : 'Welcome back'}</h2>
+      <p className="mt-2 text-[13px] leading-6 text-[#657168]">Use a Ugandan mobile number and password. No email or SMS code is used.</p>
+
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="phone-number" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Ugandan mobile number</label>
+          <input
+            id="phone-number"
+            name="phoneNumber"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            maxLength={32}
+            placeholder="0700 123 456 or +256 700 123 456"
+            value={phoneNumber}
+            onChange={(event) => setPhoneNumber(event.target.value)}
+            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 text-[14px] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
+          />
+        </div>
+        {isSignUp && <div>
+          <label htmlFor="referral-code" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Referral code (optional)</label>
+          <input
+            id="referral-code"
+            name="referralCode"
+            type="text"
+            autoCapitalize="characters"
+            autoComplete="off"
+            maxLength={10}
+            placeholder="Filled automatically from an invite link"
+            value={referralCode}
+            onChange={(event) => setReferralCode(event.target.value.toUpperCase())}
+            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 font-mono text-[14px] tracking-[.08em] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
+          />
+          <p className="mt-1.5 text-[11px] text-[#75816f]">{referralCode ? 'Added automatically from your inviter’s link. It will be saved with your registration.' : 'If you have an invite link, its referral code will appear here.'}</p>
+        </div>}
+        <div>
+          <label htmlFor="password" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete={isSignUp ? 'new-password' : 'current-password'}
+            required
+            minLength={12}
+            maxLength={128}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 text-[14px] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
+          />
+          {isSignUp && <p className="mt-1.5 text-[11px] text-[#75816f]">Use at least 12 characters. Password resets require administrator help.</p>}
+        </div>
+
+        {error && <p className="rounded-xl border border-[#f1d8d5] bg-[#fff8f7] px-3 py-2.5 text-[12px] leading-5 text-[#8b302c]" role="alert">{error}</p>}
+        {status === 'error' && <p className="text-[11px] leading-5 text-[#8b302c]" role="status">We couldn’t check an existing session. You can still try signing in or creating an account.</p>}
+
+        <button type="submit" disabled={submitting || status === 'loading'} className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white transition hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60">
+          {submitting ? 'Please wait…' : status === 'loading' ? 'Checking account…' : isSignUp ? 'Create account' : 'Sign in'}
+        </button>
+      </form>
+
+      <p className="mt-5 rounded-xl bg-[#f5f1e7] px-3.5 py-3 text-[11px] leading-5 text-[#6f695a]">
+        Your number is not verified. Use only a number you control. There is no email or SMS password reset; contact an administrator if you forget your password.
+      </p>
+      <p className="mt-5 text-center text-[12px] text-[#657168]">
+        {isSignUp ? 'Already have an account?' : 'New to the program?'}{' '}
+        <Link href={isSignUp ? '/sign-in' : '/sign-up'} className="font-bold text-[#315f49] hover:text-[#244b38]">
+          {isSignUp ? 'Sign in' : 'Create an account'}
+        </Link>
+      </p>
+    </section>
+  </AuthFrame>;
+}
+
 function SignInPage() {
-  return <AuthFrame><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></AuthFrame>;
+  return <PhoneAuthPage mode="sign-in" />;
 }
 
 function SignUpPage() {
-  return <AuthFrame><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></AuthFrame>;
+  return <PhoneAuthPage mode="sign-up" />;
 }
 
 function AppRoutes() {
@@ -502,7 +610,7 @@ function AppRoutes() {
         <Route path="/account" component={AccountPage} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
-        <Route path="/register"><Redirect to="/sign-up" /></Route>
+        <Route path="/register"><Redirect to={`/sign-up${window.location.search}`} /></Route>
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
@@ -514,32 +622,10 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
-function ClerkAppRoutes() {
-  const [, setLocation] = useLocation();
-  return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      appearance={clerkAppearance}
-      signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
-      localization={{
-        signIn: { start: { title: 'Welcome back', subtitle: 'Sign in to your Rewards Program account' } },
-        signUp: { start: { title: 'Create your account', subtitle: 'Sign up for the Rewards Program' } },
-      }}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-    >
-      <QueryClientProvider client={queryClient}><AppRoutes /></QueryClientProvider>
-    </ClerkProvider>
-  );
-}
-
 function App() {
-  if (!clerkPubKey) throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
   return (
     <TooltipProvider>
-      <WouterRouter base={basePath}><ClerkAppRoutes /></WouterRouter>
+      <WouterRouter base={basePath}><AuthProvider><AppRoutes /></AuthProvider></WouterRouter>
       <Toaster />
     </TooltipProvider>
   );

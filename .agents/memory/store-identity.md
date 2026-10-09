@@ -13,6 +13,18 @@ For this project, the user wants their own branding, a Samsung gadget catalog in
 
 **How to apply:** Clarify whether the number is a contact field or the primary sign-in method. Do not imply SMS verification unless the configured authentication provider supports it.
 
+Registration and sign-in use a Ugandan mobile number plus password only: no email, SMS code, or number verification. Forgotten passwords require administrator assistance, and existing Clerk accounts do not automatically transfer to this new account system.
+
+**Why:** The user explicitly approved replacing Clerk with phone/password accounts, accepting unverified numbers and admin-assisted resets.
+
+**How to apply:** Keep the no-email/no-SMS and unverified-number disclosures visible. Do not imply ownership verification or promise self-service recovery; tell returning Clerk users they must register again.
+
+Every account receives a persistent referral code automatically. Signup links prefill the code, and successful registrations store the direct inviter. Referral commissions and payouts remain inactive until their rules are defined.
+
+**Why:** The user asked for automatic code generation for each new user, then clarified that an inviter's code should appear automatically when a new user opens their registration link.
+
+**How to apply:** Generate each code once, keep it stable across sign-ins, prefill it from shared signup links, and reject invalid provided codes rather than silently discarding them. Direct inviter attribution may be stored, but do not imply commissions or payouts are active.
+
 The user also chose a separate UGX wallet with customer top-ups and withdrawals, and named PesaJet as the desired gateway. PesaJet was not available in the current Replit integration search, so the Home/Overview wallet UI keeps actions disabled and totals/history unavailable rather than inventing transactions.
 
 **Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers.
