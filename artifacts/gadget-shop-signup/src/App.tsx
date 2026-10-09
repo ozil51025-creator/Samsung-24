@@ -191,7 +191,7 @@ function HomeRedirect() {
 const memberNav = [
   { href: '/overview', label: 'Overview', shortLabel: 'Overview', icon: LayoutDashboard },
   { href: '/products', label: 'Products', shortLabel: 'Products', icon: ShoppingBag },
-  { href: '/purchased-products', label: 'Purchased Products', shortLabel: 'Orders', icon: PackageOpen },
+  { href: '/purchased-products', label: 'Purchased Products', shortLabel: 'Purchased', icon: PackageOpen },
   { href: '/referral', label: 'Referral', shortLabel: 'Referral', icon: UsersRound },
   { href: '/account', label: 'My Account', shortLabel: 'Account', icon: UserRound },
 ];
