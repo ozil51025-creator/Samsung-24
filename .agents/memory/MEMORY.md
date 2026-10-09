@@ -1,1 +1,1 @@
-- [Investment site scope](store-identity.md) — Use the user's own branding for an investment site centered on daily earnings.
+- [Rewards site scope](store-identity.md) — Use the user's own branding for a site where rewards come from confirmed product sales.

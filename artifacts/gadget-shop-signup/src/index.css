@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@500;600;700;800&display=swap');
 @layer theme, base, clerk, components, utilities;
 @import 'tailwindcss';
 @import '@clerk/themes/shadcn.css';
@@ -38,42 +38,42 @@
 
 :root {
   color-scheme: light;
-  --background: 192 31% 96%;
-  --foreground: 211 40% 17%;
-  --border: 191 22% 85%;
-  --input: 190 25% 88%;
-  --ring: 188 77% 43%;
-  --card: 0 0% 100%;
-  --card-foreground: 211 40% 17%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 211 40% 17%;
-  --primary: 188 78% 38%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 191 34% 91%;
-  --secondary-foreground: 211 40% 20%;
-  --muted: 190 22% 92%;
-  --muted-foreground: 208 18% 45%;
-  --accent: 186 51% 89%;
-  --accent-foreground: 211 40% 20%;
+  --background: 43 43% 94%;
+  --foreground: 160 29% 15%;
+  --border: 42 19% 80%;
+  --input: 42 19% 80%;
+  --ring: 158 47% 36%;
+  --card: 46 44% 98%;
+  --card-foreground: 160 29% 15%;
+  --popover: 46 44% 98%;
+  --popover-foreground: 160 29% 15%;
+  --primary: 158 47% 31%;
+  --primary-foreground: 46 44% 98%;
+  --secondary: 39 28% 87%;
+  --secondary-foreground: 160 29% 15%;
+  --muted: 41 25% 89%;
+  --muted-foreground: 158 13% 39%;
+  --accent: 22 72% 60%;
+  --accent-foreground: 160 29% 15%;
   --destructive: 0 66% 48%;
   --destructive-foreground: 0 0% 100%;
-  --chart-1: 188 78% 38%;
-  --chart-2: 209 45% 29%;
-  --chart-3: 169 42% 45%;
-  --chart-4: 29 73% 59%;
-  --chart-5: 215 24% 56%;
-  --sidebar: 190 29% 94%;
-  --sidebar-foreground: 211 40% 17%;
-  --sidebar-border: 191 22% 85%;
-  --sidebar-primary: 188 78% 38%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 186 51% 89%;
-  --sidebar-accent-foreground: 211 40% 20%;
-  --sidebar-ring: 188 77% 43%;
-  --card-border: 191 22% 85%;
-  --popover-border: 191 22% 85%;
+  --chart-1: 158 47% 31%;
+  --chart-2: 22 72% 60%;
+  --chart-3: 44 61% 50%;
+  --chart-4: 160 29% 15%;
+  --chart-5: 41 25% 70%;
+  --sidebar: 43 43% 94%;
+  --sidebar-foreground: 160 29% 15%;
+  --sidebar-border: 42 19% 80%;
+  --sidebar-primary: 158 47% 31%;
+  --sidebar-primary-foreground: 46 44% 98%;
+  --sidebar-accent: 39 28% 87%;
+  --sidebar-accent-foreground: 160 29% 15%;
+  --sidebar-ring: 158 47% 36%;
+  --card-border: 42 19% 80%;
+  --popover-border: 42 19% 80%;
   --app-font-sans: 'DM Sans', sans-serif;
-  --app-font-serif: 'Manrope', sans-serif;
+  --app-font-serif: 'Syne', sans-serif;
   --app-font-mono: 'DM Mono', monospace;
   --radius: 0.85rem;
   --button-outline: rgba(13, 48, 66, 0.12);
@@ -161,8 +161,60 @@
 
 .shop-shell {
   background:
-    radial-gradient(ellipse at 79% 13%, rgba(84, 190, 195, 0.13), transparent 29rem),
+    radial-gradient(ellipse at 84% 3%, rgba(215, 127, 73, 0.13), transparent 27rem),
+    radial-gradient(ellipse at 9% 42%, rgba(76, 127, 98, 0.09), transparent 29rem),
     hsl(var(--background));
+}
+
+.overview-shell {
+  overflow-x: clip;
+  color: #f5f6f5;
+  background:
+    radial-gradient(ellipse 82% 38% at 50% 8%, rgba(43, 105, 91, 0.24), transparent 72%),
+    radial-gradient(ellipse 64% 36% at 100% 64%, rgba(85, 71, 107, 0.16), transparent 70%),
+    linear-gradient(165deg, #171d23 0%, #0d1218 48%, #080b0f 100%);
+}
+
+.overview-aura {
+  background:
+    radial-gradient(ellipse at 48% 30%, rgba(55, 127, 100, 0.2), transparent 65%),
+    radial-gradient(ellipse at 78% 60%, rgba(131, 92, 146, 0.12), transparent 55%);
+  filter: blur(22px);
+}
+
+.overview-panel {
+  isolation: isolate;
+  background:
+    linear-gradient(145deg, rgba(31, 40, 48, 0.96), rgba(17, 22, 28, 0.94) 54%, rgba(25, 31, 38, 0.96));
+}
+
+.overview-panel-glow {
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(79, 148, 119, 0.22), transparent 43%),
+    radial-gradient(ellipse at 4% 85%, rgba(98, 80, 112, 0.13), transparent 38%);
+}
+
+.overview-crown {
+  color: #f0c98e;
+  background: rgba(226, 179, 113, 0.12);
+}
+
+.overview-status-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.115);
+  border-radius: 19px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    rgba(255, 255, 255, 0.025);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(15px);
+}
+
+.member-bottom-nav {
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  width: min(520px, calc(100vw - 24px));
 }
 
 .shop-grain::after {
@@ -183,8 +235,8 @@
   animation: rise-in 650ms 110ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.device-float {
-  animation: device-float 7s ease-in-out infinite;
+.product-row {
+  animation: rise-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes rise-in {
@@ -192,14 +244,19 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes device-float {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-9px) rotate(-1deg); }
-}
-
 .cl-formFieldInput::placeholder {
   color: #728591;
   opacity: 1;
+}
+
+.price-figure {
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #295f4b 0%, #173f31 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
