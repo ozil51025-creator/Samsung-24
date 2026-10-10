@@ -1232,13 +1232,32 @@ function ProductsPage() {
 }
 
 function PurchasedProductsPage() {
+  const [orders, setOrders] = useState<Array<{id:string;productName:string;priceUgx:number;status:string;createdAt:string}>>([]);
+  const [state, setState] = useState<'loading'|'ready'|'error'>('loading');
+  useEffect(() => {
+    fetch('/api/products/orders', { credentials: 'include' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load orders.');
+        setOrders(data.orders);
+        setState('ready');
+      })
+      .catch(() => setState('error'));
+  }, []);
   return <MemberFrame active="/purchased-products">
-    <section className="mx-auto max-w-[760px] rounded-[24px] border border-[#dedbce] bg-[#fffdf7]/90 px-6 py-12 text-center shadow-[0_18px_48px_rgba(36,59,49,.05)] sm:px-12 sm:py-16">
-      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[18px] bg-[#e6eadc] text-[#315f49]"><PackageOpen className="h-7 w-7" aria-hidden="true" /></span>
-      <p className="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Order history</p>
-      <h2 className="mt-2 font-[Syne] text-[27px] font-bold tracking-[-.05em] text-[#243b31] sm:text-[32px]">No purchase records</h2>
-      <p className="mx-auto mt-3 max-w-[480px] text-[13px] leading-6 text-[#657168]">There are no real order records connected to this account. Purchases cannot be made from this portal yet.</p>
-      <Link href="/products" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#315f49] px-5 text-[12px] font-bold text-[#fffdf7] hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]">Review sale prices <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+    <section className="mx-auto max-w-[760px] rounded-[24px] border border-[#dedbce] bg-[#fffdf7]/90 px-5 py-8 shadow-[0_18px_48px_rgba(36,59,49,.05)] sm:px-8 sm:py-10">
+      <span className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#e6eadc] text-[#315f49]"><PackageOpen className="h-6 w-6" aria-hidden="true" /></span>
+      <p className="mt-5 text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Order history</p>
+      <h1 className="mt-2 font-[Syne] text-[27px] font-bold tracking-[-.05em] text-[#243b31] sm:text-[32px]">Purchased products</h1>
+      {state === 'loading' && <p className="mt-4 text-sm text-[#657168]">Loading orders…</p>}
+      {state === 'error' && <p className="mt-4 text-sm text-red-700" role="alert">Could not load your orders. Please sign in again.</p>}
+      {state === 'ready' && orders.length === 0 && <p className="mt-3 max-w-[480px] text-[13px] leading-6 text-[#657168]">You have no product orders yet.</p>}
+      {state === 'ready' && orders.length > 0 && <div className="mt-5 grid gap-3">{orders.map((order) => <article key={order.id} className="rounded-xl border border-[#e1e5e1] bg-white p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3"><strong className="text-sm text-[#25372f]">{order.productName}</strong><span className="rounded-full bg-[#fff2cb] px-3 py-1 text-xs font-semibold text-[#82620b]">Pending fulfillment</span></div>
+        <p className="mt-2 text-sm text-[#506056]">UGX {money.format(order.priceUgx)}</p>
+        <p className="mt-1 text-xs text-[#808982]">Order {order.id.slice(0, 8)} · {new Date(order.createdAt).toLocaleString()}</p>
+      </article>)}</div>}
+      <Link href="/products" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#315f49] px-5 text-[12px] font-bold text-[#fffdf7] hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]">Browse products <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
     </section>
   </MemberFrame>;
 }
