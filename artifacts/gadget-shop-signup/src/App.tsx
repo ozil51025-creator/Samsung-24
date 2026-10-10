@@ -453,8 +453,7 @@ function WithdrawalPage() {
   if (authStatus === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
 
-  return <MemberFrame active="/account">
-    <main className="withdraw-content" data-testid="page-withdrawal">
+  return <main className="withdraw-content" data-testid="page-withdrawal">
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft /></Link><h1>Withdrawal</h1><Link href="/withdrawal-history" aria-label="Withdrawal history"><History /></Link></header>
       <section className="withdraw-hero">
         <p>UGX —</p><span>My balance</span>
@@ -472,8 +471,7 @@ function WithdrawalPage() {
           <li>In order to protect the interests of the platform and its members, you must own at least one device to activate the withdrawal function.</li>
         </ol>
       </section>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function BankAccountsPage() {
@@ -481,12 +479,10 @@ function BankAccountsPage() {
   if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
-  return <MemberFrame active="/account">
-    <main className="bank-list-page" data-testid="page-bank-accounts">
+  return <main className="bank-list-page" data-testid="page-bank-accounts">
       <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>List of bank accounts</h1></header>
       <Link className="bank-add-button" href="/link-bank-card">Add</Link>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function LinkBankCardPage() {
@@ -494,8 +490,7 @@ function LinkBankCardPage() {
   if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
-  return <MemberFrame active="/account">
-    <main className="bank-link-page" data-testid="page-link-bank-card">
+  return <main className="bank-link-page" data-testid="page-link-bank-card">
       <header className="withdraw-heading"><Link href="/bank-accounts" aria-label="Back to bank accounts"><ArrowLeft /></Link><h1>Link a bank card</h1></header>
       <img className="bank-car-image" src={`${basePath}/bank-link-car.jpg`} alt="" />
       <form className="bank-link-form" onSubmit={(event) => event.preventDefault()}>
@@ -507,8 +502,7 @@ function LinkBankCardPage() {
         <input id="bank-account" inputMode="numeric" placeholder="Please enter the account number" />
         <button type="button" disabled>Confirm</button>
       </form>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function WithdrawalHistoryPage() {
@@ -516,12 +510,10 @@ function WithdrawalHistoryPage() {
   if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
-  return <MemberFrame active="/account">
-    <main className="withdraw-content" data-testid="page-withdrawal-history">
+  return <main className="withdraw-content withdrawal-history-page" data-testid="page-withdrawal-history">
       <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>Withdrawal history</h1></header>
       <section className="recharge-history-empty">More data</section>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function RechargePage() {
@@ -539,8 +531,7 @@ function RechargePage() {
   if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
 
-  return <MemberFrame active="/account">
-    <main className="recharge-content" data-testid="page-recharge">
+  return <main className="recharge-content" data-testid="page-recharge">
       <header className="withdraw-heading">
         <Link href="/account" aria-label="Back to account"><ArrowLeft /></Link>
         <h1>Recharge</h1>
@@ -575,8 +566,7 @@ function RechargePage() {
       <section className="recharge-channel">
         <button className="recharge-confirm" type="button" disabled>Confirm</button>
       </section>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function RechargeHistoryPage() {
@@ -584,12 +574,10 @@ function RechargeHistoryPage() {
   if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
-  return <MemberFrame active="/account">
-    <main className="recharge-content" data-testid="page-recharge-history">
+  return <main className="recharge-content recharge-history-page" data-testid="page-recharge-history">
       <header className="withdraw-heading"><Link href="/recharge" aria-label="Back to recharge"><ArrowLeft /></Link><h1>Top-up history</h1></header>
       <section className="recharge-history-empty">More data</section>
-    </main>
-  </MemberFrame>;
+    </main>;
 }
 
 function AdminTaskCenterPage() {
