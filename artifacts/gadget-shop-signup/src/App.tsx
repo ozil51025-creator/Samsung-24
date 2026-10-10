@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, Bell, CalendarDays, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, CalendarDays, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -322,15 +322,13 @@ function HomePage() {
         ))}
       </div>
 
-      <Link href="/products" className="home-task-banner" data-testid="card-home-task-center">
+      <article className="home-task-banner" data-testid="card-home-task-center">
         <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" loading="lazy" />
-        <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
         <div className="home-task-copy">
-          <p className="home-task-eyebrow">Samsung Gadgets</p>
-          <h2>Explore the product catalogue</h2>
-          <span className="home-task-cta">Browse products <ArrowRight aria-hidden="true" /></span>
+          <h2>Task Center</h2>
+          <Link href="/tasks" className="home-task-cta">Go</Link>
         </div>
-      </Link>
+      </article>
 
       <p className="home-activity-note"><ShieldCheck aria-hidden="true" /> Checkout, deposits, and withdrawals aren’t connected yet.</p>
 
@@ -365,6 +363,54 @@ function HomePage() {
       </Link>
     </section>
   </MemberFrame>;
+}
+
+function TaskCenterPage() {
+  const { user, status } = useAuth();
+  const invitationGoals = [3, 10, 30];
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Task Center — Samsung Gadgets';
+    return () => { document.title = previousTitle; };
+  }, []);
+
+  if (status === 'loading') {
+    return <main className="task-center-shell" role="status">Checking your account…</main>;
+  }
+  if (status === 'error') {
+    return <main className="task-center-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  }
+  if (!user) return <Redirect to="/sign-in" />;
+
+  return <main className="task-center-shell" data-testid="page-task-center">
+    <header className="task-center-header">
+      <Link href="/home" aria-label="Back to Home"><ArrowLeft aria-hidden="true" /></Link>
+      <h1>Task Center</h1>
+    </header>
+    <section className="task-center-hero">
+      <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="Samsung Galaxy device" fetchPriority="high" />
+      <div className="task-center-hero-copy">
+        <strong>— UGX</strong>
+        <span>Total rewards accumulated</span>
+        <small>Rewards are not active yet</small>
+      </div>
+    </section>
+    <section className="task-center-list" aria-label="Invitation tasks">
+      {invitationGoals.map((goal) => (
+        <article className="task-center-item" key={goal}>
+          <h2>Invite {goal} Level 1 members</h2>
+          <div className="task-center-progress">
+            <div><strong>—</strong><span>Current</span></div>
+            <div><strong>{goal}</strong><span>Objective</span></div>
+            <div><strong>—</strong><span>Progress</span></div>
+          </div>
+          <p>Referral tracking and reward terms are not active.</p>
+          <button type="button" disabled>Not active</button>
+        </article>
+      ))}
+    </section>
+  </main>;
 }
 
 function ProductsPage() {
@@ -749,6 +795,7 @@ function AppRoutes() {
         <Route path="/user-portal"><Redirect to="/home" /></Route>
         <Route path="/overview"><Redirect to="/home" /></Route>
         <Route path="/home" component={HomePage} />
+        <Route path="/tasks" component={TaskCenterPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/purchased-products" component={PurchasedProductsPage} />
         <Route path="/referral" component={ReferralPage} />
