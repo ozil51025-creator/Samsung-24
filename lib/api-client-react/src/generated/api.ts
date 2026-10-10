@@ -51,6 +51,7 @@ import type {
   ProductOrdersResponse,
   ProductPurchaseResponse,
   RedeemGiftCodeInput,
+  ReferralSummary,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
   TaskCenterSettingsInput,
@@ -1358,6 +1359,83 @@ export function useGetTeamDepositMilestones<TData = Awaited<ReturnType<typeof ge
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetTeamDepositMilestonesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetReferralSummaryUrl = () => {
+
+
+
+
+  return `/api/referral/summary`
+}
+
+/**
+ * @summary Get referral team counts and recorded commissions for the signed-in member
+ */
+export const getReferralSummary = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReferralSummary> => {
+
+  return customFetch<ReferralSummary>(getGetReferralSummaryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferralSummaryQueryKey = () => {
+    return [
+    `/api/referral/summary`
+    ] as const;
+    }
+
+
+export const getGetReferralSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getReferralSummary>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralSummary>>> = ({ signal }) => getReferralSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralSummary>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReferralSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralSummary>>>
+export type GetReferralSummaryQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get referral team counts and recorded commissions for the signed-in member
+ */
+
+export function useGetReferralSummary<TData = Awaited<ReturnType<typeof getReferralSummary>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReferralSummaryQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -445,6 +445,36 @@ export const GetTeamDepositMilestonesResponse = zod.object({
 
 
 /**
+ * @summary Get referral team counts and recorded commissions for the signed-in member
+ */
+export const getReferralSummaryResponseTotalMembersMin = 0;
+
+export const getReferralSummaryResponseTotalRewardsUgxMin = 0;
+
+export const getReferralSummaryResponseLevelsItemLevelMax = 3;
+
+export const getReferralSummaryResponseLevelsItemCommissionPercentMin = 0;
+export const getReferralSummaryResponseLevelsItemCommissionPercentMax = 100;
+
+export const getReferralSummaryResponseLevelsItemMemberCountMin = 0;
+
+export const getReferralSummaryResponseLevelsItemRewardsUgxMin = 0;
+
+
+
+export const GetReferralSummaryResponse = zod.object({
+  "totalMembers": zod.number().int().min(getReferralSummaryResponseTotalMembersMin),
+  "totalRewardsUgx": zod.number().int().min(getReferralSummaryResponseTotalRewardsUgxMin),
+  "levels": zod.array(zod.object({
+  "level": zod.number().int().min(1).max(getReferralSummaryResponseLevelsItemLevelMax),
+  "commissionPercent": zod.number().int().min(getReferralSummaryResponseLevelsItemCommissionPercentMin).max(getReferralSummaryResponseLevelsItemCommissionPercentMax),
+  "memberCount": zod.number().int().min(getReferralSummaryResponseLevelsItemMemberCountMin),
+  "rewardsUgx": zod.number().int().min(getReferralSummaryResponseLevelsItemRewardsUgxMin)
+}))
+})
+
+
+/**
  * @summary Get task definitions for administrators
  */
 export const getAdminTaskCenterSettingsResponseTasksItemIdMax = 64;

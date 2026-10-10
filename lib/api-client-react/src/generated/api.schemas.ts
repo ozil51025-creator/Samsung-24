@@ -591,6 +591,31 @@ export interface TeamDepositMilestones {
   milestones: TeamDepositMilestone[];
 }
 
+export interface ReferralLevelSummary {
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  level: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  commissionPercent: number;
+  /** @minimum 0 */
+  memberCount: number;
+  /** @minimum 0 */
+  rewardsUgx: number;
+}
+
+export interface ReferralSummary {
+  /** @minimum 0 */
+  totalMembers: number;
+  /** @minimum 0 */
+  totalRewardsUgx: number;
+  levels: ReferralLevelSummary[];
+}
+
 export interface TaskCenterSettingsInput {
   /** @maxItems 30 */
   tasks: TaskCenterTask[];

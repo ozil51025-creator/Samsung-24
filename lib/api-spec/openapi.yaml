@@ -421,6 +421,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TeamDepositMilestones"
+  /referral/summary:
+    get:
+      operationId: getReferralSummary
+      tags: [auth]
+      summary: Get referral team counts and recorded commissions for the signed-in member
+      responses:
+        "200":
+          description: Referral summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralSummary"
+        "401":
+          description: Member sign in required
   /admin/task-center:
     get:
       operationId: getAdminTaskCenterSettings
@@ -1331,6 +1345,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TeamDepositMilestone"
+    ReferralLevelSummary:
+      type: object
+      additionalProperties: false
+      required: [level, commissionPercent, memberCount, rewardsUgx]
+      properties:
+        level: { type: integer, minimum: 1, maximum: 3 }
+        commissionPercent: { type: integer, minimum: 0, maximum: 100 }
+        memberCount: { type: integer, minimum: 0 }
+        rewardsUgx: { type: integer, minimum: 0 }
+    ReferralSummary:
+      type: object
+      additionalProperties: false
+      required: [totalMembers, totalRewardsUgx, levels]
+      properties:
+        totalMembers: { type: integer, minimum: 0 }
+        totalRewardsUgx: { type: integer, minimum: 0 }
+        levels:
+          type: array
+          items: { $ref: "#/components/schemas/ReferralLevelSummary" }
     TaskCenterSettingsInput:
       type: object
       additionalProperties: false
