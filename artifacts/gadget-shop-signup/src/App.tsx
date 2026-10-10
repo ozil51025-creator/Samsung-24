@@ -492,10 +492,14 @@ function LinkBankCardPage() {
   if (!user) return <Redirect to="/sign-in" />;
   return <main className="bank-link-page" data-testid="page-link-bank-card">
       <header className="withdraw-heading"><Link href="/bank-accounts" aria-label="Back to bank accounts"><ArrowLeft /></Link><h1>Link a bank card</h1></header>
-      <img className="bank-car-image" src={`${basePath}/bank-link-car.jpg`} alt="" />
+      <img className="bank-device-image" src={`${basePath}/samsung-fold8-banner.jpg`} alt="Samsung Galaxy Z Fold8" />
       <form className="bank-link-form" onSubmit={(event) => event.preventDefault()}>
         <label htmlFor="bank-name">* Select the bank</label>
-        <select id="bank-name" defaultValue=""><option value="">Please select</option></select>
+        <select id="bank-name" defaultValue="">
+          <option value="">Please select</option>
+          <option value="airtel">Airtel</option>
+          <option value="mtn">MTN</option>
+        </select>
         <label htmlFor="bank-holder">* Name of the holder</label>
         <input id="bank-holder" placeholder="Please enter the name of the account holder" />
         <label htmlFor="bank-account">* Bank account</label>
