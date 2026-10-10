@@ -4,7 +4,7 @@ import {
   phoneReferralCodesTable,
   teamDepositMilestoneClaimsTable,
 } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { calculateAllLevelTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "./team-deposit-milestones";
 
 export async function reconcileExistingTeamDepositMilestones() {
@@ -40,7 +40,7 @@ export async function reconcileExistingTeamDepositMilestones() {
             walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${milestone.rewardUgx}`,
             totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${milestone.rewardUgx}`,
           })
-          .where(sql`${phoneAccountsTable.id} = ${account.id}`);
+          .where(eq(phoneAccountsTable.id, account.id));
         claimsCreated += 1;
         totalRewardUgx += milestone.rewardUgx;
       }
