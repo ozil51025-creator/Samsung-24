@@ -46,7 +46,7 @@ function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: 
       <span aria-hidden="true" className={`brand-mark flex items-center justify-center rounded-[12px] text-[#f7f1dc] ${small ? 'h-9 w-9' : 'h-10 w-10'}`}>
         <span className="font-[Syne] text-[18px] font-bold leading-none">S</span>
       </span>
-      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>Samsung Gadgets</span>
+      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>samsung</span>
     </span>
   );
 }
@@ -54,7 +54,7 @@ function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: 
 function Header() {
   return (
     <header className="flex items-center justify-between gap-4">
-      <Link href="/" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" aria-label="Samsung Gadgets home">
+      <Link href="/" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" aria-label="samsung home">
         <Brand />
       </Link>
       <nav className="flex items-center gap-3 sm:gap-5" aria-label="Account navigation">
@@ -153,7 +153,7 @@ function Home() {
           <Link href="/sign-up" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" data-testid="link-footer-signup">Create account <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </section>
         <footer className="mt-8 flex flex-col gap-3 border-t border-[#d8d4c7] pt-5 text-[11px] leading-5 text-[#758078] sm:flex-row sm:items-center sm:justify-between">
-          <span>Samsung Gadgets · Independent retailer · Uganda</span>
+          <span>samsung · Independent retailer · Uganda</span>
           <span>Not affiliated with Samsung. Reward amounts and payout rules are not active or configured yet.</span>
         </footer>
       </div>
@@ -213,9 +213,9 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     const previousDescription = descriptionTag?.content;
     const previousOgTitle = ogTitleTag?.content;
     const previousOgDescription = ogDescriptionTag?.content;
-    const pageTitle = `${activePage?.label ?? 'Member portal'} — Samsung Gadgets`;
+    const pageTitle = `${activePage?.label ?? 'Member portal'} — samsung`;
     document.title = pageTitle;
-    const description = 'Member account portal for Samsung Gadgets, an independent retailer in Uganda. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
+    const description = 'Member account portal for samsung, an independent retailer in Uganda. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
     if (descriptionTag) descriptionTag.content = description;
     if (ogTitleTag) ogTitleTag.content = pageTitle;
     if (ogDescriptionTag) ogDescriptionTag.content = description;
@@ -239,7 +239,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
         <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
             <header className={`${isHome ? 'home-member-header ' : ''}flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
-               <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isAccount} /></Link>
+               <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="samsung overview"><Brand small inverse={isOverview || isAccount} /></Link>
               <div className="flex items-center gap-3">
                     <span className="hidden max-w-[180px] truncate text-[12px] text-[#68756a] sm:inline">{user.phoneNumber}</span>
                   <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
@@ -255,7 +255,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
               {!isOverview && !isReferral && <div className="mb-7">
-                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Samsung Gadgets · Uganda</p>
+                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">samsung · Uganda</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
               {children}
@@ -281,7 +281,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
                 <Brand small />
               </div>
               <div className="member-notice-content">
-                <p className="member-notice-eyebrow">Samsung Gadgets · Uganda</p>
+                <p className="member-notice-eyebrow">samsung · Uganda</p>
                 <h2 id="member-notice-title">Welcome to your account</h2>
                 <p className="member-notice-intro">Important information about current products and account services:</p>
                 <ul>
@@ -345,7 +345,7 @@ function HomePage() {
 
       <p className="home-activity-note"><ShieldCheck aria-hidden="true" /> Checkout, deposits, and withdrawals aren’t connected yet.</p>
 
-      <section className="home-photo-grid" aria-label="Samsung Gadgets shortcuts">
+      <section className="home-photo-grid" aria-label="samsung shortcuts">
         {homeShortcuts.map(({ href, label, note, image, position }) => (
           <Link key={label} href={href} className={`home-photo-card ${position}`} data-testid={`link-home-${label.toLowerCase().replaceAll(' ', '-')}`}>
             <img src={image} alt="" aria-hidden="true" loading="lazy" />
@@ -385,7 +385,7 @@ function TaskCenterPage() {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Task Center — Samsung Gadgets';
+    document.title = 'Task Center — samsung';
     return () => { document.title = previousTitle; };
   }, []);
   useEffect(() => {
@@ -446,7 +446,7 @@ function WithdrawalPage() {
   const [amount, setAmount] = useState('');
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Withdraw — Samsung Gadgets';
+    document.title = 'Withdraw — samsung';
     return () => { document.title = previousTitle; };
   }, []);
   if (authStatus === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
@@ -526,7 +526,7 @@ function RechargePage() {
   const amounts = [2000, 7000, 15000, 30000, 65000, 150000, 350000, 750000];
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Recharge — Samsung Gadgets';
+    document.title = 'Recharge — samsung';
     return () => { document.title = previousTitle; };
   }, []);
   if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
@@ -772,7 +772,7 @@ function AccountPage() {
   const { user } = useAuth();
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
   const accountActions = [
-    { id: 'about', label: 'About Samsung Gadgets', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
+    { id: 'about', label: 'About samsung', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
     { id: 'help', label: 'Customer service', icon: Headphones, detail: 'Customer support contact details have not been configured yet.' },
     { id: 'history', label: 'Account history', icon: History, detail: 'No verified wallet transactions are available yet.' },
     { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
@@ -786,7 +786,7 @@ function AccountPage() {
     <section className="account-content mx-auto w-full max-w-[580px]" data-testid="page-account">
       <div className="account-overview-heading">
         <div>
-          <p>Samsung Gadgets · My account</p>
+          <p>samsung · My account</p>
           <h1>Account</h1>
           <span data-testid="text-account-phone">{user?.phoneNumber}</span>
         </div>
@@ -817,7 +817,7 @@ function AccountPage() {
       </section>
 
       <Link href="/products" className="account-feature-card">
-        <span className="account-feature-eyebrow">Samsung Gadgets</span>
+        <span className="account-feature-eyebrow">samsung</span>
         <strong>Explore the product catalog</strong>
         <span>Browse phones, tablets, wearables, and accessories.</span>
         <span className="account-feature-button">Browse products <ArrowRight aria-hidden="true" /></span>
@@ -840,10 +840,15 @@ function AccountPage() {
   </MemberFrame>;
 }
 
-function AuthFrame({ children }: { children: ReactNode }) {
+function AuthFrame({ children, mode }: { children: ReactNode; mode: 'sign-in' | 'sign-up' }) {
+  const background = mode === 'sign-in' ? 'samsung-s26-ultra.jpg' : 'samsung-auth-register.jpg';
   return (
-    <main className="auth-shell grid min-h-[100dvh] place-items-center p-4 sm:p-6" data-testid="page-phone-auth">
-      <div className="w-full max-w-[460px]">{children}</div>
+    <main
+      className={`auth-shell auth-shell-${mode} grid min-h-[100dvh] place-items-center p-4 sm:p-6`}
+      style={{ backgroundImage: `linear-gradient(180deg, rgba(7, 14, 28, .38), rgba(7, 14, 28, .66)), url("${basePath}/${background}")` }}
+      data-testid="page-phone-auth"
+    >
+      <div className="auth-content w-full max-w-[460px]">{children}</div>
     </main>
   );
 }
@@ -896,15 +901,12 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     }
   };
 
-  return <AuthFrame>
+  return <AuthFrame mode={mode}>
     <div className="auth-register-brand">
       <Brand inverse />
     </div>
     <section className="auth-card" aria-label={isSignUp ? 'Register' : 'Login'} data-testid={`panel-${mode}`}>
-      <nav className="auth-mode-switch" aria-label="Choose account action">
-        <Link href="/sign-in" aria-current={!isSignUp ? 'page' : undefined} className={`auth-mode-link ${!isSignUp ? 'is-active' : ''}`} data-testid="link-auth-login">Login</Link>
-        <Link href="/sign-up" aria-current={isSignUp ? 'page' : undefined} className={`auth-mode-link ${isSignUp ? 'is-active' : ''}`} data-testid="link-auth-register">Register</Link>
-      </nav>
+      <h1 className="auth-page-title">{isSignUp ? 'Register' : 'Login'}</h1>
 
       <form className="auth-form" onSubmit={handleSubmit} data-testid={`form-${mode}`}>
         <div>
@@ -1008,7 +1010,13 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           {!submitting && status !== 'loading' && <ArrowRight aria-hidden="true" />}
         </button>
       </form>
-
+      <Link
+        href={isSignUp ? '/sign-in' : '/sign-up'}
+        className="auth-mode-switch-link"
+        data-testid={isSignUp ? 'link-auth-login' : 'link-auth-register'}
+      >
+        {isSignUp ? 'Sign in' : 'Create an account'} <span aria-hidden="true">›</span>
+      </Link>
     </section>
   </AuthFrame>;
 }

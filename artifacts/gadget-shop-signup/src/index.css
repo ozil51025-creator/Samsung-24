@@ -1878,3 +1878,136 @@ button.account-menu-row {
     backdrop-filter: none;
   }
 }
+
+/* Samsung product photography for the phone/password entry screens. */
+.auth-shell {
+  position: relative;
+  overflow-x: hidden;
+  background-color: #101a35;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.auth-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-register-brand {
+  margin-bottom: 24px;
+}
+
+.auth-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  animation: auth-rise 420ms ease-out both;
+}
+
+.auth-page-title {
+  margin: 0 0 22px;
+  color: #fff;
+  font-size: clamp(27px, 7vw, 36px);
+  font-weight: 500;
+  letter-spacing: -.025em;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .45);
+}
+
+.auth-form {
+  gap: 17px;
+  margin-top: 0;
+}
+
+.auth-label {
+  color: rgba(255,255,255,.94);
+  font-size: 13px;
+  font-weight: 500;
+  text-shadow: 0 1px 9px rgba(0, 0, 0, .5);
+}
+
+.auth-input,
+.auth-phone-control {
+  height: 54px;
+  border-color: rgba(255,255,255,.34);
+  border-radius: 24px;
+  background: rgba(21, 32, 52, .47);
+  color: #fff;
+  font-size: 15px;
+  backdrop-filter: blur(9px);
+}
+
+.auth-input::placeholder {
+  color: rgba(255,255,255,.76);
+}
+
+.auth-input:focus,
+.auth-phone-control:focus-within {
+  border-color: rgba(255,255,255,.88);
+  background: rgba(21, 32, 52, .68);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.16);
+}
+
+.auth-phone-prefix {
+  color: #fff;
+  font-size: 14px;
+}
+
+.auth-password-toggle {
+  color: rgba(255,255,255,.78);
+}
+
+.auth-password-toggle:hover {
+  color: #fff;
+}
+
+.auth-submit {
+  min-height: 48px;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #284761;
+  box-shadow: 0 5px 16px rgba(0,0,0,.22);
+  font-size: 15px;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: #eef4ff;
+}
+
+.auth-mode-switch-link {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 23px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: underline;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .65);
+}
+
+.auth-mode-switch-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.auth-field-hint,
+.auth-session-note {
+  color: rgba(255,255,255,.88);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .55);
+}
+
+@media (max-width: 767px) {
+  .auth-register-brand {
+    margin-bottom: 20px;
+  }
+
+  .auth-form {
+    gap: 15px;
+  }
+}

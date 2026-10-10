@@ -268,7 +268,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
       <aside className="admin-sidebar" aria-label="Admin console navigation">
         <div className="admin-brand">
           <span className="admin-brand-mark" aria-hidden="true">S</span>
-          <span className="admin-brand-copy"><strong>Samsung Gadgets</strong><small>OPERATIONS CONSOLE</small></span>
+          <span className="admin-brand-copy"><strong>samsung</strong><small>OPERATIONS CONSOLE</small></span>
         </div>
         <div className="admin-sidebar-label">Workspace</div>
         <button
@@ -326,7 +326,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
 
       <section className="admin-workspace">
         <header className="admin-topbar">
-          <div className="admin-breadcrumb"><span>Samsung Gadgets</span><ChevronRight size={13} /><span>Operations</span><ChevronRight size={13} /><strong>{activeSection}</strong></div>
+          <div className="admin-breadcrumb"><span>samsung</span><ChevronRight size={13} /><span>Operations</span><ChevronRight size={13} /><strong>{activeSection}</strong></div>
           <div className="admin-topbar-right">
             <span className="admin-region"><span className="admin-region-dot" />UGANDA OPERATIONS</span>
             <button className="admin-icon-button" type="button" title="Notifications unavailable" aria-label="Notifications unavailable" disabled data-testid="button-admin-notifications"><Bell size={17} /></button>
@@ -337,7 +337,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
 
         <div className="admin-mobile-brand">
           <span className="admin-brand-mark" aria-hidden="true">S</span>
-          <span><strong>Samsung Gadgets</strong><small>Operations console</small></span>
+          <span><strong>samsung</strong><small>Operations console</small></span>
         </div>
         <nav className="admin-mobile-nav" aria-label="Admin section navigation">
           {ADMIN_SECTIONS.map((section) => {
@@ -395,7 +395,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
           )}
 
           <footer className="admin-footer">
-            <span>Samsung Gadgets <i>·</i> Internal administration</span>
+            <span>samsung <i>·</i> Internal administration</span>
             <span><Shield size={12} /> Secure operations surface</span>
           </footer>
         </div>
