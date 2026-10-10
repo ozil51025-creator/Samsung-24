@@ -19,10 +19,10 @@ import {
 
 const router: IRouter = Router();
 const defaultTaskDefinitions = [
-  { id: "daily-check-in", title: "Daily Check-in", objective: 1, objectiveUnit: "check-in", rewardUgx: 500, rewardFrequency: "daily", enabled: false },
   { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
+  { id: "daily-check-in", title: "Daily Check-in", objective: 1, objectiveUnit: "check-in", rewardUgx: 500, rewardFrequency: "daily", enabled: false },
 ];
 
 function cookieName() {
