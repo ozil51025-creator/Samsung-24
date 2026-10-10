@@ -981,6 +981,11 @@
     radial-gradient(ellipse at 78% 60%, rgba(71, 159, 241, .15), transparent 55%);
 }
 
+.overview-crown {
+  color: #c6d5ff;
+  background: rgba(72, 111, 230, .2);
+}
+
 .overview-panel {
   border-color: rgba(151, 183, 255, .24);
   background:
@@ -1001,10 +1006,24 @@
 .referral-shell header,
 .shop-shell article,
 .shop-shell aside,
-.shop-shell section[class*="rounded"] {
+.shop-shell section[class*="rounded"],
+.shop-shell [class*="bg-[#fffdf7]"],
+.shop-shell [class*="bg-[#faf7ed]"],
+.shop-shell [class*="bg-[#f4eadb]"],
+.shop-shell [class*="bg-[#fff8ef]"],
+.shop-shell [class*="bg-[#fafaf9]"],
+.shop-shell [class~="bg-white"],
+.products-shell [class~="bg-white"],
+.referral-shell [class~="bg-white"] {
   border-color: rgba(57, 92, 171, .2) !important;
   background-color: rgba(255, 255, 255, .48) !important;
   backdrop-filter: blur(18px);
+}
+
+.shop-shell [class*="bg-[#244735]"] {
+  border-color: rgba(121, 158, 255, .36) !important;
+  background: linear-gradient(140deg, rgba(20, 40, 160, .76), rgba(38, 92, 203, .64)) !important;
+  backdrop-filter: blur(20px);
 }
 
 .products-shell .product-row > div[class*="bg-[#5c94d1]"] {
@@ -1021,6 +1040,16 @@
 
 .overview-shell .overview-wallet-panel {
   background: linear-gradient(145deg, rgba(37, 65, 131, .64), rgba(13, 27, 65, .58));
+}
+
+.overview-shell [class*="bg-[#14201b]"] {
+  border-color: rgba(167, 193, 255, .22) !important;
+  background: linear-gradient(145deg, rgba(37, 65, 131, .68), rgba(13, 27, 65, .6)) !important;
+  backdrop-filter: blur(18px);
+}
+
+.overview-shell [class*="bg-[#e3b67a]"] {
+  background-color: rgba(107, 145, 245, .22) !important;
 }
 
 .member-bottom-nav:not(.products-bottom-nav) {
@@ -1071,6 +1100,17 @@
   background: rgba(7, 15, 38, .36);
 }
 
+.auth-input:focus,
+.auth-phone-control:focus-within {
+  border-color: #87a8ff;
+  box-shadow: 0 0 0 3px rgba(74, 111, 230, .22);
+}
+
+.auth-phone-prefix,
+.auth-password-toggle:hover {
+  color: #b8cbff;
+}
+
 .auth-submit {
   border-color: rgba(207, 220, 255, .34);
   background: linear-gradient(110deg, #3158d4, #1428a0);
@@ -1119,12 +1159,14 @@
   color: white !important;
 }
 
-[class*="bg-[#fffdf7]"],
-[class*="bg-[#faf7ed]"],
-[class*="bg-[#f4eadb]"],
-[class*="bg-[#fff8ef]"],
-[class*="bg-[#fafaf9]"],
-[class*="bg-white"] {
+.shop-shell [class*="bg-[#fffdf7]"],
+.shop-shell [class*="bg-[#faf7ed]"],
+.shop-shell [class*="bg-[#f4eadb]"],
+.shop-shell [class*="bg-[#fff8ef]"],
+.shop-shell [class*="bg-[#fafaf9]"],
+.shop-shell [class~="bg-white"],
+.products-shell [class*="bg-white"],
+.referral-shell [class~="bg-white"] {
   background-color: rgba(255, 255, 255, .54) !important;
   backdrop-filter: blur(16px);
 }
