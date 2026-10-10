@@ -1063,7 +1063,7 @@ function AdminTaskCenterPage() {
       setAddingAdmin(false);
     }
   };
-  const manageMember = async (member: (typeof members)[number], action: 'password' | 'status' | 'wallet') => {
+  const manageMember = async (member: (typeof members)[number], action: 'password' | 'status') => {
     if (action === 'password') {
       if (!window.confirm(`Reset the password for ${member.phoneNumber}? Existing sessions will be signed out.`)) return;
       const response = await fetch(`/api/admin/members/${member.id}/password-reset`, { method: 'POST', credentials: 'include' });
@@ -1081,23 +1081,35 @@ function AdminTaskCenterPage() {
       });
       const data = await response.json();
       if (!response.ok) { window.alert(data.error ?? 'Could not change account status.'); return; }
-    } else {
-      const direction = window.prompt(`Enter "credit" or "debit" for ${member.phoneNumber}:`)?.trim().toLowerCase();
-      if (direction !== 'credit' && direction !== 'debit') return;
-      const amountUgx = Number(window.prompt('Amount in whole UGX:'));
-      if (!Number.isSafeInteger(amountUgx) || amountUgx <= 0) return;
-      const reason = window.prompt('Reason for this wallet adjustment:')?.trim();
-      if (!reason) return;
-      if (!window.confirm(`${direction === 'credit' ? 'Add' : 'Subtract'} UGX ${money.format(amountUgx)} ${direction === 'credit' ? 'to' : 'from'} ${member.phoneNumber}'s available wallet? Earnings and deposit totals will not change.`)) return;
+    }
+    loadAdminDirectory();
+  };
+  const adjustMemberWallet = async (member: (typeof members)[number], direction: 'credit' | 'debit') => {
+      const amountInput = window.prompt(`Amount in whole UGX to ${direction} ${member.phoneNumber}:`);
+      if (amountInput === null) return;
+      const amountUgx = Number(amountInput.trim());
+      if (!Number.isSafeInteger(amountUgx) || amountUgx <= 0 || amountUgx > 100_000_000) {
+        window.alert('Enter a whole-UGX amount from 1 to 100,000,000.');
+        return;
+      }
+      const reason = window.prompt(`Reason for this ${direction} to ${member.phoneNumber}'s wallet:`)?.trim();
+      if (!reason || reason.length < 3) {
+        window.alert('Enter a reason of at least 3 characters.');
+        return;
+      }
+      if (!window.confirm(`${direction === 'credit' ? 'Credit' : 'Debit'} UGX ${money.format(amountUgx)} ${direction === 'credit' ? 'to' : 'from'} ${member.phoneNumber}'s available wallet? This will be recorded in the admin audit log and will not change earnings or deposit totals.`)) return;
+      try {
       const response = await fetch(`/api/admin/members/${member.id}/wallet-adjustments`, {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ direction, amountUgx, reason }),
       });
       const data = await response.json();
-      if (!response.ok) { window.alert(data.error ?? 'Could not adjust wallet.'); return; }
+      if (!response.ok) throw new Error(data.error ?? 'Could not adjust wallet.');
       window.alert(`Wallet balance updated to UGX ${money.format(data.walletBalanceUgx)}.`);
+      loadAdminDirectory();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not adjust wallet.');
     }
-    loadAdminDirectory();
   };
   const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
     setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
@@ -1190,7 +1202,8 @@ function AdminTaskCenterPage() {
             <div className="admin-member-actions">
               <button type="button" onClick={() => void manageMember(member, 'password')}>Reset password</button>
               <button type="button" onClick={() => void manageMember(member, 'status')}>{member.isActive ? 'Disable account' : 'Enable account'}</button>
-              <button type="button" onClick={() => void manageMember(member, 'wallet')}>Adjust wallet</button>
+              <button type="button" onClick={() => void adjustMemberWallet(member, 'credit')}>Credit wallet</button>
+              <button type="button" onClick={() => void adjustMemberWallet(member, 'debit')}>Debit wallet</button>
             </div>
           </article>)}
         </div>}
