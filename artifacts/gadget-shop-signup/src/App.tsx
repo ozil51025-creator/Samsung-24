@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, CalendarDays, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, CalendarDays, Check, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -444,11 +444,6 @@ function TaskCenterPage() {
 function WithdrawalPage() {
   const { user, status: authStatus } = useAuth();
   const [amount, setAmount] = useState('');
-  const [provider, setProvider] = useState<'mtn' | 'airtel'>('mtn');
-  const [phone, setPhone] = useState('');
-  const amountValue = Number(amount);
-  const fee = Number.isFinite(amountValue) && amountValue > 0 ? Math.round(amountValue * 0.2) : 0;
-  const netAmount = Number.isFinite(amountValue) && amountValue > 0 ? amountValue - fee : 0;
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Withdraw — Samsung Gadgets';
@@ -461,29 +456,57 @@ function WithdrawalPage() {
   return <MemberFrame active="/account">
     <main className="withdraw-content" data-testid="page-withdrawal">
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft /></Link><h1>Withdrawal</h1><Link href="/withdrawal-history" aria-label="Withdrawal history"><History /></Link></header>
-      <section className="withdraw-balance">
-        <p>UGX —</p><span>Available wallet balance · not connected</span>
-        <label htmlFor="withdraw-amount">Withdrawal amount (UGX)</label>
-        <input id="withdraw-amount" type="number" min="10000" step="1000" inputMode="numeric" placeholder="Enter amount" value={amount} onChange={(event) => setAmount(event.target.value)} />
+      <section className="withdraw-hero">
+        <p>UGX —</p><span>My balance</span>
+        <img src={`${basePath}/withdrawal-earbuds.jpg`} alt="" aria-hidden="true" />
+        <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min="10000" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
       </section>
       <section className="withdraw-details">
-        <h2>Mobile money destination</h2>
-        <label htmlFor="withdraw-provider">Network</label>
-        <select id="withdraw-provider" value={provider} onChange={(event) => setProvider(event.target.value as 'mtn' | 'airtel')}>
-          <option value="mtn">MTN Mobile Money</option>
-          <option value="airtel">Airtel Money</option>
-        </select>
-        <label htmlFor="withdraw-phone">Ugandan mobile money number</label>
-        <input id="withdraw-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+256 7XX XXX XXX" value={phone} onChange={(event) => setPhone(event.target.value)} />
-        <div className="withdraw-summary">
-          <p><span>Minimum withdrawal</span><strong>UGX 10,000</strong></p>
-          <p><span>Withdrawal fee (20%)</span><strong>UGX {money.format(fee)}</strong></p>
-          <p><span>Estimated amount after fee</span><strong>UGX {money.format(netAmount)}</strong></p>
-        </div>
-        <button type="button" disabled title="PesaJet payout processing is not connected">Confirm withdrawal</button>
-        <p className="withdraw-notice" role="note">Withdrawals are not being submitted or stored yet. PesaJet payout processing must be verified before this can be enabled.</p>
-        <Link className="withdraw-history-link" href="/withdrawal-history">View withdrawal history <ArrowRight /></Link>
+        <h2>Select a bank card</h2>
+        <Link className="withdraw-bank-select" href="/bank-accounts"><CreditCard /><span>— — — — — — — —</span><ChevronRight /></Link>
+        <button className="withdraw-confirm" type="button" disabled>Confirm</button>
+        <ol className="withdraw-terms">
+          <li>The minimum withdrawal amount is UGX 10,000.</li>
+          <li>Withdrawal fees amount to 20% of the amount withdrawn.</li>
+          <li>You can make a withdrawal at any time; the funds will be credited within 4 to 24 hours.</li>
+          <li>In order to protect the interests of the platform and its members, you must own at least one device to activate the withdrawal function.</li>
+        </ol>
       </section>
+    </main>
+  </MemberFrame>;
+}
+
+function BankAccountsPage() {
+  const { user, status } = useAuth();
+  if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+  return <MemberFrame active="/account">
+    <main className="bank-list-page" data-testid="page-bank-accounts">
+      <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>List of bank accounts</h1></header>
+      <Link className="bank-add-button" href="/link-bank-card">Add</Link>
+    </main>
+  </MemberFrame>;
+}
+
+function LinkBankCardPage() {
+  const { user, status } = useAuth();
+  if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+  return <MemberFrame active="/account">
+    <main className="bank-link-page" data-testid="page-link-bank-card">
+      <header className="withdraw-heading"><Link href="/bank-accounts" aria-label="Back to bank accounts"><ArrowLeft /></Link><h1>Link a bank card</h1></header>
+      <img className="bank-car-image" src={`${basePath}/bank-link-car.jpg`} alt="" />
+      <form className="bank-link-form" onSubmit={(event) => event.preventDefault()}>
+        <label htmlFor="bank-name">* Select the bank</label>
+        <select id="bank-name" defaultValue=""><option value="">Please select</option></select>
+        <label htmlFor="bank-holder">* Name of the holder</label>
+        <input id="bank-holder" placeholder="Please enter the name of the account holder" />
+        <label htmlFor="bank-account">* Bank account</label>
+        <input id="bank-account" inputMode="numeric" placeholder="Please enter the account number" />
+        <button type="button" disabled>Confirm</button>
+      </form>
     </main>
   </MemberFrame>;
 }
@@ -496,7 +519,7 @@ function WithdrawalHistoryPage() {
   return <MemberFrame active="/account">
     <main className="withdraw-content" data-testid="page-withdrawal-history">
       <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>Withdrawal history</h1></header>
-      <section className="withdraw-empty"><History aria-hidden="true" /><p>No withdrawal requests are recorded.</p><span>Requests will appear here after payout processing is connected.</span></section>
+      <section className="recharge-history-empty">More data</section>
     </main>
   </MemberFrame>;
 }

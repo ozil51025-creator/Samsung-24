@@ -1615,9 +1615,25 @@ button.account-menu-row {
 .recharge-amount-card > label { position: relative; z-index: 1; font-size: 22px; font-weight: 600; }
 .recharge-amount-card > input { position: relative; z-index: 1; width: min(100%,210px); min-height: 42px; border: 0; border-bottom: 1px solid rgba(255,255,255,.75); background: transparent; color: #fff; font-size: 17px; }
 .recharge-amount-card > input::placeholder { color: rgba(255,255,255,.7); }
-.recharge-channel { display: grid; gap: 10px; margin: 18px 14px 20px; padding: 0 0 16px; }
-.recharge-confirm { min-height: 46px; margin-top: 5px; border: 0; border-radius: 24px; background: #000; color: #fff; font-size: 15px; font-weight: 700; }
-.recharge-confirm:disabled { opacity: .48; cursor: not-allowed; }
+.recharge-amount-card > img { position: absolute; right: 0; bottom: 0; width: 118px; height: 112px; object-fit: cover; object-position: center; }
+.recharge-presets,.recharge-channel { margin: 20px 14px; }
+.recharge-presets h2,.recharge-channel h2 { margin: 0 0 13px; color: #9998a2; font-size: 11px; font-weight: 400; text-align: center; }
+.recharge-presets h2::before,.recharge-channel h2::before { display: block; height: 1px; margin-bottom: -7px; background: #e1dfe8; content: ""; }
+.recharge-presets > div { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; padding: 14px; border-radius: 14px; background: #fff; }
+.recharge-presets button { min-height: 48px; border: 1px solid #e1e5eb; border-radius: 9px; background: #f0f2f5; color: #8b8d95; font-size: 12px; }
+.recharge-presets button[aria-pressed="true"] { background: #9db9df; color: #fff; }
+.recharge-channel { display: grid; gap: 12px; }
+.recharge-network-list { display: grid; gap: 8px; padding: 20px; border-radius: 14px; background: #fff; }
+.recharge-network-list button { display: flex; min-height: 49px; align-items: center; gap: 12px; padding: 0 14px; border: 1px solid #e3e3e3; border-radius: 10px; background: #fff; color: #25252a; font-size: 14px; text-align: left; }
+.recharge-network-list button svg { width: 19px; height: 19px; color: #54a18c; }
+.recharge-network-list button.selected { border-color: #9db9df; background: #9db9df; color: #fff; }
+.recharge-network-list button.selected svg { color: #fff; }
+.recharge-network-list button svg:last-child { margin-left: auto; }
+.recharge-confirm { display: block; width: 76%; min-height: 48px; margin: 5px auto 0; border: 0; border-radius: 26px; background: #000; color: #fff; font-size: 17px; font-weight: 700; }
+.recharge-confirm:disabled { opacity: 1; cursor: not-allowed; }
+.recharge-support { margin: 0; color: #111; font-size: 12px; line-height: 1.5; text-align: center; }
+.recharge-support a { color: inherit; text-decoration: underline; }
+.recharge-terms { display: grid; gap: 2px; margin: 10px 2px 0; padding-left: 20px; color: #535866; font-size: 11px; line-height: 1.55; }
 .recharge-shell { min-height: 100dvh; padding: 32px 20px; background: #f3f2f8; color: #253247; text-align: center; }
 .recharge-history-empty { padding: 36px 20px; color: #666; font-size: 14px; text-align: center; }
 .home-activity-note { display: flex; min-height: 48px; align-items: center; gap: 8px; margin: -12px 12px 0; padding: 9px 12px; border-radius: 0 0 11px 11px; background: #fff; color: #69717d; font-size: 10px; line-height: 1.4; }
