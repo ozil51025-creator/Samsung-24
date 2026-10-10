@@ -151,3 +151,123 @@ export const GetAdminMembersResponse = zod.object({
 })
 
 
+/**
+ * @summary Get public task definitions
+ */
+export const getTaskCenterSettingsResponseTasksItemIdMax = 64;
+
+export const getTaskCenterSettingsResponseTasksItemTitleMax = 160;
+
+export const getTaskCenterSettingsResponseTasksItemObjectiveMax = 1000000000;
+
+export const getTaskCenterSettingsResponseTasksItemObjectiveUnitMax = 40;
+
+export const getTaskCenterSettingsResponseTasksItemRewardUgxMin = 0;
+export const getTaskCenterSettingsResponseTasksItemRewardUgxMax = 1000000000;
+
+export const getTaskCenterSettingsResponseTasksMax = 30;
+
+
+
+export const GetTaskCenterSettingsResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "id": zod.string().min(1).max(getTaskCenterSettingsResponseTasksItemIdMax),
+  "title": zod.string().min(1).max(getTaskCenterSettingsResponseTasksItemTitleMax),
+  "objective": zod.number().int().min(1).max(getTaskCenterSettingsResponseTasksItemObjectiveMax),
+  "objectiveUnit": zod.string().min(1).max(getTaskCenterSettingsResponseTasksItemObjectiveUnitMax),
+  "rewardUgx": zod.number().int().min(getTaskCenterSettingsResponseTasksItemRewardUgxMin).max(getTaskCenterSettingsResponseTasksItemRewardUgxMax).nullable(),
+  "rewardFrequency": zod.enum(['once', 'daily']),
+  "enabled": zod.boolean()
+})).max(getTaskCenterSettingsResponseTasksMax)
+})
+
+
+/**
+ * @summary Get task definitions for administrators
+ */
+export const getAdminTaskCenterSettingsResponseTasksItemIdMax = 64;
+
+export const getAdminTaskCenterSettingsResponseTasksItemTitleMax = 160;
+
+export const getAdminTaskCenterSettingsResponseTasksItemObjectiveMax = 1000000000;
+
+export const getAdminTaskCenterSettingsResponseTasksItemObjectiveUnitMax = 40;
+
+export const getAdminTaskCenterSettingsResponseTasksItemRewardUgxMin = 0;
+export const getAdminTaskCenterSettingsResponseTasksItemRewardUgxMax = 1000000000;
+
+export const getAdminTaskCenterSettingsResponseTasksMax = 30;
+
+
+
+export const GetAdminTaskCenterSettingsResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "id": zod.string().min(1).max(getAdminTaskCenterSettingsResponseTasksItemIdMax),
+  "title": zod.string().min(1).max(getAdminTaskCenterSettingsResponseTasksItemTitleMax),
+  "objective": zod.number().int().min(1).max(getAdminTaskCenterSettingsResponseTasksItemObjectiveMax),
+  "objectiveUnit": zod.string().min(1).max(getAdminTaskCenterSettingsResponseTasksItemObjectiveUnitMax),
+  "rewardUgx": zod.number().int().min(getAdminTaskCenterSettingsResponseTasksItemRewardUgxMin).max(getAdminTaskCenterSettingsResponseTasksItemRewardUgxMax).nullable(),
+  "rewardFrequency": zod.enum(['once', 'daily']),
+  "enabled": zod.boolean()
+})).max(getAdminTaskCenterSettingsResponseTasksMax)
+})
+
+
+/**
+ * @summary Save editable task definitions
+ */
+export const updateAdminTaskCenterSettingsBodyTasksItemIdMax = 64;
+
+export const updateAdminTaskCenterSettingsBodyTasksItemTitleMax = 160;
+
+export const updateAdminTaskCenterSettingsBodyTasksItemObjectiveMax = 1000000000;
+
+export const updateAdminTaskCenterSettingsBodyTasksItemObjectiveUnitMax = 40;
+
+export const updateAdminTaskCenterSettingsBodyTasksItemRewardUgxMin = 0;
+export const updateAdminTaskCenterSettingsBodyTasksItemRewardUgxMax = 1000000000;
+
+export const updateAdminTaskCenterSettingsBodyTasksMax = 30;
+
+
+
+export const UpdateAdminTaskCenterSettingsBody = zod.object({
+  "tasks": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateAdminTaskCenterSettingsBodyTasksItemIdMax),
+  "title": zod.string().min(1).max(updateAdminTaskCenterSettingsBodyTasksItemTitleMax),
+  "objective": zod.number().int().min(1).max(updateAdminTaskCenterSettingsBodyTasksItemObjectiveMax),
+  "objectiveUnit": zod.string().min(1).max(updateAdminTaskCenterSettingsBodyTasksItemObjectiveUnitMax),
+  "rewardUgx": zod.number().int().min(updateAdminTaskCenterSettingsBodyTasksItemRewardUgxMin).max(updateAdminTaskCenterSettingsBodyTasksItemRewardUgxMax).nullable(),
+  "rewardFrequency": zod.enum(['once', 'daily']),
+  "enabled": zod.boolean()
+})).max(updateAdminTaskCenterSettingsBodyTasksMax)
+})
+
+export const updateAdminTaskCenterSettingsResponseTasksItemIdMax = 64;
+
+export const updateAdminTaskCenterSettingsResponseTasksItemTitleMax = 160;
+
+export const updateAdminTaskCenterSettingsResponseTasksItemObjectiveMax = 1000000000;
+
+export const updateAdminTaskCenterSettingsResponseTasksItemObjectiveUnitMax = 40;
+
+export const updateAdminTaskCenterSettingsResponseTasksItemRewardUgxMin = 0;
+export const updateAdminTaskCenterSettingsResponseTasksItemRewardUgxMax = 1000000000;
+
+export const updateAdminTaskCenterSettingsResponseTasksMax = 30;
+
+
+
+export const UpdateAdminTaskCenterSettingsResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateAdminTaskCenterSettingsResponseTasksItemIdMax),
+  "title": zod.string().min(1).max(updateAdminTaskCenterSettingsResponseTasksItemTitleMax),
+  "objective": zod.number().int().min(1).max(updateAdminTaskCenterSettingsResponseTasksItemObjectiveMax),
+  "objectiveUnit": zod.string().min(1).max(updateAdminTaskCenterSettingsResponseTasksItemObjectiveUnitMax),
+  "rewardUgx": zod.number().int().min(updateAdminTaskCenterSettingsResponseTasksItemRewardUgxMin).max(updateAdminTaskCenterSettingsResponseTasksItemRewardUgxMax).nullable(),
+  "rewardFrequency": zod.enum(['once', 'daily']),
+  "enabled": zod.boolean()
+})).max(updateAdminTaskCenterSettingsResponseTasksMax)
+})
+
+

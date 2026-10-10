@@ -15,3 +15,7 @@ export * from './phoneAccount';
 export * from './phoneAccountResponse';
 export * from './phonePasswordInput';
 export * from './registerPhoneAccountInput';
+export * from './taskCenterSettings';
+export * from './taskCenterSettingsInput';
+export * from './taskCenterTask';
+export * from './taskCenterTaskRewardFrequency';

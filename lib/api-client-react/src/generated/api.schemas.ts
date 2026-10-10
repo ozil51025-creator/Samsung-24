@@ -88,6 +88,55 @@ export interface AdminMembers {
   members: AdminMember[];
 }
 
+export type TaskCenterTaskRewardFrequency = typeof TaskCenterTaskRewardFrequency[keyof typeof TaskCenterTaskRewardFrequency];
+
+
+export const TaskCenterTaskRewardFrequency = {
+  once: 'once',
+  daily: 'daily',
+} as const;
+
+export interface TaskCenterTask {
+  /**
+     * @minLength 1
+     * @maxLength 64
+     */
+  id: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  title: string;
+  /**
+     * @minimum 1
+     * @maximum 1000000000
+     */
+  objective: number;
+  /**
+     * @minLength 1
+     * @maxLength 40
+     */
+  objectiveUnit: string;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     * @nullable
+     */
+  rewardUgx: number | null;
+  rewardFrequency: TaskCenterTaskRewardFrequency;
+  enabled: boolean;
+}
+
+export interface TaskCenterSettings {
+  /** @maxItems 30 */
+  tasks: TaskCenterTask[];
+}
+
+export interface TaskCenterSettingsInput {
+  /** @maxItems 30 */
+  tasks: TaskCenterTask[];
+}
+
 export interface ErrorResponse {
   error: string;
 }

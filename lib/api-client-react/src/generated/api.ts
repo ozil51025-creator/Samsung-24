@@ -26,7 +26,9 @@ import type {
   HealthStatus,
   PhoneAccountResponse,
   PhonePasswordInput,
-  RegisterPhoneAccountInput
+  RegisterPhoneAccountInput,
+  TaskCenterSettings,
+  TaskCenterSettingsInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -614,4 +616,246 @@ export function useGetAdminMembers<TData = Awaited<ReturnType<typeof getAdminMem
 
 
 
+
+export const getGetTaskCenterSettingsUrl = () => {
+
+
+
+
+  return `/api/task-center`
+}
+
+/**
+ * @summary Get public task definitions
+ */
+export const getTaskCenterSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<TaskCenterSettings> => {
+
+  return customFetch<TaskCenterSettings>(getGetTaskCenterSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTaskCenterSettingsQueryKey = () => {
+    return [
+    `/api/task-center`
+    ] as const;
+    }
+
+
+export const getGetTaskCenterSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getTaskCenterSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTaskCenterSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTaskCenterSettings>>> = ({ signal }) => getTaskCenterSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTaskCenterSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getTaskCenterSettings>>>
+export type GetTaskCenterSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get public task definitions
+ */
+
+export function useGetTaskCenterSettings<TData = Awaited<ReturnType<typeof getTaskCenterSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTaskCenterSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminTaskCenterSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/task-center`
+}
+
+/**
+ * @summary Get task definitions for administrators
+ */
+export const getAdminTaskCenterSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<TaskCenterSettings> => {
+
+  return customFetch<TaskCenterSettings>(getGetAdminTaskCenterSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminTaskCenterSettingsQueryKey = () => {
+    return [
+    `/api/admin/task-center`
+    ] as const;
+    }
+
+
+export const getGetAdminTaskCenterSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTaskCenterSettings>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminTaskCenterSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminTaskCenterSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTaskCenterSettings>>> = ({ signal }) => getAdminTaskCenterSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTaskCenterSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminTaskCenterSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTaskCenterSettings>>>
+export type GetAdminTaskCenterSettingsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get task definitions for administrators
+ */
+
+export function useGetAdminTaskCenterSettings<TData = Awaited<ReturnType<typeof getAdminTaskCenterSettings>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminTaskCenterSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminTaskCenterSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminTaskCenterSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/task-center`
+}
+
+/**
+ * @summary Save editable task definitions
+ */
+export const updateAdminTaskCenterSettings = async (taskCenterSettingsInput: TaskCenterSettingsInput, options?: Parameters<typeof customFetch>[1]): Promise<TaskCenterSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<TaskCenterSettings>(getUpdateAdminTaskCenterSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(taskCenterSettingsInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminTaskCenterSettingsMutationKey = () => ['updateAdminTaskCenterSettings'] as const;
+
+export const getUpdateAdminTaskCenterSettingsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>, TError,UpdateAdminTaskCenterSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>, TError,UpdateAdminTaskCenterSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminTaskCenterSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>, UpdateAdminTaskCenterSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminTaskCenterSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminTaskCenterSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>>
+    export type UpdateAdminTaskCenterSettingsMutationBody = BodyType<TaskCenterSettingsInput>
+    export type UpdateAdminTaskCenterSettingsMutationError = ErrorType<ErrorResponse>
+    export type UpdateAdminTaskCenterSettingsMutationVariables = {data: BodyType<TaskCenterSettingsInput>}
+
+    /**
+ * @summary Save editable task definitions
+ */
+export const useUpdateAdminTaskCenterSettings = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>, TError,UpdateAdminTaskCenterSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminTaskCenterSettings>>,
+        TError,
+        UpdateAdminTaskCenterSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminTaskCenterSettingsMutationOptions(options));
+    }
 
