@@ -137,6 +137,71 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string }
   return { id: account.id };
 }
 
+async function ensureProductCatalog() {
+  await db.insert(productCatalogTable).values(initialProductCatalog.map(([id, name, priceUgx, illustration]) => ({
+    id, name, priceUgx, illustration, isActive: true,
+  }))).onConflictDoNothing();
+}
+
+router.get("/products/catalog", async (_req, res): Promise<void> => {
+  try {
+    await ensureProductCatalog();
+    const products = await db.select().from(productCatalogTable);
+    res.json(ProductCatalogResponse.parse({ products: products.filter((product) => product.isActive) }));
+  } catch {
+    res.status(500).json({ error: "Could not load the product catalog." });
+  }
+});
+
+router.get("/admin/products", async (req, res): Promise<void> => {
+  if (!await requireAdmin(req, res)) return;
+  try {
+    await ensureProductCatalog();
+    res.json(ProductCatalogResponse.parse({ products: await db.select().from(productCatalogTable) }));
+  } catch {
+    res.status(500).json({ error: "Could not load products." });
+  }
+});
+
+router.put("/admin/products", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = ProductCatalogInput.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a product name and a valid listed UGX price." });
+    return;
+  }
+  try {
+    await ensureProductCatalog();
+    const current = await db.select({ id: productCatalogTable.id }).from(productCatalogTable);
+    const currentIds = current.map((item) => item.id).sort();
+    const submittedIds = parsed.data.products.map((item) => item.id).sort();
+    if (currentIds.length !== submittedIds.length || currentIds.some((id, index) => id !== submittedIds[index])) {
+      res.status(400).json({ error: "The product list must include each existing catalog item exactly once." });
+      return;
+    }
+    await db.transaction(async (tx) => {
+      for (const product of parsed.data.products) {
+        await tx.update(productCatalogTable).set({
+          name: product.name,
+          priceUgx: product.priceUgx,
+          isActive: product.isActive,
+          updatedAt: new Date(),
+        }).where(eq(productCatalogTable.id, product.id));
+      }
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        action: "products.updated",
+        details: JSON.stringify({ products: parsed.data.products.map(({ id, name, priceUgx, isActive }) => ({ id, name, priceUgx, isActive })) }),
+      });
+    });
+    res.json(ProductCatalogResponse.parse({ products: await db.select().from(productCatalogTable) }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.products.put" }, "Could not update product catalog");
+    res.status(500).json({ error: "Could not save product changes." });
+  }
+});
+
 router.get("/admin/overview", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
