@@ -19,7 +19,7 @@ import {
   RegisterPhoneAccountBody,
   RegisterPhoneAccountResponse,
 } from "@workspace/api-zod";
-import { TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
+import { calculateAllLevelTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -503,17 +503,22 @@ router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
   try {
     const accountId = await currentAccountId(req, res);
     if (!accountId) return;
-    const [team] = await db.select({ total: sum(phoneAccountsTable.totalDepositedUgx) })
-      .from(phoneReferralCodesTable)
-      .innerJoin(phoneAccountsTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
-      .where(eq(phoneReferralCodesTable.referredByAccountId, accountId));
+    const accounts = await db.select({
+      id: phoneAccountsTable.id,
+      totalDepositedUgx: phoneAccountsTable.totalDepositedUgx,
+    }).from(phoneAccountsTable);
+    const referralLinks = await db.select({
+      accountId: phoneReferralCodesTable.accountId,
+      referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+    }).from(phoneReferralCodesTable);
+    const teamDepositsUgx = calculateAllLevelTeamDeposits(accounts, referralLinks).get(accountId) ?? 0;
     const claims = await db.select({
       milestoneId: teamDepositMilestoneClaimsTable.milestoneId,
       rewardUgx: teamDepositMilestoneClaimsTable.rewardUgx,
     }).from(teamDepositMilestoneClaimsTable)
       .where(eq(teamDepositMilestoneClaimsTable.accountId, accountId));
     res.json(GetTeamDepositMilestonesResponse.parse({
-      teamDepositsUgx: Number(team?.total ?? 0),
+      teamDepositsUgx,
       totalRewardsUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
       milestones: TEAM_DEPOSIT_MILESTONES.map((milestone) => ({
         ...milestone,

@@ -18,7 +18,11 @@ import {
   UpdateAdminTaskCenterSettingsBody,
   UpdateAdminTaskCenterSettingsResponse,
 } from "@workspace/api-zod";
-import { TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
+import {
+  calculateAllLevelTeamDeposits,
+  getReferralAncestors,
+  TEAM_DEPOSIT_MILESTONES,
+} from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const defaultTaskDefinitions = [
@@ -245,21 +249,22 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
         .returning({ id: phoneAccountsTable.id });
       if (!account) throw new Error("Recharge account no longer exists.");
 
-      const [referral] = await tx.select({ referrerId: phoneReferralCodesTable.referredByAccountId })
-        .from(phoneReferralCodesTable)
-        .where(eq(phoneReferralCodesTable.accountId, verified.accountId))
-        .limit(1);
-      const referrerId = referral?.referrerId;
-      if (referrerId) {
+      const depositAccounts = await tx.select({
+        id: phoneAccountsTable.id,
+        totalDepositedUgx: phoneAccountsTable.totalDepositedUgx,
+      }).from(phoneAccountsTable);
+      const referralLinks = await tx.select({
+        accountId: phoneReferralCodesTable.accountId,
+        referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+      }).from(phoneReferralCodesTable);
+      const teamDepositsByAccount = calculateAllLevelTeamDeposits(depositAccounts, referralLinks);
+      const ancestorIds = getReferralAncestors(verified.accountId, referralLinks).sort();
+      for (const referrerId of ancestorIds) {
         await tx.select({ id: phoneAccountsTable.id })
           .from(phoneAccountsTable)
           .where(eq(phoneAccountsTable.id, referrerId))
           .for("update");
-        const [team] = await tx.select({ total: sum(phoneAccountsTable.totalDepositedUgx) })
-          .from(phoneReferralCodesTable)
-          .innerJoin(phoneAccountsTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
-          .where(eq(phoneReferralCodesTable.referredByAccountId, referrerId));
-        const teamDeposits = Number(team?.total ?? 0);
+        const teamDeposits = teamDepositsByAccount.get(referrerId) ?? 0;
         for (const milestone of TEAM_DEPOSIT_MILESTONES) {
           if (teamDeposits < milestone.thresholdUgx) continue;
           const [claim] = await tx.insert(teamDepositMilestoneClaimsTable)
