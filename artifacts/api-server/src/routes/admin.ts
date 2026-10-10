@@ -18,6 +18,7 @@ import {
   UpdateAdminTaskCenterSettingsBody,
   UpdateAdminTaskCenterSettingsResponse,
 } from "@workspace/api-zod";
+import { TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const defaultTaskDefinitions = [
@@ -259,20 +260,17 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
           .innerJoin(phoneAccountsTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
           .where(eq(phoneReferralCodesTable.referredByAccountId, referrerId));
         const teamDeposits = Number(team?.total ?? 0);
-        for (const milestone of [
-          { id: "direct-deposits-100000", threshold: 100_000, reward: 2_000 },
-          { id: "direct-deposits-500000", threshold: 500_000, reward: 20_000 },
-        ]) {
-          if (teamDeposits < milestone.threshold) continue;
+        for (const milestone of TEAM_DEPOSIT_MILESTONES) {
+          if (teamDeposits < milestone.thresholdUgx) continue;
           const [claim] = await tx.insert(teamDepositMilestoneClaimsTable)
-            .values({ accountId: referrerId, milestoneId: milestone.id, rewardUgx: milestone.reward })
+            .values({ accountId: referrerId, milestoneId: milestone.id, rewardUgx: milestone.rewardUgx })
             .onConflictDoNothing()
             .returning({ id: teamDepositMilestoneClaimsTable.id });
           if (!claim) continue;
           await tx.update(phoneAccountsTable)
             .set({
-              walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${milestone.reward}`,
-              totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${milestone.reward}`,
+              walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${milestone.rewardUgx}`,
+              totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${milestone.rewardUgx}`,
             })
             .where(eq(phoneAccountsTable.id, referrerId));
         }

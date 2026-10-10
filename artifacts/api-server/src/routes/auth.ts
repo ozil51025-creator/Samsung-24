@@ -19,6 +19,7 @@ import {
   RegisterPhoneAccountBody,
   RegisterPhoneAccountResponse,
 } from "@workspace/api-zod";
+import { TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -514,10 +515,7 @@ router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
     res.json(GetTeamDepositMilestonesResponse.parse({
       teamDepositsUgx: Number(team?.total ?? 0),
       totalRewardsUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
-      milestones: [
-        { id: "direct-deposits-100000", thresholdUgx: 100_000, rewardUgx: 2_000 },
-        { id: "direct-deposits-500000", thresholdUgx: 500_000, rewardUgx: 20_000 },
-      ].map((milestone) => ({
+      milestones: TEAM_DEPOSIT_MILESTONES.map((milestone) => ({
         ...milestone,
         received: claims.some((claim) => claim.milestoneId === milestone.id),
       })),
