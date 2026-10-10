@@ -851,7 +851,7 @@ function ReferralPage() {
   const { user } = useAuth();
   const [referralNotice, setReferralNotice] = useState('');
   const referralLevels = [
-    { level: 1, rate: '26%', tone: 'referral-level-one' },
+    { level: 1, rate: '35%', tone: 'referral-level-one' },
     { level: 2, rate: '2%', tone: 'referral-level-two' },
     { level: 3, rate: '1%', tone: 'referral-level-three' },
   ];
