@@ -504,9 +504,6 @@ function WithdrawalHistoryPage() {
 function RechargePage() {
   const { user, status } = useAuth();
   const [amount, setAmount] = useState('');
-  const [provider, setProvider] = useState<'mtn' | 'airtel'>('mtn');
-  const [phone, setPhone] = useState('');
-  const presets = [10000, 30000, 50000, 100000, 250000, 500000];
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Recharge — Samsung Gadgets';
@@ -526,24 +523,10 @@ function RechargePage() {
       <section className="recharge-amount-card">
         <span>Top-up amount</span>
         <label htmlFor="recharge-amount">UGX</label>
-        <input id="recharge-amount" type="number" min="1" step="1000" inputMode="numeric" placeholder="Enter amount" value={amount} onChange={(event) => setAmount(event.target.value)} />
-        <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="" aria-hidden="true" />
-      </section>
-      <section className="recharge-presets" aria-label="Quickly select an amount">
-        <h2>Quickly select an amount</h2>
-        <div>{presets.map((preset) => <button type="button" key={preset} aria-pressed={amount === String(preset)} onClick={() => setAmount(String(preset))}>UGX {money.format(preset)}</button>)}</div>
+        <input id="recharge-amount" type="number" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} />
       </section>
       <section className="recharge-channel">
-        <h2>Choose mobile money network</h2>
-        <div className="recharge-network-list">
-          <label className={provider === 'mtn' ? 'selected' : ''}><input type="radio" name="recharge-provider" value="mtn" checked={provider === 'mtn'} onChange={() => setProvider('mtn')} /><span>MTN Mobile Money</span></label>
-          <label className={provider === 'airtel' ? 'selected' : ''}><input type="radio" name="recharge-provider" value="airtel" checked={provider === 'airtel'} onChange={() => setProvider('airtel')} /><span>Airtel Money</span></label>
-        </div>
-        <label className="recharge-phone-label" htmlFor="recharge-phone">Mobile-money number to charge</label>
-        <input id="recharge-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+256 7XX XXX XXX" value={phone} onChange={(event) => setPhone(event.target.value)} />
-        <button className="recharge-confirm" type="button" disabled title="PesaJet collections are not connected">Confirm top-up</button>
-        <p className="recharge-notice" role="note">Top-ups are not being sent or recorded. MTN/Airtel support and PesaJet processing must be verified before making a payment.</p>
-        <Link className="withdraw-history-link" href="/recharge-history">View top-up history <ArrowRight /></Link>
+        <button className="recharge-confirm" type="button" disabled>Confirm</button>
       </section>
     </main>
   </MemberFrame>;
@@ -557,7 +540,7 @@ function RechargeHistoryPage() {
   return <MemberFrame active="/account">
     <main className="recharge-content" data-testid="page-recharge-history">
       <header className="withdraw-heading"><Link href="/recharge" aria-label="Back to recharge"><ArrowLeft /></Link><h1>Top-up history</h1></header>
-      <section className="withdraw-empty"><History aria-hidden="true" /><p>No top-ups are recorded.</p><span>Verified transactions will appear here once deposits are connected.</span></section>
+      <section className="recharge-history-empty">More data</section>
     </main>
   </MemberFrame>;
 }

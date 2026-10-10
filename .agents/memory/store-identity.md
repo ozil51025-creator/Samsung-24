@@ -45,6 +45,8 @@ Every account receives a persistent referral code automatically. Signup links pr
 
 The user also chose a separate UGX wallet with customer top-ups and withdrawals, and named PesaJet as the desired gateway. They specified a UGX 10,000 minimum withdrawal and confirmed a 20% fee deducted from each withdrawal, leaving 80% of the requested amount to be paid out. For withdrawals, they chose Uganda mobile money (MTN or Airtel). PesaJet was not available in the current Replit integration search, so payout submission and wallet totals/history remain unavailable rather than inventing transactions.
 
+Recharge amounts use UGX. Do not add deposit presets, minimums, or payment-channel claims unless the user provides them.
+
 **Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers.
 
 **How to apply:** Display the UGX 10,000 minimum and 20% fee with its net 80% payout effect. Let the withdrawal screen preview MTN/Airtel details, but do not submit or persist payout details until a provider that supports Uganda payouts is verified; keep deposits, payouts, balances, and history inactive until server-backed transaction data exists.
