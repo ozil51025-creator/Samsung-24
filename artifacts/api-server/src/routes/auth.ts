@@ -7,6 +7,8 @@ import {
   phoneReferralCodesTable,
   phoneSessionsTable,
   presenceClaimsTable,
+  rechargeRequestsTable,
+  taskCenterSettingsTable,
 } from "@workspace/db";
 import {
   GetCurrentPhoneAccountResponse,
@@ -76,6 +78,21 @@ async function currentAccountId(req: Request, res: Response): Promise<string | n
     return null;
   }
   return account.id;
+}
+
+async function currentPresenceTask() {
+  const [settings] = await db
+    .select({ tasks: taskCenterSettingsTable.tasks })
+    .from(taskCenterSettingsTable)
+    .limit(1);
+  const tasks = Array.isArray(settings?.tasks) ? settings.tasks : [];
+  const configured = tasks.find((task) =>
+    task && typeof task === "object" && "id" in task && task.id === "presence"
+  ) as { enabled?: unknown; rewardUgx?: unknown } | undefined;
+  const rewardUgx = typeof configured?.rewardUgx === "number" && Number.isSafeInteger(configured.rewardUgx) && configured.rewardUgx > 0
+    ? configured.rewardUgx
+    : 500;
+  return { enabled: configured?.enabled === true, rewardUgx };
 }
 
 function createReferralCode() {
@@ -465,11 +482,13 @@ router.get("/presence", async (req, res) => {
   try {
     const accountId = await currentAccountId(req, res);
     if (!accountId) return;
+    const task = await currentPresenceTask();
     const claims = await db
       .select({ attendanceDate: presenceClaimsTable.attendanceDate, rewardUgx: presenceClaimsTable.rewardUgx })
       .from(presenceClaimsTable)
       .where(eq(presenceClaimsTable.accountId, accountId));
     res.json({
+      ...task,
       totalUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
       days: claims.length,
       claimedToday: claims.some((claim) => claim.attendanceDate === kampalaDate()),
@@ -484,9 +503,14 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
   try {
     const accountId = await currentAccountId(req, res);
     if (!accountId) return;
+    const task = await currentPresenceTask();
+    if (!task.enabled) {
+      res.status(409).json({ error: "Presence is not active yet." });
+      return;
+    }
     const claimed = await db
       .insert(presenceClaimsTable)
-      .values({ accountId, attendanceDate: kampalaDate(), rewardUgx: 500 })
+      .values({ accountId, attendanceDate: kampalaDate(), rewardUgx: task.rewardUgx })
       .onConflictDoNothing()
       .returning({ id: presenceClaimsTable.id });
     const claims = await db
@@ -494,6 +518,7 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
       .from(presenceClaimsTable)
       .where(eq(presenceClaimsTable.accountId, accountId));
     res.json({
+      ...task,
       claimedToday: true,
       wasNewClaim: claimed.length > 0,
       totalUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
@@ -502,6 +527,28 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
   } catch (error) {
     req.log.error({ error, route: "presence.claim" }, "Could not record presence");
     res.status(500).json({ error: "Could not record presence." });
+  }
+});
+
+router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
+  try {
+    const accountId = await currentAccountId(req, res);
+    if (!accountId) return;
+    const amount = req.body?.amount;
+    const rawPhone = typeof req.body?.phone === "string" ? req.body.phone.trim().replace(/[\s().-]/g, "") : "";
+    const nationalPhone = rawPhone.startsWith("+256") ? rawPhone.slice(4) : rawPhone.startsWith("256") ? rawPhone.slice(3) : rawPhone.startsWith("0") ? rawPhone.slice(1) : rawPhone;
+    if (!Number.isSafeInteger(amount) || amount < 2000 || !/^7\d{8}$/.test(nationalPhone)) {
+      res.status(400).json({ error: "Enter a valid Ugandan mobile number and recharge amount of at least UGX 2,000." });
+      return;
+    }
+    const [request] = await db
+      .insert(rechargeRequestsTable)
+      .values({ accountId, amountUgx: amount, payerPhone: `+256${nationalPhone}` })
+      .returning({ id: rechargeRequestsTable.id });
+    res.status(201).json({ requestId: request.id, status: "pending" });
+  } catch (error) {
+    req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");
+    res.status(500).json({ error: "Could not create the recharge request." });
   }
 });
 

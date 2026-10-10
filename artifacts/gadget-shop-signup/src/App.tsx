@@ -377,7 +377,7 @@ function HomePage() {
 
 function PresencePage() {
   const { user, status } = useAuth();
-  const [presence, setPresence] = useState<{ totalUgx: number; days: number; claimedToday: boolean } | null>(null);
+  const [presence, setPresence] = useState<{ totalUgx: number; days: number; claimedToday: boolean; enabled: boolean; rewardUgx: number } | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [presenceMessage, setPresenceMessage] = useState('');
   useEffect(() => {
@@ -424,17 +424,17 @@ function PresencePage() {
     <img className="presence-hero-image" src={samsungPresenceImage} alt="Samsung Galaxy phone, watch, and earbuds" />
     <section className="presence-summary">
       <div className="presence-reward">
-        <strong>UGX 500</strong>
+        <strong>UGX {presence?.rewardUgx.toLocaleString() ?? '500'}</strong>
         <span>Daily Bonus</span>
       </div>
       <div className="presence-stats">
         <div><strong>{presence ? `UGX ${presence.totalUgx.toLocaleString()}` : 'UGX —'}</strong><span>Cumulative bonus</span></div>
         <div><strong>{presence?.days ?? '—'}</strong><span>Days of attendance</span></div>
       </div>
-      <button type="button" disabled={!presence || presence.claimedToday || claiming} onClick={claimPresence} aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
-      <p id="presence-unavailable" className="presence-unavailable" role="status">{presenceMessage || (presence?.claimedToday ? 'Presence already recorded today.' : 'Daily attendance is recorded once per day.')}</p>
+      <button type="button" disabled={!presence || !presence.enabled || presence.claimedToday || claiming} onClick={claimPresence} aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
+      <p id="presence-unavailable" className="presence-unavailable" role="status">{presenceMessage || (presence?.claimedToday ? 'Presence already recorded today.' : presence && !presence.enabled ? 'Presence is not active yet.' : 'Daily attendance is recorded once per day.')}</p>
       <ol>
-        <li>Daily presence reward: 500 UGX.</li>
+        <li>Daily presence reward: {presence?.rewardUgx.toLocaleString() ?? '500'} UGX.</li>
         <li>Log in once a day.</li>
         <li>Log in again after midnight (00:00) each day.</li>
       </ol>
@@ -629,7 +629,30 @@ function RechargePage() {
 function RechargePaymentPage() {
   const { user, status } = useAuth();
   const [phone, setPhone] = useState('');
+  const [requestId, setRequestId] = useState('');
+  const [requestError, setRequestError] = useState('');
+  const [creatingRequest, setCreatingRequest] = useState(false);
   const amount = Number(new URLSearchParams(window.location.search).get('amount'));
+  const validPhone = /^(?:\+256|0)?7\d{8}$/.test(phone.replace(/[\s().-]/g, ''));
+  const createRechargeRequest = async () => {
+    setCreatingRequest(true);
+    setRequestError('');
+    try {
+      const response = await fetch('/api/recharge-requests', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, phone }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not create recharge request.');
+      setRequestId(data.requestId as string);
+    } catch (error) {
+      setRequestError(error instanceof Error ? error.message : 'Could not create recharge request.');
+    } finally {
+      setCreatingRequest(false);
+    }
+  };
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -664,8 +687,17 @@ function RechargePaymentPage() {
         data-testid="input-recharge-mobile-number"
       />
       <p className="recharge-payment-warning">Check the mobile money number before continuing.</p>
-      <button type="button" disabled data-testid="button-recharge-payment-continue">Continue</button>
-      <p className="recharge-payment-unavailable">Mobile money payment processing is not connected yet.</p>
+      <button type="button" disabled={!validPhone || creatingRequest || Boolean(requestId)} onClick={createRechargeRequest} data-testid="button-recharge-payment-continue">{creatingRequest ? 'Please wait…' : 'Continue'}</button>
+      {requestError && <p role="alert">{requestError}</p>}
+      {requestId && <section className="recharge-manual-instructions" aria-live="polite" data-testid="recharge-manual-instructions">
+        <h2>Manual Airtel Money transfer</h2>
+        <p>Recharge request pending verification.</p>
+        <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
+        <p>Send to: <strong>0743240195</strong></p>
+        <p>Account name: <strong>Nakaliba Martha</strong></p>
+        <p>Reference: <strong>{requestId.slice(0, 8).toUpperCase()}</strong></p>
+        <p>After sending, contact customer service for verification. This page does not confirm payment or add funds automatically.</p>
+      </section>}
     </section>
   </main>;
 }
@@ -683,6 +715,8 @@ function RechargeHistoryPage() {
 
 function AdminTaskCenterPage() {
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
+  const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
+  const [rechargeStatus, setRechargeStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
@@ -702,6 +736,25 @@ function AdminTaskCenterPage() {
       });
   };
   useEffect(() => { loadTasks(); }, []);
+  const loadRechargeRequests = () => {
+    setRechargeStatus('loading');
+    fetch('/api/admin/recharge-requests', { credentials: 'include' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load recharge requests.');
+        setRechargeRequests(data.requests as typeof rechargeRequests);
+        setRechargeStatus('ready');
+      })
+      .catch(() => setRechargeStatus('error'));
+  };
+  useEffect(() => { loadRechargeRequests(); }, []);
+  const verifyRecharge = async (id: string) => {
+    const response = await fetch(`/api/admin/recharge-requests/${encodeURIComponent(id)}/verify`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (response.ok) loadRechargeRequests();
+  };
   const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
     setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
   const saveTasks = async (event: FormEvent) => {
@@ -752,6 +805,18 @@ function AdminTaskCenterPage() {
         </div>
         {message && <p className="admin-task-message" role="status">{message}</p>}
       </form>}
+      <section className="admin-recharge-review">
+        <h2>Manual recharge requests</h2>
+        <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification does not add funds to the wallet.</p>
+        {rechargeStatus === 'loading' && <p>Loading requests…</p>}
+        {rechargeStatus === 'error' && <button type="button" onClick={loadRechargeRequests}>Retry loading requests</button>}
+        {rechargeStatus === 'ready' && rechargeRequests.length === 0 && <p>No recharge requests.</p>}
+        {rechargeRequests.map((request) => <article className="admin-recharge-review-item" key={request.id}>
+          <p><strong>UGX {money.format(request.amountUgx)}</strong> · {request.status}</p>
+          <p>Member: {request.memberPhone} · Sender: {request.payerPhone}</p>
+          {request.status === 'pending' && <button type="button" onClick={() => void verifyRecharge(request.id)}>Verify transfer</button>}
+        </article>)}
+      </section>
     </div>
   </main>;
 }
@@ -786,7 +851,7 @@ function ReferralPage() {
   const { user } = useAuth();
   const [referralNotice, setReferralNotice] = useState('');
   const referralLevels = [
-    { level: 1, rate: '35%', tone: 'referral-level-one' },
+    { level: 1, rate: '26%', tone: 'referral-level-one' },
     { level: 2, rate: '2%', tone: 'referral-level-two' },
     { level: 3, rate: '1%', tone: 'referral-level-three' },
   ];
@@ -817,41 +882,29 @@ function ReferralPage() {
 
   return <MemberFrame active="/referral">
     <section className="mx-auto max-w-[920px] space-y-5" data-testid="page-referral">
-      <header className="flex items-center justify-between gap-4 rounded-[17px] border border-[#e7e9eb] bg-white px-4 py-3 shadow-[0_3px_12px_rgba(25,31,37,.04)]">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fff0e2] text-[#9b4b14]"><UsersRound className="h-5 w-5" aria-hidden="true" /></span>
-          <h1 className="truncate font-[Syne] text-[15px] font-bold tracking-[-.03em] text-[#25292d]">Team</h1>
-        </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e8eaec] bg-[#fafbfb] text-[#68727a]" title="Notifications are unavailable">
-          <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
-        </span>
-      </header>
+      <header className="referral-page-heading"><h1>Team</h1></header>
 
-      <section className="referral-invite-card" aria-labelledby="referral-invite-title">
+      <section className="referral-invite-card" aria-label="Referral invitation">
         <div className="referral-team-summary">
-          <div><span>Total rewards</span><strong aria-label="Unavailable">—</strong></div>
+          <div><span>Total rewards</span><strong aria-label="Unavailable">UGX —</strong></div>
           <div><span>Total members</span><strong aria-label="Unavailable">—</strong></div>
         </div>
         <div className="referral-hero-art">
           <img src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy smartphones including foldable devices" />
-        </div>
-        <div className="referral-invite-copy">
-          <h2 id="referral-invite-title">Invite friends</h2>
-          <p>Share your invitation code or link. New accounts can use your code during registration.</p>
         </div>
         <div className="referral-share-grid">
           <div className="referral-share-item">
             <span>Invitation code</span>
             <strong>{user?.referralCode ?? 'Generating…'}</strong>
             <button type="button" onClick={copyReferralCode} disabled={!user?.referralCode} aria-label="Copy invitation code">
-              <Copy aria-hidden="true" /> Copy code
+              <Copy aria-hidden="true" /> Copy
             </button>
           </div>
           <div className="referral-share-item">
             <span>Invitation link</span>
             <strong className="referral-link-text" title={referralLink}>{referralLink || 'Preparing your referral link…'}</strong>
             <button type="button" onClick={copyReferralLink} disabled={!referralLink} aria-label="Copy invitation link">
-              <Copy aria-hidden="true" /> Copy link
+              <Copy aria-hidden="true" /> Copy
             </button>
           </div>
         </div>
@@ -877,18 +930,34 @@ function ReferralPage() {
 }
 
 function AccountPage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const [, setLocation] = useLocation();
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
   const accountActions = [
-    { id: 'about', label: 'About samsung', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
+    { id: 'about', label: 'About us', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
     { id: 'help', label: 'Customer service', icon: Headphones, href: customerServiceUrl },
-    { id: 'history', label: 'Account history', icon: History, detail: 'No verified wallet transactions are available yet.' },
-    { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
-    { id: 'install', label: 'Install app', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
-    { id: 'password', label: 'Change password', icon: ShieldCheck, detail: 'Password changes are handled by an administrator. Self-service password changes are not available yet.' },
-    { id: 'gift', label: 'Redeem gift code', icon: Gift, detail: 'Gift-code redemption is not available yet.' },
+    { id: 'history', label: 'History', icon: History, detail: 'No verified wallet transactions are available yet.' },
+    { id: 'terms', label: 'Regulations', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
+    { id: 'install', label: 'Download app', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
     { id: 'link-card', label: 'Link a card', icon: CreditCard, detail: 'Card linking is not available yet.' },
+    { id: 'password', label: 'Change password', icon: ShieldCheck, detail: 'Password changes are handled by an administrator. Self-service password changes are not available yet.' },
+    { id: 'gift', label: 'Exchange a gift', icon: Gift, detail: 'Gift-code redemption is not available yet.' },
   ];
+
+  async function handleAccountSignOut() {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      await signOut();
+      setLocation('/');
+    } catch {
+      setSignOutError('Could not sign you out. Try again.');
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return <MemberFrame active="/account">
     <section className="account-content mx-auto w-full max-w-[580px]" data-testid="page-account">
@@ -924,11 +993,11 @@ function AccountPage() {
         </Link>
       </section>
 
-      <Link href="/products" className="account-feature-card">
-        <span className="account-feature-eyebrow">samsung</span>
-        <strong>Explore the product catalog</strong>
-        <span>Browse phones, tablets, wearables, and accessories.</span>
-        <span className="account-feature-button">Browse products <ArrowRight aria-hidden="true" /></span>
+      <Link href="/tasks" className="account-feature-card">
+        <img src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy devices" />
+        <span className="account-feature-eyebrow">Task Center</span>
+        <strong>Task Center</strong>
+        <span className="account-feature-button">Go <ArrowRight aria-hidden="true" /></span>
       </Link>
 
       <section className="account-shortcut-grid" aria-label="Account shortcuts">
@@ -946,6 +1015,10 @@ function AccountPage() {
           );
         })}
       </section>
+      <button type="button" className="account-logout" onClick={handleAccountSignOut} disabled={signingOut}>
+        {signingOut ? 'Signing out…' : 'Log out'} <ArrowRight aria-hidden="true" />
+      </button>
+      {signOutError && <p role="alert" className="account-signout-error">{signOutError}</p>}
     </section>
   </MemberFrame>;
 }

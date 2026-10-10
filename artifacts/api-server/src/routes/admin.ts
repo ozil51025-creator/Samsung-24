@@ -6,6 +6,7 @@ import {
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  rechargeRequestsTable,
   taskCenterSettingsTable,
 } from "@workspace/db";
 import {
@@ -133,7 +134,8 @@ async function readTaskCenterSettings() {
 
 router.get("/task-center", async (req, res): Promise<void> => {
   try {
-    res.json(GetTaskCenterSettingsResponse.parse({ tasks: await readTaskCenterSettings() }));
+    const tasks = (await readTaskCenterSettings()).filter((task) => task.id !== "presence");
+    res.json(GetTaskCenterSettingsResponse.parse({ tasks }));
   } catch (error) {
     req.log.error({ error, route: "task-center.get" }, "Could not load task definitions");
     res.status(500).json({ error: "Could not load task definitions." });
@@ -180,6 +182,54 @@ router.put("/admin/task-center", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.task-center.put" }, "Could not save task definitions");
     res.status(500).json({ error: "Could not save task definitions." });
+  }
+});
+
+router.get("/admin/recharge-requests", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    const requests = await db
+      .select({
+        id: rechargeRequestsTable.id,
+        amountUgx: rechargeRequestsTable.amountUgx,
+        payerPhone: rechargeRequestsTable.payerPhone,
+        status: rechargeRequestsTable.status,
+        createdAt: rechargeRequestsTable.createdAt,
+        memberPhone: phoneAccountsTable.phoneNumber,
+      })
+      .from(rechargeRequestsTable)
+      .innerJoin(phoneAccountsTable, eq(rechargeRequestsTable.accountId, phoneAccountsTable.id))
+      .orderBy(desc(rechargeRequestsTable.createdAt))
+      .limit(100);
+    res.json({ requests });
+  } catch (error) {
+    req.log.error({ error, route: "admin.recharge-requests" }, "Could not load recharge requests");
+    res.status(500).json({ error: "Could not load recharge requests." });
+  }
+});
+
+router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const id = req.params.id;
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) {
+    res.status(400).json({ error: "Invalid recharge request." });
+    return;
+  }
+  try {
+    const [request] = await db.update(rechargeRequestsTable)
+      .set({ status: "verified" })
+      .where(and(eq(rechargeRequestsTable.id, id), eq(rechargeRequestsTable.status, "pending")))
+      .returning({ id: rechargeRequestsTable.id });
+    if (!request) {
+      res.status(404).json({ error: "Pending recharge request was not found." });
+      return;
+    }
+    res.json({ requestId: request.id, status: "verified", walletCredited: false });
+  } catch (error) {
+    req.log.error({ error, route: "admin.recharge-requests.verify" }, "Could not verify recharge request");
+    res.status(500).json({ error: "Could not verify recharge request." });
   }
 });
 

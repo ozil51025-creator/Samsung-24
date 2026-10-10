@@ -1655,6 +1655,11 @@ button.account-menu-row {
 .recharge-terms { display: grid; gap: 2px; margin: 10px 2px 0; padding-left: 20px; color: #535866; font-size: 11px; line-height: 1.55; }
 .recharge-shell { min-height: 100dvh; padding: 32px 20px; background: #f3f2f8; color: #253247; text-align: center; }
 .recharge-history-empty { padding: 36px 20px; color: #666; font-size: 14px; text-align: center; }
+.admin-recharge-review { display: grid; gap: 12px; margin-top: 28px; padding: 18px; border: 1px solid #d8dde5; border-radius: 14px; background: #fff; }
+.admin-recharge-review h2 { margin: 0; font-size: 20px; }
+.admin-recharge-review-item { display: grid; gap: 6px; padding: 14px 0; border-top: 1px solid #e3e6eb; }
+.admin-recharge-review-item p { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.admin-recharge-review-item button { justify-self: start; min-height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: #0b3f80; color: #fff; font-weight: 700; }
 .recharge-payment-page { width: min(100%,680px); min-height: calc(100dvh - 64px); margin: 0 auto; background: #f4f4f4; color: #263341; }
 .recharge-payment-header { display: flex; height: 68px; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.2); background: #0b3f80; color: #fff; }
 .recharge-payment-header span { font-size: 21px; font-weight: 700; letter-spacing: -.04em; }
@@ -1667,7 +1672,12 @@ button.account-menu-row {
 .recharge-payment-form input { min-height: 58px; padding: 0 16px; border: 2px solid #0b3f80; border-radius: 12px; background: #fff; color: #202b34; font-size: 16px; }
 .recharge-payment-warning { margin: 0; padding: 14px; border-radius: 10px; background: #fff2ca; color: #755e14; font-size: 13px; line-height: 1.5; }
 .recharge-payment-form button { min-height: 54px; margin-top: 24px; border: 0; border-radius: 14px; background: #8eaac7; color: #fff; font-size: 17px; font-weight: 700; }
+.recharge-payment-form button:not(:disabled) { background: #0b3f80; cursor: pointer; }
+.recharge-payment-form button:disabled { cursor: not-allowed; opacity: .65; }
 .recharge-payment-unavailable { margin: 0; color: #6b7075; font-size: 12px; text-align: center; }
+.recharge-manual-instructions { display: grid; gap: 10px; padding: 16px; border: 1px solid #d6e1ec; border-radius: 12px; background: #fff; color: #263341; font-size: 14px; line-height: 1.45; }
+.recharge-manual-instructions h2 { color: #0b3f80; font-size: 17px; }
+.recharge-manual-instructions p { margin: 0; }
 .home-activity-strip { display: flex; min-height: 58px; align-items: center; gap: 9px; overflow: hidden; margin: 0 12px; padding: 10px 13px; border-radius: 10px; background: #fff; color: #626874; font-size: 12px; white-space: nowrap; }
 .home-activity-strip svg { width: 20px; height: 20px; flex: 0 0 auto; color: #9299a5; }
 .home-photo-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); grid-template-rows: repeat(2,142px); gap: 8px; margin: 0 12px; }
@@ -1702,6 +1712,10 @@ button.account-menu-row {
     linear-gradient(180deg, #f7f8fa 0%, #fff 58%, #f7f8fa 100%);
 }
 
+.product-page-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 3px 4px; }
+.product-page-heading h1 { color: #303847; font-size: 24px; font-weight: 600; }
+.product-page-mark { display: grid; width: 54px; height: 54px; place-items: center; border-radius: 50%; background: #fff; color: #1428a0; font-size: 24px; font-weight: 800; box-shadow: 0 4px 15px rgba(25,40,90,.08); }
+
 .product-summary-banner {
   position: relative;
   isolation: isolate;
@@ -1723,11 +1737,27 @@ button.account-menu-row {
 .product-summary-banner::before { position: absolute; z-index: 1; inset: 0; border-radius: inherit; background: linear-gradient(90deg,rgba(24,48,132,.92),rgba(42,64,142,.72) 62%,rgba(15,31,83,.35)); content: ""; }
 .product-summary-banner > div { position: relative; z-index: 2; }
 
+.investment-catalog { display: grid; gap: 16px; width: 100%; }
+.investment-catalog-banner { position: relative; min-height: 190px; overflow: hidden; border-radius: 16px; background: #0b3f80; }
+.investment-catalog-banner::after { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(5,27,56,.74),rgba(5,27,56,.08)); content: ""; }
+.investment-catalog-banner img { display: block; width: 100%; height: 190px; object-fit: cover; }
+.investment-catalog-banner h1 { position: absolute; z-index: 1; left: 20px; bottom: 18px; margin: 0; color: #fff; font-size: clamp(24px,6vw,34px); font-weight: 700; text-shadow: 0 2px 14px rgba(0,0,0,.28); }
+.investment-table-scroll { overflow-x: auto; border: 1px solid #3d83c0; border-radius: 12px; background: #fff; }
+.investment-table { width: 100%; min-width: 330px; border-collapse: collapse; color: #123c70; font-size: 13px; }
+.investment-table thead { background: #1264ad; color: #fff; }
+.investment-table th, .investment-table td { padding: 12px 13px; border-right: 1px solid #b6d1e6; border-bottom: 1px solid #c8dcec; }
+.investment-table thead th { font-weight: 700; text-align: left; }
+.investment-table thead th:last-child, .investment-table td:last-child { text-align: right; white-space: nowrap; }
+.investment-table tbody tr:nth-child(even) { background: #edf6fc; }
+.investment-table tbody th { width: 68%; font-weight: 600; text-align: left; }
+.investment-table tbody td strong { font-weight: 700; }
+.investment-table tr:last-child th, .investment-table tr:last-child td { border-bottom: 0; }
+.investment-table th:last-child, .investment-table td:last-child { border-right: 0; }
 .product-summary-range { text-align: right; }
 .product-summary-eyebrow { color: rgba(255,255,255,.75); font-size: 9px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
 .product-summary-value { margin-top: 5px; color: #fff; font-family: Syne,sans-serif; font-size: clamp(18px,4.2vw,24px); font-weight: 700; letter-spacing: -.045em; }
 .product-summary-label { margin-top: 2px; color: rgba(255,255,255,.9); font-size: 11px; }
-.product-catalog-list { display: grid; gap: 14px; margin-top: 19px; }
+.product-catalog-list { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 19px; }
 .product-list-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 3px 2px; }
 .product-list-eyebrow { color: #748094; font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .product-list-heading h2 { margin-top: 3px; color: #222b3a; font-family: Syne,sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -.045em; }
@@ -1751,8 +1781,7 @@ button.account-menu-row {
 .product-checkout-note { margin-top: 14px; padding: 12px 14px; border: 1px solid #e4e8f0; border-radius: 13px; background: rgba(255,255,255,.8); color: #6e7785; font-size: 10px; line-height: 1.6; }
 
 @media (min-width: 720px) {
-  .product-catalog-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .product-list-heading { grid-column: 1 / -1; }
+  .product-catalog-list { grid-template-columns: 1fr; }
 }
 
 .referral-invite-card {
@@ -1833,6 +1862,18 @@ button.account-menu-row {
 .account-feature-button { display: inline-flex; min-height: 30px; align-items: center; gap: 6px; margin-top: 3px; padding: 0 14px; border-radius: 999px; background: #fff; color: #263a82; font-size: 10px; font-weight: 700; }
 .account-feature-button svg { width: 13px; height: 13px; }
 .account-shortcut-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px 7px; }
+.account-feature-card { position: relative; isolation: isolate; justify-content: flex-end; min-height: 164px; }
+.account-feature-card::before { position: absolute; z-index: 0; inset: 0; background: linear-gradient(90deg,rgba(8,20,50,.76),rgba(14,32,76,.34)); content: ""; }
+.account-feature-card > img { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.account-feature-card > .account-feature-eyebrow,
+.account-feature-card > strong,
+.account-feature-card > .account-feature-button { position: relative; z-index: 1; }
+.account-feature-card > .account-feature-eyebrow { color: rgba(255,255,255,.85); }
+.account-feature-card > .account-feature-button { color: #263a82; font-size: 12px; }
+.account-logout { display: flex; width: 100%; min-height: 54px; align-items: center; justify-content: space-between; margin-top: 26px; padding: 0 4px; border-top: 1px solid #e6e7e9; color: #20242b; font-size: 14px; text-align: left; }
+.account-logout svg { width: 15px; height: 15px; transform: rotate(0deg); }
+.account-logout:disabled { opacity: .65; }
+.account-signout-error { color: #b42318; font-size: 12px; }
 .account-shortcut { min-width: 0; text-align: center; }
 .account-shortcut > button,.account-shortcut-link { display: flex; width: 100%; min-height: 73px; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #333b49; font-size: 9px; line-height: 1.3; text-decoration: none; }
 .account-shortcut > button svg,.account-shortcut-link svg { width: 23px; height: 23px; color: #202b3c; stroke-width: 1.8; }
@@ -1898,6 +1939,19 @@ button.account-menu-row {
   .referral-hero-art { min-height: 215px; }
   .referral-hero-art img { height: 240px; }
 }
+
+.referral-shell { color: #222832; background: #fff; }
+.referral-page-heading { padding: 0 2px; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.referral-page-heading h1 { color: #25292d; font-size: 25px; font-weight: 700; }
+.referral-invite-card { position: relative; min-height: 510px; justify-content: space-between; overflow: hidden; padding: 19px 16px 12px; border: 0; border-radius: 18px; background: #152347 !important; }
+.referral-invite-card::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.08) 43%,rgba(0,0,0,.58)); content: ""; pointer-events: none; }
+.referral-team-summary { position: relative; z-index: 2; }
+.referral-hero-art { position: absolute; z-index: 0; inset: 0; min-height: 0; }
+.referral-hero-art img { width: 100%; height: 100%; border-radius: 0; object-fit: cover; filter: brightness(.78); }
+.referral-share-grid { position: relative; z-index: 2; margin-top: auto; }
+.referral-share-item button { text-transform: uppercase; }
+.referral-copy-status { position: relative; z-index: 2; }
+.referral-levels { background: transparent !important; border: 0 !important; }
 
 @media (prefers-reduced-transparency: reduce) {
   .home-shell .home-intro {
