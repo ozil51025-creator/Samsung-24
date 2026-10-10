@@ -1,5 +1,5 @@
 import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
-import { and, count, desc, eq, gt, inArray, isNotNull, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNotNull, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
@@ -150,18 +150,43 @@ async function ensureProductCatalog() {
   }))).onConflictDoNothing();
 }
 
-router.get("/products/catalog", async (_req, res): Promise<void> => {
+async function requireMemberAccountId(req: Request, res: Response): Promise<string | null> {
+  const token = req.cookies?.[cookieName()];
+  if (typeof token !== "string" || !/^[a-f0-9]{64}$/i.test(token)) {
+    res.status(401).json({ error: "Not signed in." });
+    return null;
+  }
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const [account] = await db.select({ id: phoneAccountsTable.id })
+    .from(phoneSessionsTable)
+    .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))
+    .where(and(
+      eq(phoneSessionsTable.tokenHash, tokenHash),
+      gt(phoneSessionsTable.expiresAt, new Date()),
+      eq(phoneAccountsTable.isActive, true),
+    ))
+    .limit(1);
+  if (!account) {
+    res.status(401).json({ error: "Not signed in." });
+    return null;
+  }
+  return account.id;
+}
+
+router.get("/products/catalog", async (req, res): Promise<void> => {
+  const accountId = await requireMemberAccountId(req, res);
+  if (!accountId) return;
   try {
     await ensureProductCatalog();
     const products = await db.select().from(productCatalogTable);
-    const [totals] = await db.select({
-      purchasedCount: count(),
-      totalCollected: sum(productOrdersTable.priceUgx),
-    }).from(productOrdersTable);
+    const [totals] = await db.select({ purchasedCount: count() })
+      .from(productOrdersTable)
+      .where(eq(productOrdersTable.buyerAccountId, accountId));
     res.json(GetProductCatalogResponse.parse({
       products: products.filter((product) => product.isActive),
       purchasedCount: totals?.purchasedCount ?? 0,
-      totalCollectedUgx: Number(totals?.totalCollected ?? 0),
+      // No product-earnings ledger exists yet; purchase prices are spend, not earnings received.
+      totalCollectedUgx: 0,
     }));
   } catch {
     res.status(500).json({ error: "Could not load the product catalog." });
