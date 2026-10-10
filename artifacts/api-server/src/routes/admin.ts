@@ -370,6 +370,12 @@ router.post("/admin/admins", async (req, res): Promise<void> => {
       res.status(409).json({ error: "That member is already an administrator." });
       return;
     }
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id,
+      targetAccountId: target.id,
+      action: "admin.access_granted",
+      reason: "Administrator granted access",
+    });
     res.status(201).json(AddAdminAccountResponse.parse({
       id: target.id,
       phoneNumber: target.phoneNumber,
@@ -436,6 +442,11 @@ router.put("/admin/task-center", async (req, res): Promise<void> => {
         target: taskCenterSettingsTable.id,
         set: { tasks, updatedAt: new Date() },
       });
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id,
+      action: "task_center.updated",
+      details: JSON.stringify({ taskCount: tasks.length, enabledTaskIds: tasks.filter((task) => task.enabled).map((task) => task.id) }),
+    });
     res.json(UpdateAdminTaskCenterSettingsResponse.parse({ tasks }));
   } catch (error) {
     req.log.error({ error, route: "admin.task-center.put" }, "Could not save task definitions");
@@ -496,6 +507,13 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
         .where(eq(phoneAccountsTable.id, verified.accountId))
         .returning({ id: phoneAccountsTable.id });
       if (!account) throw new Error("Recharge account no longer exists.");
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: verified.accountId,
+        action: "deposit.verified",
+        amountUgx: verified.amountUgx,
+        reason: `Recharge request ${verified.id} verified`,
+      });
 
       const depositAccounts = await tx.select({
         id: phoneAccountsTable.id,
