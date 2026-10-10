@@ -377,11 +377,40 @@ function HomePage() {
 
 function PresencePage() {
   const { user, status } = useAuth();
+  const [presence, setPresence] = useState<{ totalUgx: number; days: number; claimedToday: boolean } | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [presenceMessage, setPresenceMessage] = useState('');
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Presence — samsung';
     return () => { document.title = previousTitle; };
   }, []);
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/presence', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load presence.');
+        setPresence(await response.json());
+      })
+      .catch(() => setPresenceMessage('Presence could not be loaded.'));
+  }, [user]);
+
+  const claimPresence = async () => {
+    if (claiming || presence?.claimedToday) return;
+    setClaiming(true);
+    setPresenceMessage('');
+    try {
+      const response = await fetch('/api/presence/claim', { method: 'POST', credentials: 'include' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not record presence.');
+      setPresence(result);
+      setPresenceMessage(result.wasNewClaim ? 'Presence recorded.' : 'You have already recorded presence today.');
+    } catch {
+      setPresenceMessage('Presence could not be recorded. Try again.');
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   if (status === 'loading') return <main className="presence-page" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="presence-page"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
@@ -399,11 +428,11 @@ function PresencePage() {
         <span>Daily Bonus</span>
       </div>
       <div className="presence-stats">
-        <div><strong>UGX —</strong><span>Cumulative bonus</span></div>
-        <div><strong>—</strong><span>Days of attendance</span></div>
+        <div><strong>{presence ? `UGX ${presence.totalUgx.toLocaleString()}` : 'UGX —'}</strong><span>Cumulative bonus</span></div>
+        <div><strong>{presence?.days ?? '—'}</strong><span>Days of attendance</span></div>
       </div>
-      <button type="button" disabled aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
-      <p id="presence-unavailable" className="presence-unavailable">Attendance tracking is not connected yet.</p>
+      <button type="button" disabled={!presence || presence.claimedToday || claiming} onClick={claimPresence} aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
+      <p id="presence-unavailable" className="presence-unavailable" role="status">{presenceMessage || (presence?.claimedToday ? 'Presence already recorded today.' : 'Daily attendance is recorded once per day.')}</p>
       <ol>
         <li>Daily presence reward: 500 UGX.</li>
         <li>Log in once a day.</li>

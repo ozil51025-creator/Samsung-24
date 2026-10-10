@@ -6,6 +6,7 @@ import {
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  presenceClaimsTable,
 } from "@workspace/db";
 import {
   GetCurrentPhoneAccountResponse,
@@ -42,6 +43,39 @@ function sessionCookieOptions() {
 
 function hashSessionToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
+}
+
+function kampalaDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Kampala",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+async function currentAccountId(req: Request, res: Response): Promise<string | null> {
+  const token = req.cookies?.[sessionCookieName()];
+  if (typeof token !== "string" || !/^[a-f0-9]{64}$/i.test(token)) {
+    res.status(401).json({ error: "Not signed in." });
+    return null;
+  }
+  const [account] = await db
+    .select({ id: phoneAccountsTable.id })
+    .from(phoneSessionsTable)
+    .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))
+    .where(and(
+      eq(phoneSessionsTable.tokenHash, hashSessionToken(token)),
+      gt(phoneSessionsTable.expiresAt, new Date()),
+    ))
+    .limit(1);
+  if (!account) {
+    res.status(401).json({ error: "Not signed in." });
+    return null;
+  }
+  return account.id;
 }
 
 function createReferralCode() {
@@ -424,6 +458,50 @@ router.get("/auth/me", async (req, res) => {
     const details = databaseErrorDetails(error);
     req.log.error({ errorCode: details.code, route: "auth.me" }, "Phone account session lookup failed");
     res.status(500).json({ error: "Could not check your account session." });
+  }
+});
+
+router.get("/presence", async (req, res) => {
+  try {
+    const accountId = await currentAccountId(req, res);
+    if (!accountId) return;
+    const claims = await db
+      .select({ attendanceDate: presenceClaimsTable.attendanceDate, rewardUgx: presenceClaimsTable.rewardUgx })
+      .from(presenceClaimsTable)
+      .where(eq(presenceClaimsTable.accountId, accountId));
+    res.json({
+      totalUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
+      days: claims.length,
+      claimedToday: claims.some((claim) => claim.attendanceDate === kampalaDate()),
+    });
+  } catch (error) {
+    req.log.error({ error, route: "presence.get" }, "Could not load presence history");
+    res.status(500).json({ error: "Could not load presence history." });
+  }
+});
+
+router.post("/presence/claim", requireSameOrigin, async (req, res) => {
+  try {
+    const accountId = await currentAccountId(req, res);
+    if (!accountId) return;
+    const claimed = await db
+      .insert(presenceClaimsTable)
+      .values({ accountId, attendanceDate: kampalaDate(), rewardUgx: 500 })
+      .onConflictDoNothing()
+      .returning({ id: presenceClaimsTable.id });
+    const claims = await db
+      .select({ rewardUgx: presenceClaimsTable.rewardUgx })
+      .from(presenceClaimsTable)
+      .where(eq(presenceClaimsTable.accountId, accountId));
+    res.json({
+      claimedToday: true,
+      wasNewClaim: claimed.length > 0,
+      totalUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
+      days: claims.length,
+    });
+  } catch (error) {
+    req.log.error({ error, route: "presence.claim" }, "Could not record presence");
+    res.status(500).json({ error: "Could not record presence." });
   }
 });
 
