@@ -4,6 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
+import { ProductIllustration } from '@/components/product-illustration';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
 import { ArrowDownRight, ArrowRight, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
@@ -425,7 +426,7 @@ function ReferralPage() {
       <header className="flex items-center justify-between gap-4 rounded-[17px] border border-[#e7e9eb] bg-white px-4 py-3 shadow-[0_3px_12px_rgba(25,31,37,.04)]">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fff0e2] text-[#9b4b14]"><UsersRound className="h-5 w-5" aria-hidden="true" /></span>
-          <h1 className="truncate font-[Syne] text-[15px] font-bold tracking-[-.03em] text-[#25292d]">Team &amp; Referrals</h1>
+          <h1 className="truncate font-[Syne] text-[15px] font-bold tracking-[-.03em] text-[#25292d]">Team</h1>
         </div>
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e8eaec] bg-[#fafbfb] text-[#68727a]" title="Notifications are unavailable">
           <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
@@ -433,10 +434,17 @@ function ReferralPage() {
       </header>
 
       <section className="referral-invite-card" aria-labelledby="referral-invite-title">
+        <div className="referral-team-summary">
+          <div><span>Total rewards</span><strong aria-label="Unavailable">—</strong></div>
+          <div><span>Total members</span><strong aria-label="Unavailable">—</strong></div>
+        </div>
+        <div className="referral-hero-art">
+          <ProductIllustration kind={productCatalog[10].illustration} name={productCatalog[10].name} />
+          <span>Samsung Galaxy · illustrative image</span>
+        </div>
         <div className="referral-invite-copy">
-          <p className="referral-invite-eyebrow">Samsung Gadgets · Invite &amp; share</p>
-          <h2 id="referral-invite-title">Invite friends to join</h2>
-          <p>Share your code or link. New accounts can use your code during registration.</p>
+          <h2 id="referral-invite-title">Invite friends</h2>
+          <p>Share your invitation code or link. New accounts can use your code during registration.</p>
         </div>
         <div className="referral-share-grid">
           <div className="referral-share-item">

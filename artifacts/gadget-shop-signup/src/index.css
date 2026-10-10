@@ -1671,6 +1671,40 @@ button.account-menu-row {
   .member-notice-overlay { background: rgba(8,14,27,.92); backdrop-filter: none; }
 }
 
+.referral-invite-card {
+  position: relative;
+  display: flex;
+  min-height: 470px;
+  flex-direction: column;
+  padding: 17px 17px 12px;
+  background:
+    radial-gradient(ellipse at 52% 45%,rgba(89,120,215,.42),transparent 16rem),
+    linear-gradient(160deg,rgba(7,17,40,.98),rgba(16,28,63,.97) 52%,rgba(5,12,29,.99)) !important;
+}
+.referral-team-summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.referral-team-summary > div { display: flex; min-width: 80px; flex-direction: column; gap: 3px; color: #fff; }
+.referral-team-summary > div:last-child { align-items: flex-end; text-align: right; }
+.referral-team-summary span { color: rgba(255,255,255,.88); font-size: 10px; font-weight: 600; }
+.referral-team-summary strong { color: white; font-size: 18px; font-weight: 700; }
+.referral-hero-art { display: flex; flex: 1 1 auto; min-height: 190px; flex-direction: column; align-items: center; justify-content: center; gap: 0; overflow: hidden; }
+.referral-hero-art svg { width: 202px; height: 202px; filter: drop-shadow(0 14px 22px rgba(0,0,0,.3)); }
+.referral-hero-art > span { margin-top: -10px; color: rgba(255,255,255,.54); font-size: 8px; }
+.referral-invite-copy { position: relative; z-index: 1; }
+.referral-invite-copy h2 { margin-top: 1px; font-size: 20px; }
+.referral-invite-copy > p:last-child { margin-top: 3px; font-size: 10px; }
+.referral-share-grid { position: relative; z-index: 1; margin-top: 10px; }
+.referral-share-item > span { min-height: 18px; font-size: 10px; }
+.referral-share-item > strong { min-height: 28px; font-size: 17px; }
+.referral-share-item > strong.referral-link-text { font-size: 8px; }
+.referral-share-item button { min-height: 39px; }
+.referral-copy-status { min-height: 14px; margin-top: 3px; }
+
+@media (min-width: 640px) {
+  .referral-invite-card { min-height: 510px; padding: 21px 23px 14px; }
+  .referral-hero-art { min-height: 215px; }
+  .referral-hero-art svg { width: 222px; height: 222px; }
+}
+
 @media (prefers-reduced-transparency: reduce) {
   .home-shell .home-intro {
     background: rgba(14, 27, 60, .95);
