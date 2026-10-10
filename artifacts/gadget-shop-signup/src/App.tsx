@@ -240,8 +240,9 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
   return (
     <>
-        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
+        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isWithdrawalHistory ? 'withdrawal-history-shell' : isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
+            {!isWithdrawalHistory && <>
             <header className={`${isHome ? 'home-member-header ' : ''}flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
                <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="samsung overview"><Brand small inverse={isOverview || isAccount} /></Link>
               <div className="flex items-center gap-3">
@@ -257,17 +258,19 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
              </nav>
              {signOutError && <p className="w-full text-right text-[11px] text-red-500" role="alert">{signOutError}</p>}
             </header>
-            <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
+            </>}
+            <div className={`flex-1 ${isWithdrawalHistory ? 'withdrawal-history-main' : isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
               {!isOverview && !isReferral && !isWithdrawalHistory && <div className="mb-7">
                 <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">samsung</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
               {children}
             </div>
-            {!isOverview && <footer className={`border-t py-4 text-[11px] leading-5 ${isReferral ? 'border-[#e1e4e6] text-[#788087]' : isProducts ? 'border-[#9bbfce] text-[#547181]' : 'border-[#d8d4c7] text-[#758078]'}`}>
+            {!isOverview && !isWithdrawalHistory && <footer className={`border-t py-4 text-[11px] leading-5 ${isReferral ? 'border-[#e1e4e6] text-[#788087]' : isProducts ? 'border-[#9bbfce] text-[#547181]' : 'border-[#d8d4c7] text-[#758078]'}`}>
               Independent retailer · Not affiliated with Samsung · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
+          {!isWithdrawalHistory &&
           <nav className={`member-bottom-nav liquid-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : isHome ? 'home-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
             {mobileMemberNav.map(({ href, shortLabel, icon: Icon }) => (
               <Link key={href} href={href} aria-current={activeNavPath === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] ${isProducts ? (activeNavPath === href ? 'text-[#075985]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (activeNavPath === href ? 'text-[#075985]' : 'text-[#566174] hover:bg-white') : (activeNavPath === href ? 'text-[#7dd3fc]' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
@@ -276,6 +279,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               </Link>
             ))}
           </nav>
+          }
         </main>
         {showMemberNotice && (
           <div className="member-notice-overlay">
@@ -647,9 +651,8 @@ function WithdrawalHistoryPage() {
     <main className="withdraw-content withdrawal-history-page" data-testid="page-withdrawal-history">
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft aria-hidden="true" /></Link><h1>Withdrawal history</h1></header>
       <section className="withdraw-history-empty" role="status">
-        <span className="withdraw-history-icon"><History aria-hidden="true" /></span>
         <h2>No withdrawal history</h2>
-        <p>There are no recorded withdrawals for this account yet.</p>
+        <p>There are no recorded withdrawals for this account yet. History will appear here when withdrawals are available.</p>
       </section>
     </main>
   </MemberFrame>;

@@ -2283,15 +2283,32 @@ button.account-menu-row {
 .account-shortcut > button svg,.account-shortcut-link svg { color: #32363b; }
 .account-logout { color: #35393e; }
 
-.withdrawal-history-page { min-height: calc(100dvh - 168px); background: #fff; }
+.withdrawal-history-shell {
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding: 0 !important;
+  background: #fff !important;
+  color: #282b30;
+}
+.withdrawal-history-shell .member-frame { min-height: 100dvh; max-width: 480px; }
+.withdrawal-history-main { padding: 0 !important; }
+.withdrawal-history-page {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 18px calc(24px + env(safe-area-inset-bottom));
+  background: #fff;
+  color: #282b30;
+}
 .withdrawal-history-page .withdraw-heading {
-  min-height: 52px;
-  margin: -5px 0 0;
-  padding: 0 4px;
+  min-height: 64px;
+  margin: 0 -18px;
+  padding: 0 20px;
+  gap: 16px;
   border: 0;
   background: #fff;
 }
-.withdrawal-history-page .withdraw-heading h1 { color: #2d3034; font-size: 18px; font-weight: 500; }
+.withdrawal-history-page .withdraw-heading h1 { color: #25282d; font-size: 18px; font-weight: 500; }
 .withdraw-history-empty {
   display: grid;
   min-height: min(56dvh,440px);
@@ -2301,10 +2318,8 @@ button.account-menu-row {
   padding: 24px;
   text-align: center;
 }
-.withdraw-history-icon { display: grid; width: 58px; height: 58px; place-items: center; margin-bottom: 3px; border-radius: 50%; background: #f4f5f6; color: #858a91; }
-.withdraw-history-icon svg { width: 24px; height: 24px; }
-.withdraw-history-empty h2 { color: #373b40; font-size: 15px; font-weight: 600; }
-.withdraw-history-empty p { max-width: 300px; color: #85898f; font-size: 12px; line-height: 1.6; }
+.withdraw-history-empty h2 { color: #686d73; font-size: 15px; font-weight: 500; }
+.withdraw-history-empty p { max-width: 320px; color: #85898f; font-size: 12px; line-height: 1.6; }
 
 .member-bottom-nav.liquid-bottom-nav,
 .home-shell .home-bottom-nav,
@@ -2428,5 +2443,5 @@ button.account-menu-row {
   .products-shell .product-summary-banner { min-height: 88px; }
   .products-shell .product-catalog-list { gap: 9px; }
   .account-content { padding-top: 0; }
-  .withdrawal-history-page { min-height: calc(100dvh - 125px); }
+  .withdrawal-history-page { min-height: 100dvh; }
 }
