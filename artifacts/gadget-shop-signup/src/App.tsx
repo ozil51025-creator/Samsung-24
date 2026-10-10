@@ -795,7 +795,8 @@ function AdminTaskCenterPage() {
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
   const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
-  const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null }>>([]);
+  const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null; isActive: boolean }>>([]);
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
   const [admins, setAdmins] = useState<Array<{ id: string; phoneNumber: string; createdAt: string }>>([]);
   const [adminPhone, setAdminPhone] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
@@ -827,19 +828,22 @@ function AdminTaskCenterPage() {
       fetch('/api/admin/overview', { credentials: 'include' }),
       fetch('/api/admin/members', { credentials: 'include' }),
       fetch('/api/admin/admins', { credentials: 'include' }),
+      fetch('/api/admin/audit-logs', { credentials: 'include' }),
     ])
-      .then(async ([overviewResponse, membersResponse, adminsResponse]) => {
-        const [overviewData, membersData, adminsData] = await Promise.all([
+      .then(async ([overviewResponse, membersResponse, adminsResponse, auditResponse]) => {
+        const [overviewData, membersData, adminsData, auditData] = await Promise.all([
           overviewResponse.json(),
           membersResponse.json(),
           adminsResponse.json(),
+          auditResponse.json(),
         ]);
-        if (!overviewResponse.ok || !membersResponse.ok || !adminsResponse.ok) {
+        if (!overviewResponse.ok || !membersResponse.ok || !adminsResponse.ok || !auditResponse.ok) {
           throw new Error('Could not load the admin dashboard. Check your admin access and try again.');
         }
         setOverview(overviewData);
         setMembers(membersData.members);
         setAdmins(adminsData.admins);
+        setAuditLogs(auditData.logs);
         setDirectoryStatus('ready');
       })
       .catch(() => setDirectoryStatus('error'));
@@ -886,6 +890,42 @@ function AdminTaskCenterPage() {
       setAddingAdmin(false);
     }
   };
+  const manageMember = async (member: (typeof members)[number], action: 'password' | 'status' | 'wallet') => {
+    if (action === 'password') {
+      if (!window.confirm(`Reset the password for ${member.phoneNumber}? Existing sessions will be signed out.`)) return;
+      const response = await fetch(`/api/admin/members/${member.id}/password-reset`, { method: 'POST', credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) { window.alert(data.error ?? 'Could not reset password.'); return; }
+      window.alert(`Temporary password for ${member.phoneNumber} (shown once):\n\n${data.temporaryPassword}\n\nShare it with the member securely.`);
+    } else if (action === 'status') {
+      const isActive = !member.isActive;
+      if (isActive === false && !window.confirm(`Deactivate ${member.phoneNumber}? They will be signed out and unable to log in.`)) return;
+      const reason = window.prompt(`Reason for ${isActive ? 'activating' : 'deactivating'} ${member.phoneNumber}:`);
+      if (!reason?.trim()) return;
+      const response = await fetch(`/api/admin/members/${member.id}/status`, {
+        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive, reason }),
+      });
+      const data = await response.json();
+      if (!response.ok) { window.alert(data.error ?? 'Could not change account status.'); return; }
+    } else {
+      const direction = window.prompt(`Enter "credit" or "debit" for ${member.phoneNumber}:`)?.trim().toLowerCase();
+      if (direction !== 'credit' && direction !== 'debit') return;
+      const amountUgx = Number(window.prompt('Amount in whole UGX:'));
+      if (!Number.isSafeInteger(amountUgx) || amountUgx <= 0) return;
+      const reason = window.prompt('Reason for this wallet adjustment:')?.trim();
+      if (!reason) return;
+      if (!window.confirm(`${direction === 'credit' ? 'Add' : 'Subtract'} UGX ${money.format(amountUgx)} ${direction === 'credit' ? 'to' : 'from'} ${member.phoneNumber}'s available wallet? Earnings and deposit totals will not change.`)) return;
+      const response = await fetch(`/api/admin/members/${member.id}/wallet-adjustments`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction, amountUgx, reason }),
+      });
+      const data = await response.json();
+      if (!response.ok) { window.alert(data.error ?? 'Could not adjust wallet.'); return; }
+      window.alert(`Wallet balance updated to UGX ${money.format(data.walletBalanceUgx)}.`);
+    }
+    loadAdminDirectory();
+  };
   const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
     setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
   const saveTasks = async (event: FormEvent) => {
@@ -914,7 +954,7 @@ function AdminTaskCenterPage() {
     <div className="admin-task-body">
       <p className="admin-task-note">Manage members, administrator access, task rules, and verified deposit requests. Financial totals and checkout controls are not available until those systems record verified transactions.</p>
       <nav className="admin-section-nav" aria-label="Admin panel sections">
-        <a href="#admin-overview">Overview</a><a href="#admin-members">Members</a><a href="#admin-access">Admins</a><a href="#admin-tasks">Task Center</a><a href="#admin-recharges">Deposits</a>
+        <a href="#admin-overview">Overview</a><a href="#admin-members">Members</a><a href="#admin-access">Admins</a><a href="#admin-tasks">Task Center</a><a href="#admin-recharges">Deposits</a><a href="#admin-audit">Audit log</a>
       </nav>
       <section id="admin-overview" className="admin-panel-section">
         <h2>Overview</h2>
@@ -934,9 +974,15 @@ function AdminTaskCenterPage() {
             <div><strong>{member.phoneNumber}</strong><span>Joined {new Date(member.createdAt).toLocaleDateString()}</span></div>
             <div><span>Referral code</span><strong>{member.referralCode ?? '—'}</strong></div>
             <div><span>Invited by</span><strong>{member.referredByAccountId ? 'Referred member' : 'Direct signup'}</strong></div>
+            <div><span>Account status</span><strong>{member.isActive ? 'Active' : 'Disabled'}</strong></div>
+            <div className="admin-member-actions">
+              <button type="button" onClick={() => void manageMember(member, 'password')}>Reset password</button>
+              <button type="button" onClick={() => void manageMember(member, 'status')}>{member.isActive ? 'Disable account' : 'Enable account'}</button>
+              <button type="button" onClick={() => void manageMember(member, 'wallet')}>Adjust wallet</button>
+            </div>
           </article>)}
         </div>}
-        <p className="admin-task-note">Member profiles are view-only here. Wallet edits, password resets, and account suspension need dedicated audited controls.</p>
+        <p className="admin-task-note">Password resets issue a temporary password once and sign out existing sessions. Wallet changes require a reason, affect the available wallet only, and do not rewrite earnings or deposit totals.</p>
       </section>
       <section id="admin-access" className="admin-panel-section">
         <h2>Administrator access</h2>
@@ -988,6 +1034,19 @@ function AdminTaskCenterPage() {
           <p>Member: {request.memberPhone} · Sender: {request.payerPhone}</p>
           {request.status === 'pending' && <button type="button" onClick={() => void verifyRecharge(request.id)}>Verify transfer</button>}
         </article>)}
+      </section>
+      <section id="admin-audit" className="admin-panel-section">
+        <h2>Administrator audit log</h2>
+        {auditLogs.length === 0 && directoryStatus === 'ready' && <p>No administrator actions recorded yet.</p>}
+        <div className="admin-audit-list">
+          {auditLogs.map((entry) => <article key={entry.id}>
+            <strong>{entry.action.replaceAll('.', ' ')}</strong>
+            <span>{new Date(entry.createdAt).toLocaleString()} · By {entry.performedByPhone}{entry.targetPhone ? ` · Member ${entry.targetPhone}` : ''}</span>
+            {entry.amountUgx !== null && <span>UGX {money.format(entry.amountUgx)}</span>}
+            {entry.reason && <p>Reason: {entry.reason}</p>}
+            {entry.details && <p>{entry.details}</p>}
+          </article>)}
+        </div>
       </section>
     </div>
   </main>;
