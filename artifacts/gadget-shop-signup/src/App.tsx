@@ -3,15 +3,33 @@ import { AuthProvider, getAuthErrorMessage, useAuth } from '@/auth/auth-context'
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
+const memberNoticeKey = 'samsung-gadgets:show-member-notice';
+
+function queueMemberNotice() {
+  try {
+    window.sessionStorage.setItem(memberNoticeKey, 'true');
+  } catch {
+    // Authentication should still succeed when browser storage is unavailable.
+  }
+}
+
+function consumeMemberNotice() {
+  try {
+    const shouldShow = window.sessionStorage.getItem(memberNoticeKey) === 'true';
+    window.sessionStorage.removeItem(memberNoticeKey);
+    return shouldShow;
+  } catch {
+    return false;
+  }
+}
 
 function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: boolean }) {
   return (
@@ -136,11 +154,10 @@ function Home() {
 
 function HomeRedirect() {
   const { user } = useAuth();
-  return user ? <Redirect to="/overview" /> : <Redirect to="/sign-in" />;
+  return user ? <Redirect to="/home" /> : <Redirect to="/sign-in" />;
 }
 
 const memberNav = [
-  { href: '/overview', label: 'Overview', shortLabel: 'Overview', icon: LayoutDashboard },
   { href: '/home', label: 'Home', shortLabel: 'Home', icon: Wallet },
   { href: '/products', label: 'Products', shortLabel: 'Products', icon: ShoppingBag },
   { href: '/purchased-products', label: 'Purchased', shortLabel: 'Purchased', icon: PackageOpen },
@@ -148,13 +165,21 @@ const memberNav = [
   { href: '/account', label: 'Account', shortLabel: 'Account', icon: UserRound },
 ];
 
+const mobileMemberNav = [
+  { href: '/home', shortLabel: 'Home', icon: Wallet },
+  { href: '/products', shortLabel: 'Products', icon: ShoppingBag },
+  { href: '/referral', shortLabel: 'Team', icon: UsersRound },
+  { href: '/account', shortLabel: 'Me', icon: UserRound },
+];
+
 function MemberFrame({ active, children }: { active: string; children: ReactNode }) {
   const { user, status, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
+  const [showMemberNotice, setShowMemberNotice] = useState(consumeMemberNotice);
   const activePage = memberNav.find((item) => item.href === active);
-  const isOverview = active === '/overview';
+  const isOverview = false;
   const isHome = active === '/home';
   const isReferral = active === '/referral';
   const isProducts = active === '/products';
@@ -202,17 +227,17 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
   return (
     <>
-        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
+        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
-            <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
-              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isHome || isAccount} /></Link>
+            <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
+               <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isAccount} /></Link>
               <div className="flex items-center gap-3">
-                   <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview || isHome ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
-                 <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview || isHome ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
+                    <span className="hidden max-w-[180px] truncate text-[12px] text-[#68756a] sm:inline">{user.phoneNumber}</span>
+                  <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
                  {memberNav.map(({ href, label, icon: Icon }) => (
-                   <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview || isHome ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
+                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
@@ -230,89 +255,116 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               Independent retailer · Not affiliated with Samsung · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
-          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-6 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
-            {memberNav.map(({ href, shortLabel, icon: Icon }) => (
-              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${isProducts ? (active === href ? 'text-[#142438]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : (active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
+          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : isHome ? 'home-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
+            {mobileMemberNav.map(({ href, shortLabel, icon: Icon }) => (
+              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${isProducts ? (active === href ? 'text-[#142438]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (active === href ? 'text-[#1529a6]' : 'text-[#566174] hover:bg-white') : (active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
                 <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-white text-[#10151a]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
                 <span className="max-w-full truncate text-[9px] font-semibold leading-none">{shortLabel}</span>
               </Link>
             ))}
           </nav>
         </main>
+        {showMemberNotice && (
+          <div className="member-notice-overlay">
+            <section className="member-notice-dialog" role="dialog" aria-modal="true" aria-labelledby="member-notice-title">
+              <div className="member-notice-banner">
+                <span className="member-notice-word">MEMBER<br />UPDATE</span>
+                <Brand small />
+              </div>
+              <div className="member-notice-content">
+                <p className="member-notice-eyebrow">Samsung Gadgets · Uganda</p>
+                <h2 id="member-notice-title">Welcome to your account</h2>
+                <p className="member-notice-intro">Important information about current products and account services:</p>
+                <ul>
+                  <li>Catalog prices are shown in UGX. Exact product models and stock still need confirmation.</li>
+                  <li>Product checkout, deposits, and withdrawals are not enabled yet.</li>
+                  <li>No daily earnings or welcome cash bonus are active. This site does not offer guaranteed investment returns.</li>
+                  <li>Referral rates are displayed as 35% / 2% / 1%; referral rewards are not active until their terms are confirmed.</li>
+                </ul>
+                <button type="button" onClick={() => setShowMemberNotice(false)} className="member-notice-dismiss">OK</button>
+              </div>
+            </section>
+          </div>
+        )}
     </>
   );
 }
 
-function OverviewPage() {
-  const { user } = useAuth();
-  return <MemberFrame active="/overview">
-    <section className="overview-dashboard relative mx-auto max-w-[850px]" aria-labelledby="overview-title">
-      <div className="overview-aura pointer-events-none absolute -inset-x-8 -inset-y-5 -z-10 rounded-[42px]" aria-hidden="true" />
-      <div className="overview-panel relative overflow-hidden rounded-[28px] border border-white/[.14] p-5 text-[#f5f6f5] shadow-[0_28px_90px_rgba(0,0,0,.42)] backdrop-blur-2xl sm:rounded-[32px] sm:p-8">
-        <div className="overview-panel-glow pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-[#b3c7bd]">
-            <span className="overview-crown flex h-5 w-5 items-center justify-center rounded-md text-[11px]" aria-hidden="true">✦</span>
-            Samsung Gadgets · Uganda
-          </div>
-          <h1 id="overview-title" data-testid="text-overview-welcome" className="mt-4 max-w-[670px] font-[Syne] text-[clamp(1.9rem,6vw,3.15rem)] font-semibold leading-[1.12] tracking-[-.055em] text-white">
-            Welcome — explore your gadget rewards.
-          </h1>
-          <p className="mt-3 max-w-[620px] text-[13px] leading-6 text-white/65 sm:text-[14px]">
-            Your member overview for product price tiers and program updates. All listed amounts are in UGX.
-          </p>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <article className="overview-status-card" data-testid="card-overview-welcome-bonus">
-              <div className="flex items-center gap-2 text-[12px] font-medium text-white/65"><Gift className="h-4 w-4 text-[#edbd76]" aria-hidden="true" /> Welcome bonus</div>
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="price-figure text-[20px] font-semibold tracking-[-.04em] text-white" data-testid="text-welcome-bonus-amount">UGX 5,000</p>
-                <span className="rounded-full border border-[#e3b67a]/25 bg-[#e3b67a]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.1em] text-[#f0c98e]">Pending terms</span>
-              </div>
-              <p className="mt-2 text-[11px] leading-[1.55] text-white/50">Not credited or withdrawable; eligibility and payout rules are not set.</p>
-            </article>
-
-            <article className="overview-status-card" data-testid="card-overview-products">
-              <div className="flex items-center gap-2 text-[12px] font-medium text-white/65"><ShoppingBag className="h-4 w-4 text-[#9ee0c2]" aria-hidden="true" /> Product catalog</div>
-              <p className="mt-2 text-[20px] font-semibold tracking-[-.04em] text-white" data-testid="text-overview-product-count">12 price tiers</p>
-              <p className="mt-2 text-[11px] leading-[1.55] text-white/50">UGX 20,000–2,000,000. Product details and checkout are unavailable.</p>
-              <Link href="/products" className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#a4e6c8] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4]" data-testid="link-overview-products">Browse products <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
-            </article>
-
-            <article className="overview-status-card" data-testid="card-overview-rewards">
-              <div className="flex items-center gap-2 text-[12px] font-medium text-white/65"><BadgeCheck className="h-4 w-4 text-[#9ee0c2]" aria-hidden="true" /> Rewards status</div>
-              <p className="mt-2 text-[20px] font-semibold tracking-[-.04em] text-white" data-testid="status-overview-rewards">Not active</p>
-              <p className="mt-2 text-[11px] leading-[1.55] text-white/50">No daily earnings, reward balance, or payouts are being tracked.</p>
-            </article>
-
-            <article className="overview-status-card" data-testid="card-overview-referrals">
-              <div className="flex items-center gap-2 text-[12px] font-medium text-white/65"><UsersRound className="h-4 w-4 text-[#d3b3ff]" aria-hidden="true" /> Referral program</div>
-              <p className="mt-2 text-[20px] font-semibold tracking-[-.04em] text-white" data-testid="status-overview-referrals">Not active</p>
-              <p className="mt-2 text-[11px] leading-[1.55] text-white/50">Referral links, sale attribution, and bonus terms are not configured.</p>
-            </article>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-[460px] text-[11px] leading-5 text-white/45">Purchases are not accepted here. Pending amounts are informational only and do not represent an available balance.</p>
-            <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#e9b975] px-5 text-[12px] font-bold text-[#211d18] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" data-testid="link-overview-browse">
-              Explore products <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  </MemberFrame>;
-}
-
 function HomePage() {
+  const { user } = useAuth();
+  const homeActions = [
+    { href: '/home', label: 'Home', icon: Wallet },
+    { href: '/products', label: 'Products', icon: ShoppingBag },
+    { href: '/purchased-products', label: 'Purchased', icon: PackageOpen },
+    { href: '/referral', label: 'Referral team', icon: UsersRound },
+    { href: '/account', label: 'My account', icon: UserRound },
+  ];
   return <MemberFrame active="/home">
-    <section className="home-dashboard mx-auto max-w-[850px]" data-testid="page-home">
-      <div className="home-intro">
-        <p className="home-eyebrow">UGX wallet</p>
-        <h1 className="mt-2 font-[Syne] text-[28px] font-semibold tracking-[-.05em] text-white sm:text-[34px]">Your money activity</h1>
-        <p className="mt-2 max-w-[620px] text-[13px] leading-6 text-white/65">View deposits, withdrawals, account history, and accumulated amounts in one place.</p>
+    <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
+      <div className="home-member-heading">
+        <div>
+          <p className="home-member-phone" data-testid="text-home-phone">{user?.phoneNumber ?? 'Samsung Gadgets member'}</p>
+          <span className="home-member-tier">Member</span>
+        </div>
+        <span className="home-brand-mini" aria-label="Samsung Gadgets">S</span>
       </div>
-      <OverviewWalletPanel />
+
+      <div className="home-balance-grid">
+        <article className="home-balance-card">
+          <p className="home-balance-value" data-testid="text-home-wallet-balance">—</p>
+          <p className="home-balance-label">Wallet balance</p>
+          <span className="home-balance-note">UGX · Not connected</span>
+        </article>
+        <article className="home-balance-card">
+          <p className="home-balance-value" data-testid="text-home-accumulated">—</p>
+          <p className="home-balance-label">Total accumulated</p>
+          <span className="home-balance-note">UGX · No ledger yet</span>
+        </article>
+      </div>
+
+      <div className="home-money-actions" aria-label="Wallet actions">
+        <button type="button" disabled title="Deposits are unavailable until a payment provider is verified." data-testid="button-home-deposit">
+          <Download aria-hidden="true" /><span>Deposit</span>
+        </button>
+        <button type="button" disabled title="Withdrawals are unavailable until a payment provider is verified." data-testid="button-home-withdraw">
+          <CreditCard aria-hidden="true" /><span>Withdraw</span>
+        </button>
+        <a href="#account-history" data-testid="link-home-history">
+          <History aria-hidden="true" /><span>History</span>
+        </a>
+      </div>
+
+      <article className="home-task-banner" data-testid="card-home-task-center">
+        <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
+        <div className="home-task-copy">
+          <p className="home-task-eyebrow">Samsung Gadgets</p>
+          <h1>Explore the product catalogue</h1>
+          <p>Review the current UGX sale-price tiers. Product availability and checkout are not connected yet.</p>
+          <Link href="/products" data-testid="link-home-browse-products">Browse products <ArrowRight aria-hidden="true" /></Link>
+        </div>
+      </article>
+
+      <section className="home-quick-links" aria-labelledby="home-shortcuts-title">
+        <div className="home-section-heading">
+          <div><p className="home-section-eyebrow">Your space</p><h2 id="home-shortcuts-title">Quick access</h2></div>
+          <span>5 pages</span>
+        </div>
+        <div className="home-quick-grid">
+          {homeActions.map(({ href, label, icon: Icon }) => (
+            <Link key={label} href={href} className="home-quick-link" data-testid={`link-home-${label.toLowerCase().replaceAll(' ', '-')}`}>
+              <span><Icon aria-hidden="true" /></span><strong>{label}</strong>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section id="account-history" className="home-history-panel" aria-labelledby="home-history-title">
+        <div className="home-section-heading">
+          <div><p className="home-section-eyebrow">Wallet records</p><h2 id="home-history-title">Account history</h2></div>
+          <History aria-hidden="true" />
+        </div>
+        <p>No wallet transactions are recorded yet. Deposit, withdrawal, and accumulated totals will appear here after a verified provider and ledger are connected.</p>
+      </section>
     </section>
   </MemberFrame>;
 }
@@ -338,10 +390,10 @@ function PurchasedProductsPage() {
 function ReferralPage() {
   const { user } = useAuth();
   const [referralNotice, setReferralNotice] = useState('');
-  const stats = [
-    { label: 'Total team', value: 'Not shown', icon: UsersRound },
-    { label: 'Product purchases', value: 'Not tracked', icon: ShoppingBag },
-    { label: 'Commissions', value: 'Not active', icon: LockKeyhole },
+  const referralLevels = [
+    { level: 1, rate: '35%', tone: 'referral-level-one' },
+    { level: 2, rate: '2%', tone: 'referral-level-two' },
+    { level: 3, rate: '1%', tone: 'referral-level-three' },
   ];
 
   const referralLink = user?.referralCode
@@ -358,22 +410,13 @@ function ReferralPage() {
     }
   }
 
-  async function shareReferralLink() {
-    if (!user?.referralCode || !referralLink) return;
+  async function copyReferralCode() {
+    if (!user?.referralCode) return;
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Join Samsung Gadgets',
-          text: `Register using my referral code ${user.referralCode}.`,
-          url: referralLink,
-        });
-        setReferralNotice('Referral link shared.');
-      } else {
-        await navigator.clipboard.writeText(referralLink);
-        setReferralNotice('Sharing is unavailable. Referral link copied instead.');
-      }
+      await navigator.clipboard.writeText(user.referralCode);
+      setReferralNotice('Referral code copied.');
     } catch {
-      setReferralNotice('Could not share the referral link. You can copy it above.');
+      setReferralNotice('Could not copy the referral code.');
     }
   }
 
@@ -389,54 +432,45 @@ function ReferralPage() {
         </span>
       </header>
 
-      <section className="rounded-[24px] bg-gradient-to-br from-[#a84b0d] via-[#98420d] to-[#312720] p-4 text-white shadow-[0_14px_30px_rgba(89,47,18,.2)] sm:p-7">
-        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#ffd48e]">Community · product rewards</p>
-        <h2 className="mt-2 max-w-[640px] font-[Syne] text-[24px] font-bold leading-[1.12] tracking-[-.045em] sm:text-[32px]">3-Tier Team Downline &amp; Rewards</h2>
-        <p className="mt-3 max-w-[640px] text-[13px] leading-6 text-white/80">Invite friends to explore the Samsung gadget catalog. Signups through your link record who invited them; commissions are not active yet.</p>
+      <section className="referral-invite-card" aria-labelledby="referral-invite-title">
+        <div className="referral-invite-copy">
+          <p className="referral-invite-eyebrow">Samsung Gadgets · Invite &amp; share</p>
+          <h2 id="referral-invite-title">Invite friends to join</h2>
+          <p>Share your code or link. New accounts can use your code during registration.</p>
+        </div>
+        <div className="referral-share-grid">
+          <div className="referral-share-item">
+            <span>Invitation code</span>
+            <strong>{user?.referralCode ?? 'Generating…'}</strong>
+            <button type="button" onClick={copyReferralCode} disabled={!user?.referralCode} aria-label="Copy invitation code">
+              <Copy aria-hidden="true" /> Copy code
+            </button>
+          </div>
+          <div className="referral-share-item">
+            <span>Invitation link</span>
+            <strong className="referral-link-text" title={referralLink}>{referralLink || 'Preparing your referral link…'}</strong>
+            <button type="button" onClick={copyReferralLink} disabled={!referralLink} aria-label="Copy invitation link">
+              <Copy aria-hidden="true" /> Copy link
+            </button>
+          </div>
+        </div>
+        <p className="referral-copy-status" role="status" aria-live="polite">{referralNotice}</p>
       </section>
 
-      <section className="rounded-[24px] border border-[#e5e7e9] bg-white p-4 shadow-[0_5px_16px_rgba(20,28,36,.06)] sm:p-6" aria-labelledby="referral-code-title">
-        <h2 id="referral-code-title" className="text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral code</h2>
-        <div className="mt-2 flex min-h-12 items-center justify-between gap-3 rounded-[16px] border border-[#e7e8e7] bg-[#fafaf9] px-4">
-          <span className="font-mono text-[14px] font-bold tracking-[.12em] text-[#25292d]">{user?.referralCode ?? 'Generating…'}</span>
-          <span className="rounded-full bg-[#e7f2e8] px-3 py-1 text-[10px] font-bold uppercase tracking-[.05em] text-[#356746]">Generated</span>
-        </div>
-        <h3 className="mt-5 text-[10px] font-bold uppercase tracking-[.12em] text-[#8b9094]">Your referral link</h3>
-        <div className="mt-2 truncate rounded-[14px] border border-[#e7e8e7] bg-[#fafaf9] px-4 py-3 font-mono text-[11px] text-[#697178]" title={referralLink}>{referralLink || 'Preparing your referral link…'}</div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <button type="button" onClick={copyReferralLink} disabled={!referralLink} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] bg-[#9e4b12] px-3 text-[12px] font-bold text-white hover:bg-[#813c0d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9e4b12] disabled:cursor-not-allowed disabled:opacity-55"><Copy className="h-4 w-4" aria-hidden="true" /> Copy link</button>
-          <button type="button" onClick={shareReferralLink} disabled={!referralLink} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] border border-[#e5e6e7] bg-[#f6f6f5] px-3 text-[12px] font-bold text-[#343a3f] hover:bg-[#eeefed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9e4b12] disabled:cursor-not-allowed disabled:opacity-55"><Share2 className="h-4 w-4" aria-hidden="true" /> Share link</button>
-        </div>
-        <p className="mt-3 min-h-5 text-[11px] leading-5 text-[#81868a]" role="status" aria-live="polite">{referralNotice}</p>
+      <section className="referral-levels" aria-label="Referral commission levels">
+        {referralLevels.map(({ level, rate, tone }) => (
+          <article key={level} className={`referral-tier-card ${tone}`}>
+            <span className="referral-level-badge">Lv{level}</span>
+            <div><strong>{rate}</strong><span>Commission</span></div>
+            <div><strong>—</strong><span>Members</span></div>
+            <div><strong>—</strong><span>Rewards</span></div>
+          </article>
+        ))}
       </section>
 
-      <section aria-labelledby="team-performance-title">
-        <h2 id="team-performance-title" className="mb-3 px-1 text-[12px] font-bold uppercase tracking-[.09em] text-[#737a7f]">Overall team performance</h2>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {stats.map(({ label, value, icon: Icon }) => (
-            <article key={label} className="min-w-0 rounded-[18px] border border-[#e5e7e9] bg-white px-2.5 py-4 text-center shadow-[0_3px_10px_rgba(25,31,37,.04)] sm:px-4">
-              <Icon className="mx-auto h-4 w-4 text-[#9b4a13]" aria-hidden="true" />
-              <p className="mt-2 text-[9px] font-bold uppercase tracking-[.04em] text-[#81878b] sm:text-[10px]">{label}</p>
-              <p className="mt-2 break-words font-[Syne] text-[12px] font-bold leading-tight text-[#25292c] sm:text-[15px]">{value}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="downline-title">
-        <h2 id="downline-title" className="mb-3 px-1 text-[12px] font-bold uppercase tracking-[.09em] text-[#737a7f]">3-tier downline breakdown</h2>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {[1, 2, 3].map((level) => (
-            <article key={level} className="min-w-0 rounded-[17px] border border-[#e5e7e9] bg-white p-3 shadow-[0_3px_10px_rgba(25,31,37,.04)] sm:p-4">
-              <p className="text-[9px] font-bold uppercase tracking-[.06em] text-[#8b9094] sm:text-[10px]">Level {level}</p>
-              <p className="mt-2 font-[Syne] text-[13px] font-bold leading-tight text-[#25292c] sm:text-[15px]">Not shown</p>
-              <p className="mt-2 text-[9px] leading-4 text-[#858a8e] sm:text-[10px]">Referral team counts are not displayed yet.</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <p className="rounded-[16px] border border-[#ead6c1] bg-[#fff8ef] px-4 py-3 text-[11px] leading-5 text-[#765b47]">Referral rewards remain inactive until the qualifying purchase, calculation basis, and payout terms are confirmed.</p>
+      <p className="referral-terms-note">
+        Displayed rates are not active yet. Reward eligibility, calculation basis, and payout terms still need confirmation.
+      </p>
     </section>
   </MemberFrame>;
 }
@@ -445,55 +479,67 @@ function AccountPage() {
   const { user } = useAuth();
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
   const accountActions = [
+    { id: 'about', label: 'About Samsung Gadgets', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
+    { id: 'help', label: 'Customer service', icon: Headphones, detail: 'Customer support contact details have not been configured yet.' },
+    { id: 'history', label: 'Account history', icon: History, detail: 'No verified wallet transactions are available yet.' },
+    { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
+    { id: 'install', label: 'Install app', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
     { id: 'password', label: 'Change password', icon: ShieldCheck, detail: 'Password changes are handled by an administrator. Self-service password changes are not available yet.' },
     { id: 'gift', label: 'Redeem gift code', icon: Gift, detail: 'Gift-code redemption is not available yet.' },
-    { id: 'help', label: 'Help & community', icon: Headphones, detail: 'Help and community links have not been configured yet.' },
-    { id: 'install', label: 'Install Samsung Gadgets', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
-    { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
+    { id: 'link-card', label: 'Link a card', icon: CreditCard, detail: 'Card linking is not available yet.' },
   ];
 
   return <MemberFrame active="/account">
     <section className="account-content mx-auto w-full max-w-[580px]" data-testid="page-account">
-      <div className="account-quick-actions" aria-label="Wallet and notifications">
-        <button type="button" disabled title="PesaJet wallet service is not connected" className="account-deposit-button" data-testid="button-account-deposit">
-          <Download className="h-4 w-4" aria-hidden="true" /> Deposit
-        </button>
-        <button type="button" disabled aria-label="Notifications unavailable" title="Notifications are not available yet" className="account-bell-button" data-testid="button-account-notifications">
-          <Bell className="h-5 w-5" aria-hidden="true" />
-        </button>
+      <div className="account-overview-heading">
+        <div>
+          <p>Samsung Gadgets · My account</p>
+          <h1>Account</h1>
+          <span data-testid="text-account-phone">{user?.phoneNumber}</span>
+        </div>
+        <span className="account-overview-avatar" aria-hidden="true"><UserRound /></span>
       </div>
 
-      <section className="account-profile-card" aria-labelledby="account-profile-title">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="account-eyebrow">Samsung Gadgets · Member account</p>
-            <h1 id="account-profile-title" className="mt-2 font-[Syne] text-[30px] font-semibold tracking-[-.055em] text-white">Your account</h1>
-            <p className="mt-2 break-all text-[14px] text-white/75" data-testid="text-account-phone">{user?.phoneNumber}</p>
-          </div>
-          <span className="account-profile-icon" aria-hidden="true"><UserRound className="h-6 w-6" /></span>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="account-status-pill">Phone sign-in</span>
-          <span className="account-status-pill">Number not verified</span>
-        </div>
+      <section className="account-balance-row" aria-label="Wallet totals">
+        <article>
+          <strong>UGX —</strong>
+          <span>Wallet balance</span>
+        </article>
+        <article>
+          <strong>UGX —</strong>
+          <span>Total accumulated</span>
+        </article>
       </section>
 
-      <section className="account-menu-card" aria-label="Account options">
-        <Link href="/overview#wallet-history" className="account-menu-row" data-testid="link-account-history">
-          <History className="account-menu-icon" aria-hidden="true" />
-          <span>Transaction history</span>
-          <ChevronRight className="account-menu-chevron" aria-hidden="true" />
+      <section className="account-wallet-actions" aria-label="Wallet actions">
+        <button type="button" disabled title="PesaJet wallet service is not connected" data-testid="button-account-deposit">
+          <Download aria-hidden="true" /><span>Deposit</span>
+        </button>
+        <button type="button" disabled title="PesaJet wallet service is not connected" data-testid="button-account-withdraw">
+          <CreditCard aria-hidden="true" /><span>Withdraw</span>
+        </button>
+        <Link href="/home#account-history" data-testid="link-account-history">
+          <History aria-hidden="true" /><span>History</span>
         </Link>
+      </section>
+
+      <Link href="/products" className="account-feature-card">
+        <span className="account-feature-eyebrow">Samsung Gadgets</span>
+        <strong>Explore the product catalog</strong>
+        <span>Browse phones, tablets, wearables, and accessories.</span>
+        <span className="account-feature-button">Browse products <ArrowRight aria-hidden="true" /></span>
+      </Link>
+
+      <section className="account-shortcut-grid" aria-label="Account shortcuts">
         {accountActions.map(({ id, label, icon: Icon, detail }) => {
           const isExpanded = expandedAction === id;
           return (
-            <div className="account-menu-item" key={id}>
-              <button type="button" className="account-menu-row" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}>
-                <Icon className="account-menu-icon" aria-hidden="true" />
+            <div className="account-shortcut" key={id}>
+              <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}>
+                <Icon aria-hidden="true" />
                 <span>{label}</span>
-                {id === 'help' ? <ArrowRight className="account-menu-chevron -rotate-45" aria-hidden="true" /> : isExpanded ? <ChevronDown className="account-menu-chevron" aria-hidden="true" /> : <ChevronDown className="account-menu-chevron" aria-hidden="true" />}
               </button>
-              {isExpanded && <p className="account-menu-detail" role="status" data-testid={`status-account-${id}`}>{detail}</p>}
+              {isExpanded && <p role="status" data-testid={`status-account-${id}`}>{detail}</p>}
             </div>
           );
         })}
@@ -525,7 +571,7 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const [submitting, setSubmitting] = useState(false);
   const isSignUp = mode === 'sign-up';
 
-  if (user) return <Redirect to="/overview" />;
+  if (user) return <Redirect to="/home" />;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -547,6 +593,7 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       } else {
         await signIn({ phoneNumber, password });
       }
+      queueMemberNotice();
     } catch (reason) {
       setError(getAuthErrorMessage(
         reason,
@@ -687,8 +734,8 @@ function AppRoutes() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={HomeRedirect} />
-        <Route path="/user-portal"><Redirect to="/overview" /></Route>
-        <Route path="/overview" component={OverviewPage} />
+        <Route path="/user-portal"><Redirect to="/home" /></Route>
+        <Route path="/overview"><Redirect to="/home" /></Route>
         <Route path="/home" component={HomePage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/purchased-products" component={PurchasedProductsPage} />
