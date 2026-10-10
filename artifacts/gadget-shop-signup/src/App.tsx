@@ -309,16 +309,16 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 }
 
 function HomePage() {
-  const homeShortcuts = [
-    { href: '/products', label: 'Browse products', note: 'UGX sale prices', image: `${basePath}/samsung-s26-ultra.jpg`, position: 'home-feature-tall' },
-    { href: '/purchased-products', label: 'My purchases', note: 'Order history', image: `${basePath}/samsung-fold8-banner.jpg`, position: '' },
-    { href: '/account', label: 'My account', note: 'Account settings', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
+  const homeSummaryCards = [
+    { label: 'Pay', image: `${basePath}/samsung-s26-ultra.jpg`, position: 'home-feature-tall' },
+    { label: 'Cumulative', image: `${basePath}/samsung-fold8-banner.jpg`, position: '' },
+    { label: 'Withdrawal', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
   ];
   const homeActions = [
     { label: 'Recharge', icon: Download, href: '/recharge' },
-    { label: 'Withdraw', icon: CreditCard, href: '/withdrawal' },
+    { label: 'Withdrawal', icon: CreditCard, href: '/withdrawal' },
     { label: 'Customer service', icon: Headphones, title: 'Customer support details have not been configured.' },
-    { label: 'Check-in', icon: CalendarDays, title: 'Daily check-in rewards are not active.' },
+    { label: 'Presence', icon: CalendarDays, title: 'Presence is currently unavailable.' },
   ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
@@ -326,10 +326,10 @@ function HomePage() {
         <img src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip foldable smartphone" fetchPriority="high" />
         <div className="home-top-hero-copy">
           <p>Samsung Galaxy</p>
-          <h1>Explore the latest devices</h1>
-          <span>UGX sale prices · availability to confirm</span>
+          <h1>Explore Galaxy devices</h1>
+          <span>Samsung products · prices in UGX</span>
         </div>
-        <Link href="/products" className="home-top-hero-button">Browse</Link>
+        <Link href="/products" className="home-top-hero-button">Buy</Link>
       </section>
 
       <div className="home-money-actions" aria-label="Account shortcuts">
@@ -352,37 +352,19 @@ function HomePage() {
         </div>
       </article>
 
-      <p className="home-activity-note"><ShieldCheck aria-hidden="true" /> Checkout, deposits, and withdrawals aren’t connected yet.</p>
+      <div className="home-activity-strip" role="status">
+        <History aria-hidden="true" />
+        <span>No wallet transactions are recorded yet.</span>
+      </div>
 
-      <section className="home-photo-grid" aria-label="samsung shortcuts">
-        {homeShortcuts.map(({ href, label, note, image, position }) => (
-          <Link key={label} href={href} className={`home-photo-card ${position}`} data-testid={`link-home-${label.toLowerCase().replaceAll(' ', '-')}`}>
+      <section className="home-photo-grid home-summary-grid" aria-label="Account summary">
+        {homeSummaryCards.map(({ label, image, position }) => (
+          <article key={label} className={`home-photo-card ${position}`}>
             <img src={image} alt="" aria-hidden="true" loading="lazy" />
-            <span className="home-photo-card-copy"><strong>{label}</strong><small>{note}</small></span>
-          </Link>
+            <span className="home-photo-card-copy"><strong>— UGX</strong><small>{label}</small></span>
+          </article>
         ))}
       </section>
-
-      <section className="home-balance-grid" aria-label="Wallet totals">
-        <article className="home-balance-card">
-          <p className="home-balance-value" data-testid="text-home-wallet-balance">—</p>
-          <p className="home-balance-label">Wallet balance</p>
-          <span className="home-balance-note">UGX · Not connected</span>
-        </article>
-        <article className="home-balance-card">
-          <p className="home-balance-value" data-testid="text-home-accumulated">—</p>
-          <p className="home-balance-label">Total accumulated</p>
-          <span className="home-balance-note">UGX · No ledger yet</span>
-        </article>
-      </section>
-
-      <Link href="/account" className="home-history-panel" data-testid="link-home-history">
-        <div className="home-section-heading">
-          <div><p className="home-section-eyebrow">Wallet records</p><h2 id="home-history-title">Account history</h2></div>
-          <History aria-hidden="true" />
-        </div>
-        <p>No wallet transactions are recorded yet.</p>
-      </Link>
     </section>
   </MemberFrame>;
 }

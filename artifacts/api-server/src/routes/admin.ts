@@ -22,8 +22,11 @@ const defaultTaskDefinitions = [
   { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
-  { id: "daily-check-in", title: "Daily Check-in", objective: 1, objectiveUnit: "check-in", rewardUgx: 500, rewardFrequency: "daily", enabled: false },
 ];
+
+function isPresenceTask(task: { id: string; title: string }) {
+  return task.id === "daily-check-in" || /\bcheck[\s-]*in\b/i.test(task.title);
+}
 
 function cookieName() {
   return process.env.NODE_ENV === "production" ? "__Host-rewards_session" : "rewards_session";
@@ -123,7 +126,8 @@ async function readTaskCenterSettings() {
     .from(taskCenterSettingsTable)
     .where(eq(taskCenterSettingsTable.id, "default"))
     .limit(1);
-  return stored?.tasks ?? defaultTaskDefinitions;
+  const settings = GetAdminTaskCenterSettingsResponse.parse({ tasks: stored?.tasks ?? defaultTaskDefinitions });
+  return settings.tasks.filter((task) => !isPresenceTask(task));
 }
 
 router.get("/task-center", async (req, res): Promise<void> => {
@@ -154,23 +158,24 @@ router.put("/admin/task-center", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Check each task title, objective, UGX reward, and frequency." });
     return;
   }
-  const ids = parsed.data.tasks.map((task) => task.id);
+  const tasks = parsed.data.tasks.filter((task) => !isPresenceTask(task));
+  const ids = tasks.map((task) => task.id);
   if (new Set(ids).size !== ids.length) {
     res.status(400).json({ error: "Each task must have a unique ID." });
     return;
   }
-  if (parsed.data.tasks.some((task) => task.enabled && task.rewardUgx === null)) {
+  if (tasks.some((task) => task.enabled && task.rewardUgx === null)) {
     res.status(400).json({ error: "Set a UGX reward before marking a task active." });
     return;
   }
   try {
     await db.insert(taskCenterSettingsTable)
-      .values({ id: "default", tasks: parsed.data.tasks, updatedAt: new Date() })
+      .values({ id: "default", tasks, updatedAt: new Date() })
       .onConflictDoUpdate({
         target: taskCenterSettingsTable.id,
-        set: { tasks: parsed.data.tasks, updatedAt: new Date() },
+        set: { tasks, updatedAt: new Date() },
       });
-    res.json(UpdateAdminTaskCenterSettingsResponse.parse({ tasks: parsed.data.tasks }));
+    res.json(UpdateAdminTaskCenterSettingsResponse.parse({ tasks }));
   } catch (error) {
     req.log.error({ error, route: "admin.task-center.put" }, "Could not save task definitions");
     res.status(500).json({ error: "Could not save task definitions." });
