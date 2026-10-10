@@ -1052,6 +1052,10 @@
   background-color: rgba(107, 145, 245, .22) !important;
 }
 
+.overview-shell [class*="bg-[#e9b975]"] {
+  background-color: rgba(49, 88, 212, .54) !important;
+}
+
 .member-bottom-nav:not(.products-bottom-nav) {
   border-color: rgba(157, 185, 255, .24);
   background: rgba(12, 24, 55, .76);
@@ -1136,14 +1140,33 @@
   color: #1428a0 !important;
 }
 
+[class*="text-[#536e59]"],
+[class*="text-[#53675b]"],
+[class*="text-[#647168]"],
+[class*="text-[#6c786d]"],
+[class*="text-[#75816f]"],
+[class*="text-[#657168]"],
+[class*="text-[#617166]"],
+[class*="text-[#819080]"],
+[class*="text-[#728073]"],
+[class*="text-[#9a6749]"],
+[class*="text-[#746d5f]"],
+[class*="text-[#3e6070]"],
+[class*="text-[#315466]"] {
+  color: #52627e !important;
+}
+
 [class*="text-[#bfa873]"],
 [class*="text-[#e3b67a]"],
 [class*="text-[#f0c98e]"],
 [class*="text-[#e5b28e]"],
+[class*="text-[#ffd48e]"],
 [class*="text-[#edbd76]"],
 [class*="text-[#e4a16f]"],
 [class*="text-[#9b4b14]"],
-[class*="text-[#9e4b12]"] {
+[class*="text-[#9e4b12]"],
+[class*="text-[#9b4a13]"],
+[class*="text-[#765b47]"] {
   color: #a9c4ff !important;
 }
 
