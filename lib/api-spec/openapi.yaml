@@ -773,6 +773,31 @@ paths:
                 $ref: "#/components/schemas/AdminGiftCodes"
         "401":
           description: Administrator sign in required
+    post:
+      operationId: createAdminGiftCode
+      tags: [admin]
+      summary: Issue a single-use gift code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminGiftCodeInput"
+      responses:
+        "201":
+          description: Issued gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCode"
+        "400":
+          description: Invalid gift-code value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Administrator sign in required
   /admin/settings:
     get:
       operationId: getAdminSiteSettings
@@ -806,31 +831,6 @@ paths:
                 $ref: "#/components/schemas/AdminSiteSettings"
         "400":
           description: Invalid settings values
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Administrator sign in required
-    post:
-      operationId: createAdminGiftCode
-      tags: [admin]
-      summary: Issue a single-use gift code
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdminGiftCodeInput"
-      responses:
-        "201":
-          description: Issued gift code
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AdminGiftCode"
-        "400":
-          description: Invalid gift-code value
           content:
             application/json:
               schema:

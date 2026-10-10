@@ -4,6 +4,7 @@ import { and, count, eq, gt, sql, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
+  giftCodesTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
   presenceClaimsTable,
@@ -31,6 +32,8 @@ import {
   RegisterPhoneAccountResponse,
   PurchaseProductResponse,
   GetAdminSiteSettingsResponse,
+  RedeemGiftCodeBody,
+  RedeemGiftCodeResponse,
 } from "@workspace/api-zod";
 import { calculateLevelOneToThreeTeamDeposits, getReferralAncestorsThroughLevelThree, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 import { readSiteSettings } from "../lib/site-settings";
@@ -571,6 +574,40 @@ router.get("/site-settings", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "site-settings.get" }, "Could not load public site settings");
     res.status(500).json({ error: "Could not load site settings." });
+  }
+});
+
+router.post("/gift-codes/redeem", requireSameOrigin, async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  const parsed = RedeemGiftCodeBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a valid gift code." });
+    return;
+  }
+  const code = parsed.data.code.trim().toUpperCase();
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [gift] = await tx.select().from(giftCodesTable).where(eq(giftCodesTable.code, code)).for("update").limit(1);
+      if (!gift || gift.redeemedAt) return null;
+      const [member] = await tx.update(phoneAccountsTable)
+        .set({
+          walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${gift.amountUgx}`,
+          totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${gift.amountUgx}`,
+        }).where(eq(phoneAccountsTable.id, accountId))
+        .returning({ walletBalanceUgx: phoneAccountsTable.walletBalanceUgx });
+      if (!member) return null;
+      await tx.update(giftCodesTable).set({ redeemedByAccountId: accountId, redeemedAt: new Date() }).where(eq(giftCodesTable.id, gift.id));
+      return { amountUgx: gift.amountUgx, walletBalanceUgx: member.walletBalanceUgx };
+    });
+    if (!result) {
+      res.status(400).json({ error: "That gift code is invalid or has already been redeemed." });
+      return;
+    }
+    res.json(RedeemGiftCodeResponse.parse(result));
+  } catch (error) {
+    req.log.error({ error, route: "gift-codes.redeem" }, "Could not redeem gift code");
+    res.status(500).json({ error: "Could not redeem gift code." });
   }
 });
 

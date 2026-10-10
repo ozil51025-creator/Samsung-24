@@ -57,6 +57,62 @@ import {
 import { readSiteSettings } from "../lib/site-settings";
 
 const router: IRouter = Router();
+
+router.get("/admin/gift-codes", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    const rows = await db.select({
+      id: giftCodesTable.id,
+      code: giftCodesTable.code,
+      amountUgx: giftCodesTable.amountUgx,
+      createdAt: giftCodesTable.createdAt,
+      redeemedAt: giftCodesTable.redeemedAt,
+      redeemedByPhone: phoneAccountsTable.phoneNumber,
+    }).from(giftCodesTable)
+      .leftJoin(phoneAccountsTable, eq(giftCodesTable.redeemedByAccountId, phoneAccountsTable.id))
+      .orderBy(desc(giftCodesTable.createdAt)).limit(500);
+    res.json(GetAdminGiftCodesResponse.parse({ codes: rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString(), redeemedAt: row.redeemedAt?.toISOString() ?? null })) }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.gift-codes.get" }, "Could not load gift codes");
+    res.status(500).json({ error: "Could not load gift codes." });
+  }
+});
+
+router.post("/admin/gift-codes", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = CreateAdminGiftCodeBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a valid gift-code amount." });
+    return;
+  }
+  try {
+    const code = randomBytes(10).toString("hex").toUpperCase();
+    const [created] = await db.insert(giftCodesTable).values({
+      code,
+      amountUgx: parsed.data.amountUgx,
+      createdByAdminAccountId: admin.id,
+    }).returning();
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id,
+      action: "gift_code.created",
+      amountUgx: created.amountUgx,
+      details: `Issued single-use wallet credit code ${created.code}`,
+    });
+    res.status(201).json(CreateAdminGiftCodeResponse.parse({
+      id: created.id,
+      code: created.code,
+      amountUgx: created.amountUgx,
+      createdAt: created.createdAt.toISOString(),
+      redeemedAt: null,
+      redeemedByPhone: null,
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.gift-codes.create" }, "Could not create gift code");
+    res.status(500).json({ error: "Could not create gift code." });
+  }
+});
 const defaultTaskDefinitions = [
   { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },

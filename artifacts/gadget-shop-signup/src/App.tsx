@@ -982,6 +982,109 @@ function RechargeHistoryPage() {
     </main>;
 }
 
+type AdminGiftCodeRecord = {
+  id: string;
+  code: string;
+  amountUgx: number;
+  createdAt: string;
+  redeemedAt: string | null;
+  redeemedByPhone: string | null;
+};
+
+function AdminGiftCodesSection() {
+  const [codes, setCodes] = useState<AdminGiftCodeRecord[]>([]);
+  const [amountUgx, setAmountUgx] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const load = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/gift-codes', { credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load gift codes.');
+      setCodes(data.codes ?? []);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load gift codes.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { void load(); }, []);
+  const createCode = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true); setError(''); setMessage('');
+    try {
+      const response = await fetch('/api/admin/gift-codes', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amountUgx: Number(amountUgx) }),
+      });
+      const code = await response.json();
+      if (!response.ok) throw new Error(code.error ?? 'Could not create gift code.');
+      setMessage(`New code: ${code.code} · UGX ${money.format(code.amountUgx)}`);
+      setAmountUgx('');
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not create gift code.');
+    } finally {
+      setSaving(false);
+    }
+  };
+  return <div className="mt-4 space-y-5">
+    <p className="admin-section-subtitle">Issue single-use codes that credit the member’s wallet when redeemed.</p>
+    <form className="admin-add-form" onSubmit={createCode}>
+      <label htmlFor="gift-code-amount">Wallet credit amount (UGX)</label>
+      <div><input id="gift-code-amount" required type="number" min="1" max="100000000" step="1" value={amountUgx} onChange={(event) => setAmountUgx(event.target.value)} /><button type="submit" disabled={saving}>{saving ? 'Creating…' : 'Create gift code'}</button></div>
+      {message && <p role="status">{message}</p>}
+      {error && <p role="alert">{error}</p>}
+    </form>
+    <div className="space-y-2">
+      <h3>Issued codes</h3>
+      {loading && <p role="status">Loading gift codes…</p>}
+      {!loading && !codes.length && !error && <p>No gift codes have been issued yet.</p>}
+      {codes.map((code) => <article key={code.id} className="admin-recharge-review-item">
+        <strong className="font-mono">{code.code}</strong>
+        <span>UGX {money.format(code.amountUgx)} · {code.redeemedAt ? `Redeemed by ${code.redeemedByPhone ?? 'member'}` : 'Unused'}</span>
+        <small>Created {new Date(code.createdAt).toLocaleString('en-UG')}</small>
+      </article>)}
+    </div>
+  </div>;
+}
+
+function GiftCodeRedeemPanel() {
+  const { refresh } = useAuth();
+  const [code, setCode] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const redeem = async (event: FormEvent) => {
+    event.preventDefault(); setError(''); setMessage(''); setSubmitting(true);
+    try {
+      const response = await fetch('/api/gift-codes/redeem', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.trim().toUpperCase() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not redeem this code.');
+      await refresh();
+      setCode('');
+      setMessage(`UGX ${money.format(data.amountUgx)} added to your wallet.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not redeem this code.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  return <form className="mt-3 space-y-2" onSubmit={redeem}>
+    <label htmlFor="member-gift-code" className="block text-xs font-semibold">Gift code</label>
+    <input id="member-gift-code" required minLength={12} maxLength={32} value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="w-full rounded-xl border p-3 font-mono uppercase" />
+    <button type="submit" disabled={submitting} className="rounded-full bg-[#17392d] px-4 py-2 text-sm font-semibold text-white">{submitting ? 'Redeeming…' : 'Redeem code'}</button>
+    {message && <p role="status">{message}</p>}
+    {error && <p role="alert">{error}</p>}
+  </form>;
+}
+
 type AdminLedgerTransaction = {
   id: string;
   type: string;
@@ -1483,7 +1586,7 @@ function AdminTaskCenterPage() {
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'gift-codes'}>
         <h2>Gift Codes</h2>
-        <p className="admin-connection-state"><Gift /> Gift-code creation and redemption are not connected. No codes are available to manage.</p>
+        <AdminGiftCodesSection />
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'messages'}>
         <h2>Messages</h2>
@@ -1817,7 +1920,7 @@ function AccountPage() {
                 : href?.startsWith('https://')
                   ? <a href={href} target="_blank" rel="noopener noreferrer" className="account-shortcut-link" data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></a>
                   : <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></button>}
-              {isExpanded && <p role="status" data-testid={`status-account-${id}`}>{detail}</p>}
+              {isExpanded && (id === 'gift' ? <GiftCodeRedeemPanel /> : <p role="status" data-testid={`status-account-${id}`}>{detail}</p>)}
             </div>
           );
         })}

@@ -875,6 +875,34 @@ export const GetAdminGiftCodesResponse = zod.object({
 
 
 /**
+ * @summary Issue a single-use gift code
+ */
+export const createAdminGiftCodeBodyAmountUgxMax = 100000000;
+
+
+
+export const CreateAdminGiftCodeBody = zod.object({
+  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeBodyAmountUgxMax)
+})
+
+export const createAdminGiftCodeResponseCodeMin = 12;
+export const createAdminGiftCodeResponseCodeMax = 32;
+
+export const createAdminGiftCodeResponseAmountUgxMax = 100000000;
+
+
+
+export const CreateAdminGiftCodeResponse = zod.object({
+  "id": zod.string().uuid(),
+  "code": zod.string().min(createAdminGiftCodeResponseCodeMin).max(createAdminGiftCodeResponseCodeMax),
+  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeResponseAmountUgxMax),
+  "createdAt": zod.coerce.date(),
+  "redeemedAt": zod.coerce.date().nullable(),
+  "redeemedByPhone": zod.string().nullable()
+})
+
+
+/**
  * @summary Get editable site-wide business and access settings
  */
 export const getAdminSiteSettingsResponseBrandNameMax = 80;
@@ -1149,34 +1177,6 @@ export const UpdateAdminSiteSettingsResponse = zod.object({
   "showAnnouncement": zod.boolean(),
   "announcementTitle": zod.string().max(updateAdminSiteSettingsResponseAnnouncementTitleMax),
   "announcementMessage": zod.string().max(updateAdminSiteSettingsResponseAnnouncementMessageMax)
-})
-
-
-/**
- * @summary Issue a single-use gift code
- */
-export const createAdminGiftCodeBodyAmountUgxMax = 100000000;
-
-
-
-export const CreateAdminGiftCodeBody = zod.object({
-  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeBodyAmountUgxMax)
-})
-
-export const createAdminGiftCodeResponseCodeMin = 12;
-export const createAdminGiftCodeResponseCodeMax = 32;
-
-export const createAdminGiftCodeResponseAmountUgxMax = 100000000;
-
-
-
-export const CreateAdminGiftCodeResponse = zod.object({
-  "id": zod.string().uuid(),
-  "code": zod.string().min(createAdminGiftCodeResponseCodeMin).max(createAdminGiftCodeResponseCodeMax),
-  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeResponseAmountUgxMax),
-  "createdAt": zod.coerce.date(),
-  "redeemedAt": zod.coerce.date().nullable(),
-  "redeemedByPhone": zod.string().nullable()
 })
 
 
