@@ -1032,7 +1032,7 @@
   color: white;
 }
 
-.referral-shell section:first-of-type {
+.referral-shell [data-testid="page-referral"] > section:first-of-type {
   border: 1px solid rgba(158, 190, 255, .28);
   background: linear-gradient(135deg, rgba(20, 40, 160, .88), rgba(38, 92, 203, .8), rgba(13, 29, 74, .82)) !important;
   backdrop-filter: blur(18px);
