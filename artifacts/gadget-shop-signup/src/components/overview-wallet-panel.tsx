@@ -68,7 +68,7 @@ export function OverviewWalletPanel() {
         </button>
       </div>
 
-      <section className="mt-5 border-t border-white/10 pt-4" aria-labelledby="wallet-history-title">
+      <section id="wallet-history" className="mt-5 border-t border-white/10 pt-4" aria-labelledby="wallet-history-title">
         <h3 id="wallet-history-title" className="flex items-center gap-2 text-[12px] font-semibold text-white/80">
           <Clock3 className="h-4 w-4 text-[#edbd76]" aria-hidden="true" />
           Account history

@@ -7,7 +7,7 @@ import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Eye, EyeOff, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -157,6 +157,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   const isOverview = active === '/overview';
   const isReferral = active === '/referral';
   const isProducts = active === '/products';
+  const isAccount = active === '/account';
   const handleSignOut = async () => {
     setSigningOut(true);
     setSignOutError('');
@@ -200,10 +201,10 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
   return (
     <>
-        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : 'shop-shell'}`}>
+        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
             <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
-              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview} /></Link>
+              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isAccount} /></Link>
               <div className="flex items-center gap-3">
                  <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
                  <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
@@ -430,26 +431,62 @@ function ReferralPage() {
 
 function AccountPage() {
   const { user } = useAuth();
+  const [expandedAction, setExpandedAction] = useState<string | null>(null);
+  const accountActions = [
+    { id: 'password', label: 'Change password', icon: ShieldCheck, detail: 'Password changes are handled by an administrator. Self-service password changes are not available yet.' },
+    { id: 'gift', label: 'Redeem gift code', icon: Gift, detail: 'Gift-code redemption is not available yet.' },
+    { id: 'help', label: 'Help & community', icon: Headphones, detail: 'Help and community links have not been configured yet.' },
+    { id: 'install', label: 'Install Samsung Gadgets', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
+    { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
+  ];
+
   return <MemberFrame active="/account">
-      <section className="grid gap-5 lg:grid-cols-[.75fr_1.25fr]">
-        <div className="rounded-[22px] border border-[#355944] bg-[#244735] p-6 text-[#f8f3e5] sm:p-8">
-          <span className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#e4a16f] text-[#253b30]"><UserRound className="h-6 w-6" aria-hidden="true" /></span>
-          <p className="mt-6 text-[10px] font-bold uppercase tracking-[.16em] text-[#b9cdb4]">Signed-in profile</p>
-          <h2 className="mt-2 break-words font-[Syne] text-[25px] font-semibold leading-tight tracking-[-.04em]">Your account</h2>
-          <p className="mt-2 break-all text-[13px] text-[#d6dfd0]">{user?.phoneNumber}</p>
-          <span className="mt-4 inline-flex rounded-full border border-[#e3b67a]/30 bg-[#e3b67a]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.08em] text-[#f0c98e]">Phone not verified</span>
+    <section className="account-content mx-auto w-full max-w-[580px]" data-testid="page-account">
+      <div className="account-quick-actions" aria-label="Wallet and notifications">
+        <button type="button" disabled title="PesaJet wallet service is not connected" className="account-deposit-button" data-testid="button-account-deposit">
+          <Download className="h-4 w-4" aria-hidden="true" /> Deposit
+        </button>
+        <button type="button" disabled aria-label="Notifications unavailable" title="Notifications are not available yet" className="account-bell-button" data-testid="button-account-notifications">
+          <Bell className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+
+      <section className="account-profile-card" aria-labelledby="account-profile-title">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="account-eyebrow">Samsung Gadgets · Member account</p>
+            <h1 id="account-profile-title" className="mt-2 font-[Syne] text-[30px] font-semibold tracking-[-.055em] text-white">Your account</h1>
+            <p className="mt-2 break-all text-[14px] text-white/75" data-testid="text-account-phone">{user?.phoneNumber}</p>
+          </div>
+          <span className="account-profile-icon" aria-hidden="true"><UserRound className="h-6 w-6" /></span>
         </div>
-        <div className="rounded-[22px] border border-[#dedbce] bg-[#fffdf7]/90 p-6 sm:p-8">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#75816f]">Account details</p>
-          <dl className="mt-5 divide-y divide-[#ece8dc]">
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Phone number</dt><dd className="break-all text-[13px] text-[#294637]">{user?.phoneNumber}</dd></div>
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Verification</dt><dd className="text-[13px] text-[#294637]">Not verified by SMS</dd></div>
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Sign-in method</dt><dd className="text-[13px] text-[#294637]">Phone number and password</dd></div>
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Password recovery</dt><dd className="text-[13px] leading-5 text-[#294637]">Contact an administrator. There is no email or SMS reset.</dd></div>
-            <div className="grid gap-1 py-4 sm:grid-cols-[150px_1fr] sm:gap-4"><dt className="text-[11px] font-semibold text-[#75816f]">Account created</dt><dd className="text-[13px] text-[#294637]">{user?.createdAt ? new Intl.DateTimeFormat('en-UG', { dateStyle: 'medium' }).format(new Date(user.createdAt)) : '—'}</dd></div>
-          </dl>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <span className="account-status-pill">Phone sign-in</span>
+          <span className="account-status-pill">Number not verified</span>
         </div>
       </section>
+
+      <section className="account-menu-card" aria-label="Account options">
+        <Link href="/overview#wallet-history" className="account-menu-row" data-testid="link-account-history">
+          <History className="account-menu-icon" aria-hidden="true" />
+          <span>Transaction history</span>
+          <ChevronRight className="account-menu-chevron" aria-hidden="true" />
+        </Link>
+        {accountActions.map(({ id, label, icon: Icon, detail }) => {
+          const isExpanded = expandedAction === id;
+          return (
+            <div className="account-menu-item" key={id}>
+              <button type="button" className="account-menu-row" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}>
+                <Icon className="account-menu-icon" aria-hidden="true" />
+                <span>{label}</span>
+                {id === 'help' ? <ArrowRight className="account-menu-chevron -rotate-45" aria-hidden="true" /> : isExpanded ? <ChevronDown className="account-menu-chevron" aria-hidden="true" /> : <ChevronDown className="account-menu-chevron" aria-hidden="true" />}
+              </button>
+              {isExpanded && <p className="account-menu-detail" role="status" data-testid={`status-account-${id}`}>{detail}</p>}
+            </div>
+          );
+        })}
+      </section>
+    </section>
   </MemberFrame>;
 }
 

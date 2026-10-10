@@ -1233,3 +1233,229 @@
     backdrop-filter: none;
   }
 }
+
+.account-shell {
+  position: relative;
+  overflow-x: clip;
+  color: #f7f9ff;
+  background:
+    linear-gradient(180deg, rgba(9, 17, 29, .2) 0%, rgba(8, 17, 29, .37) 28%, rgba(6, 16, 25, .83) 70%, #071321 100%),
+    radial-gradient(ellipse at 78% 33%, rgba(211, 133, 99, .35), transparent 32rem),
+    radial-gradient(ellipse at 13% 30%, rgba(108, 150, 196, .3), transparent 29rem),
+    linear-gradient(180deg, #28364b 0%, #66717c 25%, #293847 49%, #0b1929 100%);
+}
+
+.account-shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  opacity: .52;
+  background:
+    linear-gradient(180deg, transparent 0 32%, rgba(7, 16, 27, .13) 44%, rgba(6, 14, 23, .66) 100%),
+    linear-gradient(90deg, transparent 0 7%, rgba(12, 22, 34, .32) 7.4% 18%, transparent 18.4% 29%, rgba(12, 22, 34, .3) 29.4% 43%, transparent 43.4% 64%, rgba(12, 22, 34, .27) 64.4% 79%, transparent 79.4%),
+    repeating-linear-gradient(90deg, transparent 0 56px, rgba(222, 232, 247, .055) 57px 58px, transparent 59px 84px);
+}
+
+.account-shell .member-frame > header {
+  border-color: rgba(210, 225, 255, .18) !important;
+}
+
+.account-shell .member-frame > header button[data-testid="button-sign-out"] {
+  border-color: rgba(222, 233, 255, .2) !important;
+  background: rgba(12, 24, 48, .46) !important;
+  color: rgba(245, 248, 255, .88) !important;
+  backdrop-filter: blur(14px);
+}
+
+.account-shell .member-frame > header .member-nav a {
+  color: rgba(237, 243, 255, .67);
+}
+
+.account-shell .member-frame > header .member-nav a[aria-current="page"] {
+  color: white;
+}
+
+.account-shell .member-frame > footer {
+  display: none;
+}
+
+.account-content {
+  padding-bottom: 1.5rem;
+}
+
+.account-quick-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+  margin: -.35rem 0 1.5rem;
+}
+
+.account-deposit-button,
+.account-bell-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  border: 1px solid rgba(214, 229, 255, .25);
+  backdrop-filter: blur(16px);
+}
+
+.account-deposit-button {
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(29, 76, 91, .48);
+  color: rgba(237, 244, 255, .62);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.account-bell-button {
+  width: 48px;
+  border-radius: 50%;
+  background: rgba(237, 244, 255, .12);
+  color: rgba(242, 247, 255, .72);
+}
+
+.account-deposit-button:disabled,
+.account-bell-button:disabled {
+  cursor: not-allowed;
+  opacity: .76;
+}
+
+.account-profile-card,
+.account-menu-card {
+  border: 1px solid rgba(220, 233, 255, .22);
+  background:
+    radial-gradient(ellipse at 78% 5%, rgba(122, 163, 225, .16), transparent 65%),
+    linear-gradient(145deg, rgba(28, 35, 51, .77), rgba(8, 20, 30, .75) 63%, rgba(8, 32, 39, .72));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .075);
+  backdrop-filter: blur(24px);
+}
+
+.account-profile-card {
+  margin-bottom: 1rem;
+  padding: 1.35rem;
+  border-radius: 25px;
+}
+
+.account-eyebrow {
+  color: rgba(218, 231, 255, .67);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.account-profile-icon {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(205, 225, 255, .23);
+  border-radius: 16px;
+  background: rgba(106, 146, 219, .19);
+  color: #d9e6ff;
+}
+
+.account-status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 .7rem;
+  border: 1px solid rgba(197, 220, 255, .18);
+  border-radius: 999px;
+  background: rgba(159, 190, 244, .09);
+  color: rgba(235, 242, 255, .78);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.account-menu-card {
+  padding: .25rem 1.35rem;
+  border-radius: 29px;
+}
+
+.account-menu-item + .account-menu-item,
+.account-menu-card > .account-menu-item,
+.account-menu-item {
+  border-top: 1px solid rgba(221, 235, 255, .2);
+}
+
+.account-menu-row {
+  display: grid;
+  width: 100%;
+  min-height: 70px;
+  grid-template-columns: 28px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: .85rem;
+  color: #f5f7fc;
+  font-size: 14px;
+  text-align: left;
+  transition: color .18s ease, background .18s ease;
+}
+
+a.account-menu-row,
+button.account-menu-row {
+  cursor: pointer;
+}
+
+.account-menu-row:hover {
+  color: #cbdcff;
+}
+
+.account-menu-row:focus-visible {
+  outline: 2px solid #9bbaff;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.account-menu-icon {
+  width: 21px;
+  height: 21px;
+  color: rgba(238, 244, 255, .88);
+  stroke-width: 1.7;
+}
+
+.account-menu-chevron {
+  width: 18px;
+  height: 18px;
+  justify-self: end;
+  color: rgba(236, 243, 255, .75);
+}
+
+.account-menu-detail {
+  margin: -.25rem 0 1rem 2.65rem;
+  max-width: 440px;
+  color: rgba(226, 235, 250, .73);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  .account-profile-card {
+    padding: 1.6rem 1.8rem;
+  }
+
+  .account-menu-card {
+    padding: .4rem 1.75rem;
+  }
+
+  .account-menu-row {
+    min-height: 76px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .account-profile-card,
+  .account-menu-card {
+    background: rgba(13, 24, 39, .96);
+    backdrop-filter: none;
+  }
+}
