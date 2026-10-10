@@ -15,6 +15,7 @@ import {
 } from "@workspace/db";
 import {
   GetCurrentPhoneAccountResponse,
+  GetMyProductOrdersResponse,
   GetTeamDepositMilestonesResponse,
   LoginPhoneAccountBody,
   LoginPhoneAccountResponse,
@@ -692,6 +693,28 @@ router.post("/products/:productId/purchase", requireSameOrigin, async (req, res)
   } catch (error) {
     req.log.error({ error, route: "products.purchase" }, "Could not complete product purchase");
     res.status(500).json({ error: "The purchase could not be completed. No wallet funds were taken." });
+  }
+});
+
+router.get("/products/orders", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const rows = await db.select({
+      id: productOrdersTable.id,
+      productName: productOrdersTable.productName,
+      priceUgx: productOrdersTable.priceUgx,
+      status: productOrdersTable.status,
+      createdAt: productOrdersTable.createdAt,
+    }).from(productOrdersTable)
+      .where(eq(productOrdersTable.buyerAccountId, accountId))
+      .orderBy(sql`${productOrdersTable.createdAt} DESC`);
+    res.json(GetMyProductOrdersResponse.parse({
+      orders: rows.map((order) => ({ ...order, createdAt: order.createdAt.toISOString() })),
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "products.orders" }, "Could not load member product orders");
+    res.status(500).json({ error: "Could not load product orders." });
   }
 });
 

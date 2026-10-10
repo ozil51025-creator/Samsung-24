@@ -1173,16 +1173,44 @@ function AdminTaskCenterPage() {
 function ProductsPage() {
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'error'>('loading');
-  useEffect(() => {
-    fetch('/api/products/catalog')
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error('Could not load the product catalog.');
-        setProducts((data.products as AdminCatalogItem[]).map(({ id, name, priceUgx, illustration }) => ({ id, name, price: priceUgx, illustration })));
-        setCatalogState('ready');
-      })
-      .catch(() => setCatalogState('error'));
-  }, []);
+  const [purchaseCount, setPurchaseCount] = useState(0);
+  const [totalCollectedUgx, setTotalCollectedUgx] = useState(0);
+  const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
+  const [purchaseMessage, setPurchaseMessage] = useState('');
+  const loadCatalog = async () => {
+    try {
+      const response = await fetch('/api/products/catalog');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load the product catalog.');
+      setProducts((data.products as AdminCatalogItem[]).map(({ id, name, priceUgx, illustration }) => ({ id, name, price: priceUgx, illustration })));
+      setPurchaseCount(data.purchasedCount ?? 0);
+      setTotalCollectedUgx(data.totalCollectedUgx ?? 0);
+      setCatalogState('ready');
+    } catch {
+      setCatalogState('error');
+    }
+  };
+  useEffect(() => { void loadCatalog(); }, []);
+  const buyProduct = async (productId: string) => {
+    setBuyingProductId(productId);
+    setPurchaseMessage('');
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(productId)}/purchase`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Purchase could not be completed.');
+      const commissions = (data.commissions as Array<{level:number;amountUgx:number}>)
+        .map((item) => `Level ${item.level}: UGX ${money.format(item.amountUgx)}`).join(', ');
+      setPurchaseMessage(`Order recorded and awaiting fulfillment. Remaining wallet: UGX ${money.format(data.walletBalanceUgx)}.${commissions ? ` Referral rewards credited: ${commissions}.` : ''}`);
+      await loadCatalog();
+    } catch (error) {
+      setPurchaseMessage(error instanceof Error ? error.message : 'Purchase could not be completed.');
+    } finally {
+      setBuyingProductId(null);
+    }
+  };
   return <MemberFrame active="/products">
     {catalogState === 'loading' && <p className="catalog-load-state" role="status">Loading products…</p>}
     {catalogState === 'error' && <p className="catalog-load-state" role="alert">The product catalog could not be loaded.</p>}
@@ -1190,6 +1218,11 @@ function ProductsPage() {
       products={products}
       formatPrice={(price) => money.format(price)}
       imageUrl={`${basePath}/samsung-s26-ultra-banner.jpeg`}
+      purchaseCount={purchaseCount}
+      totalCollectedUgx={totalCollectedUgx}
+      buyingProductId={buyingProductId}
+      purchaseMessage={purchaseMessage}
+      onPurchase={buyProduct}
       productImages={{
         'galaxy-s-ultra': `${basePath}/samsung-s26-ultra.jpg`,
         'galaxy-z-fold': `${basePath}/samsung-fold8-banner.jpg`,
