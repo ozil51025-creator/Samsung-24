@@ -153,6 +153,15 @@ router.put("/admin/task-center", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Check each task title, objective, UGX reward, and frequency." });
     return;
   }
+  const ids = parsed.data.tasks.map((task) => task.id);
+  if (new Set(ids).size !== ids.length) {
+    res.status(400).json({ error: "Each task must have a unique ID." });
+    return;
+  }
+  if (parsed.data.tasks.some((task) => task.enabled && task.rewardUgx === null)) {
+    res.status(400).json({ error: "Set a UGX reward before marking a task active." });
+    return;
+  }
   try {
     await db.insert(taskCenterSettingsTable)
       .values({ id: "default", tasks: parsed.data.tasks, updatedAt: new Date() })

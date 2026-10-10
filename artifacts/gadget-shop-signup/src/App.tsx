@@ -12,6 +12,15 @@ import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } fr
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
 const memberNoticeKey = 'samsung-gadgets:show-member-notice';
+type TaskDefinition = {
+  id: string;
+  title: string;
+  objective: number;
+  objectiveUnit: string;
+  rewardUgx: number | null;
+  rewardFrequency: 'once' | 'daily';
+  enabled: boolean;
+};
 
 function queueMemberNotice() {
   try {
@@ -297,8 +306,8 @@ function HomePage() {
     { href: '/account', label: 'My account', note: 'Account settings', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
   ];
   const homeActions = [
-    { label: 'Deposit', icon: Download, title: 'Deposits are unavailable until a payment provider is verified.' },
-    { label: 'Withdraw', icon: CreditCard, title: 'Withdrawals are unavailable until a payment provider is verified.' },
+    { label: 'Deposit', icon: Download, href: '/recharge' },
+    { label: 'Withdraw', icon: CreditCard, href: '/withdrawal' },
     { label: 'Customer service', icon: Headphones, title: 'Customer support details have not been configured.' },
     { label: 'Check-in', icon: CalendarDays, title: 'Daily check-in rewards are not active.' },
   ];
@@ -315,10 +324,14 @@ function HomePage() {
       </section>
 
       <div className="home-money-actions" aria-label="Account shortcuts">
-        {homeActions.map(({ label, icon: Icon, title }) => (
-          <button key={label} type="button" disabled title={title} aria-label={`${label}: unavailable`}>
-            <Icon aria-hidden="true" /><span>{label}</span>
-          </button>
+        {homeActions.map(({ label, icon: Icon, title, href }) => (
+          href
+            ? <Link key={label} href={href} aria-label={label}>
+                <Icon aria-hidden="true" /><span>{label}</span>
+              </Link>
+            : <button key={label} type="button" disabled title={title} aria-label={`${label}: unavailable`}>
+                <Icon aria-hidden="true" /><span>{label}</span>
+              </button>
         ))}
       </div>
 
@@ -367,13 +380,25 @@ function HomePage() {
 
 function TaskCenterPage() {
   const { user, status } = useAuth();
-  const invitationGoals = [3, 10, 30];
+  const [tasks, setTasks] = useState<TaskDefinition[]>([]);
+  const [tasksStatus, setTasksStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Task Center — Samsung Gadgets';
     return () => { document.title = previousTitle; };
   }, []);
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/task-center', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load tasks.');
+        const data = await response.json() as { tasks: TaskDefinition[] };
+        setTasks(data.tasks);
+        setTasksStatus('ready');
+      })
+      .catch(() => setTasksStatus('error'));
+  }, [user]);
 
   if (status === 'loading') {
     return <main className="task-center-shell" role="status">Checking your account…</main>;
@@ -396,20 +421,219 @@ function TaskCenterPage() {
         <small>Rewards are not active yet</small>
       </div>
     </section>
-    <section className="task-center-list" aria-label="Invitation tasks">
-      {invitationGoals.map((goal) => (
-        <article className="task-center-item" key={goal}>
-          <h2>Invite {goal} Level 1 members</h2>
+    <section className="task-center-list" aria-label="Tasks">
+      {tasksStatus === 'loading' && <p className="task-center-message">Loading tasks…</p>}
+      {tasksStatus === 'error' && <p className="task-center-message" role="alert">Tasks could not be loaded. Please try again later.</p>}
+      {tasksStatus === 'ready' && tasks.length === 0 && <p className="task-center-message">No tasks have been added yet.</p>}
+      {tasks.map((task) => (
+        <article className="task-center-item" key={task.id}>
+          <h2>{task.title}</h2>
           <div className="task-center-progress">
             <div><strong>—</strong><span>Current</span></div>
-            <div><strong>{goal}</strong><span>Objective</span></div>
+            <div><strong>{task.objective.toLocaleString()} {task.objectiveUnit}</strong><span>Objective</span></div>
             <div><strong>—</strong><span>Progress</span></div>
           </div>
-          <p>Referral tracking and reward terms are not active.</p>
-          <button type="button" disabled>Not active</button>
+          <p>{task.rewardUgx === null ? 'Reward amount not set' : `${money.format(task.rewardUgx)} UGX · ${task.rewardFrequency === 'daily' ? 'daily' : 'one-time'}`} · Progress tracking not connected</p>
+          <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
         </article>
       ))}
     </section>
+  </main>;
+}
+
+function WithdrawalPage() {
+  const { user, status: authStatus } = useAuth();
+  const [amount, setAmount] = useState('');
+  const [provider, setProvider] = useState<'mtn' | 'airtel'>('mtn');
+  const [phone, setPhone] = useState('');
+  const amountValue = Number(amount);
+  const fee = Number.isFinite(amountValue) && amountValue > 0 ? Math.round(amountValue * 0.2) : 0;
+  const netAmount = Number.isFinite(amountValue) && amountValue > 0 ? amountValue - fee : 0;
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Withdraw — Samsung Gadgets';
+    return () => { document.title = previousTitle; };
+  }, []);
+  if (authStatus === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
+  if (authStatus === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+
+  return <MemberFrame active="/account">
+    <main className="withdraw-content" data-testid="page-withdrawal">
+      <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft /></Link><h1>Withdrawal</h1><Link href="/withdrawal-history" aria-label="Withdrawal history"><History /></Link></header>
+      <section className="withdraw-balance">
+        <p>UGX —</p><span>Available wallet balance · not connected</span>
+        <label htmlFor="withdraw-amount">Withdrawal amount (UGX)</label>
+        <input id="withdraw-amount" type="number" min="10000" step="1000" inputMode="numeric" placeholder="Enter amount" value={amount} onChange={(event) => setAmount(event.target.value)} />
+      </section>
+      <section className="withdraw-details">
+        <h2>Mobile money destination</h2>
+        <label htmlFor="withdraw-provider">Network</label>
+        <select id="withdraw-provider" value={provider} onChange={(event) => setProvider(event.target.value as 'mtn' | 'airtel')}>
+          <option value="mtn">MTN Mobile Money</option>
+          <option value="airtel">Airtel Money</option>
+        </select>
+        <label htmlFor="withdraw-phone">Ugandan mobile money number</label>
+        <input id="withdraw-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+256 7XX XXX XXX" value={phone} onChange={(event) => setPhone(event.target.value)} />
+        <div className="withdraw-summary">
+          <p><span>Minimum withdrawal</span><strong>UGX 10,000</strong></p>
+          <p><span>Withdrawal fee (20%)</span><strong>UGX {money.format(fee)}</strong></p>
+          <p><span>Estimated amount after fee</span><strong>UGX {money.format(netAmount)}</strong></p>
+        </div>
+        <button type="button" disabled title="PesaJet payout processing is not connected">Confirm withdrawal</button>
+        <p className="withdraw-notice" role="note">Withdrawals are not being submitted or stored yet. PesaJet payout processing must be verified before this can be enabled.</p>
+        <Link className="withdraw-history-link" href="/withdrawal-history">View withdrawal history <ArrowRight /></Link>
+      </section>
+    </main>
+  </MemberFrame>;
+}
+
+function WithdrawalHistoryPage() {
+  const { user, status } = useAuth();
+  if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+  return <MemberFrame active="/account">
+    <main className="withdraw-content" data-testid="page-withdrawal-history">
+      <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>Withdrawal history</h1></header>
+      <section className="withdraw-empty"><History aria-hidden="true" /><p>No withdrawal requests are recorded.</p><span>Requests will appear here after payout processing is connected.</span></section>
+    </main>
+  </MemberFrame>;
+}
+
+function RechargePage() {
+  const { user, status } = useAuth();
+  const [amount, setAmount] = useState('');
+  const [provider, setProvider] = useState<'mtn' | 'airtel'>('mtn');
+  const [phone, setPhone] = useState('');
+  const presets = [10000, 30000, 50000, 100000, 250000, 500000];
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Recharge — Samsung Gadgets';
+    return () => { document.title = previousTitle; };
+  }, []);
+  if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+
+  return <MemberFrame active="/account">
+    <main className="recharge-content" data-testid="page-recharge">
+      <header className="withdraw-heading">
+        <Link href="/account" aria-label="Back to account"><ArrowLeft /></Link>
+        <h1>Recharge</h1>
+        <Link href="/recharge-history" aria-label="Top-up history"><History /></Link>
+      </header>
+      <section className="recharge-amount-card">
+        <span>Top-up amount</span>
+        <label htmlFor="recharge-amount">UGX</label>
+        <input id="recharge-amount" type="number" min="1" step="1000" inputMode="numeric" placeholder="Enter amount" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="" aria-hidden="true" />
+      </section>
+      <section className="recharge-presets" aria-label="Quickly select an amount">
+        <h2>Quickly select an amount</h2>
+        <div>{presets.map((preset) => <button type="button" key={preset} aria-pressed={amount === String(preset)} onClick={() => setAmount(String(preset))}>UGX {money.format(preset)}</button>)}</div>
+      </section>
+      <section className="recharge-channel">
+        <h2>Choose mobile money network</h2>
+        <div className="recharge-network-list">
+          <label className={provider === 'mtn' ? 'selected' : ''}><input type="radio" name="recharge-provider" value="mtn" checked={provider === 'mtn'} onChange={() => setProvider('mtn')} /><span>MTN Mobile Money</span></label>
+          <label className={provider === 'airtel' ? 'selected' : ''}><input type="radio" name="recharge-provider" value="airtel" checked={provider === 'airtel'} onChange={() => setProvider('airtel')} /><span>Airtel Money</span></label>
+        </div>
+        <label className="recharge-phone-label" htmlFor="recharge-phone">Mobile-money number to charge</label>
+        <input id="recharge-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+256 7XX XXX XXX" value={phone} onChange={(event) => setPhone(event.target.value)} />
+        <button className="recharge-confirm" type="button" disabled title="PesaJet collections are not connected">Confirm top-up</button>
+        <p className="recharge-notice" role="note">Top-ups are not being sent or recorded. MTN/Airtel support and PesaJet processing must be verified before making a payment.</p>
+        <Link className="withdraw-history-link" href="/recharge-history">View top-up history <ArrowRight /></Link>
+      </section>
+    </main>
+  </MemberFrame>;
+}
+
+function RechargeHistoryPage() {
+  const { user, status } = useAuth();
+  if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+  return <MemberFrame active="/account">
+    <main className="recharge-content" data-testid="page-recharge-history">
+      <header className="withdraw-heading"><Link href="/recharge" aria-label="Back to recharge"><ArrowLeft /></Link><h1>Top-up history</h1></header>
+      <section className="withdraw-empty"><History aria-hidden="true" /><p>No top-ups are recorded.</p><span>Verified transactions will appear here once deposits are connected.</span></section>
+    </main>
+  </MemberFrame>;
+}
+
+function AdminTaskCenterPage() {
+  const [tasks, setTasks] = useState<TaskDefinition[]>([]);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [message, setMessage] = useState('');
+  const [saving, setSaving] = useState(false);
+  const loadTasks = () => {
+    setStatus('loading');
+    fetch('/api/admin/task-center', { credentials: 'include' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load Task Center settings.');
+        setTasks((data as { tasks: TaskDefinition[] }).tasks);
+        setStatus('ready');
+        setMessage('');
+      })
+      .catch((error: unknown) => {
+        setStatus('error');
+        setMessage(error instanceof Error ? error.message : 'Could not load Task Center settings.');
+      });
+  };
+  useEffect(() => { loadTasks(); }, []);
+  const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
+    setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
+  const saveTasks = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/task-center', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not save Task Center settings.');
+      setTasks((data as { tasks: TaskDefinition[] }).tasks);
+      setMessage('Task Center settings saved.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not save Task Center settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+  return <main className="admin-task-page">
+    <header className="admin-task-header"><Link href="/home" aria-label="Back to Home"><ArrowLeft /></Link><div><p>Admin settings</p><h1>Task Center</h1></div></header>
+    <div className="admin-task-body">
+      <p className="admin-task-note">Edit task goals and UGX rewards. Saving these terms does not enable referral tracking or process payouts.</p>
+      {status === 'loading' && <p role="status">Loading settings…</p>}
+      {status === 'error' && <div className="admin-task-error" role="alert"><p>{message}</p><button type="button" onClick={loadTasks}>Try again</button></div>}
+      {status === 'ready' && <form onSubmit={saveTasks}>
+        {tasks.map((task) => <fieldset className="admin-task-card" key={task.id}>
+          <legend>{task.title || 'Task'}</legend>
+          <label>Task title<input required maxLength={160} value={task.title} onChange={(event) => changeTask(task.id, { title: event.target.value })} /></label>
+          <div className="admin-task-row">
+            <label>Goal<input required type="number" min="1" value={task.objective} onChange={(event) => changeTask(task.id, { objective: Number(event.target.value) })} /></label>
+            <label>Goal unit<input required maxLength={40} value={task.objectiveUnit} onChange={(event) => changeTask(task.id, { objectiveUnit: event.target.value })} /></label>
+          </div>
+          <div className="admin-task-row">
+            <label>Reward (UGX)<input type="number" min="0" value={task.rewardUgx ?? ''} onChange={(event) => changeTask(task.id, { rewardUgx: event.target.value === '' ? null : Number(event.target.value) })} /></label>
+            <label>Reward frequency<select value={task.rewardFrequency} onChange={(event) => changeTask(task.id, { rewardFrequency: event.target.value as TaskDefinition['rewardFrequency'] })}><option value="once">One-time</option><option value="daily">Daily</option></select></label>
+          </div>
+          <label className="admin-task-toggle"><input type="checkbox" checked={task.enabled} onChange={(event) => changeTask(task.id, { enabled: event.target.checked })} /> Show as active</label>
+          <button className="admin-task-remove" type="button" onClick={() => setTasks((current) => current.filter((item) => item.id !== task.id))}>Remove task</button>
+        </fieldset>)}
+        <div className="admin-task-actions">
+          <button type="button" onClick={() => setTasks((current) => [...current, { id: `task-${Date.now()}`, title: '', objective: 1, objectiveUnit: 'members', rewardUgx: null, rewardFrequency: 'once', enabled: false }])}>Add task</button>
+          <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
+        </div>
+        {message && <p className="admin-task-message" role="status">{message}</p>}
+      </form>}
+    </div>
   </main>;
 }
 
@@ -570,13 +794,13 @@ function AccountPage() {
       </section>
 
       <section className="account-wallet-actions" aria-label="Wallet actions">
-        <button type="button" disabled title="PesaJet wallet service is not connected" data-testid="button-account-deposit">
+        <Link href="/recharge" data-testid="button-account-deposit" aria-label="Deposit">
           <Download aria-hidden="true" /><span>Deposit</span>
-        </button>
-        <button type="button" disabled title="PesaJet wallet service is not connected" data-testid="button-account-withdraw">
+        </Link>
+        <Link href="/withdrawal" data-testid="button-account-withdraw" aria-label="Withdraw">
           <CreditCard aria-hidden="true" /><span>Withdraw</span>
-        </button>
-        <Link href="/home#account-history" data-testid="link-account-history">
+        </Link>
+        <Link href="/withdrawal-history" data-testid="link-account-history">
           <History aria-hidden="true" /><span>History</span>
         </Link>
       </section>
@@ -796,6 +1020,11 @@ function AppRoutes() {
         <Route path="/overview"><Redirect to="/home" /></Route>
         <Route path="/home" component={HomePage} />
         <Route path="/tasks" component={TaskCenterPage} />
+        <Route path="/admin" component={AdminTaskCenterPage} />
+        <Route path="/withdrawal" component={WithdrawalPage} />
+        <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />
+        <Route path="/recharge" component={RechargePage} />
+        <Route path="/recharge-history" component={RechargeHistoryPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/purchased-products" component={PurchasedProductsPage} />
         <Route path="/referral" component={ReferralPage} />
