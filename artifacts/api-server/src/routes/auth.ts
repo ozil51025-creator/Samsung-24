@@ -609,11 +609,12 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
 router.post("/products/:productId/purchase", requireSameOrigin, async (req, res): Promise<void> => {
   const accountId = await currentAccountId(req, res);
   if (!accountId) return;
-  const productId = req.params.productId;
-  if (!/^[a-z0-9-]{1,60}$/.test(productId)) {
+  const rawProductId = req.params.productId;
+  if (typeof rawProductId !== "string" || !/^[a-z0-9-]{1,60}$/.test(rawProductId)) {
     res.status(400).json({ error: "Invalid product." });
     return;
   }
+  const productId = rawProductId;
   try {
     const result = await db.transaction(async (tx) => {
       const [product] = await tx.select({
