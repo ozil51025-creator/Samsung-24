@@ -11,6 +11,12 @@ The user requested Samsung blue, dark neutrals, white, and translucent surfaces 
 
 **How to apply:** Use Samsung blue (#1428A0) with navy and white, and translucent glass-like surfaces consistently across public, auth, and member pages.
 
+For screenshot-led page work, the user wants the reference followed closely and does not want agent-invented options, copy, amounts, or terms. If screenshot content conflicts with an earlier confirmed project rule, ask before choosing which data to display.
+
+**Why:** The user explicitly corrected the assistant for adding unprovided choices and asked for pages to match their screenshots exactly.
+
+**How to apply:** Reproduce only the provided reference content and visual elements. Do not fill gaps with guesses; clarify direct conflicts such as currency or payment channels before changing them.
+
 **Why:** The user first chose the sales-rewards option and sale prices only, then corrected the catalog display after noticing their supplied daily/hourly figures were missing. Their requested values have not been supported by verified payout terms. They also requested member pages, a cash welcome bonus, real checkout, and multi-level referral bonuses. They corrected a preview that showed only three unlabeled icons instead of the five pages.
 
 **How to apply:** Use "Samsung Gadgets" as the store name and keep the independent-retailer disclaimer visible; do not imply Samsung affiliation. Keep persistent mobile and desktop navigation labeled Overview, Home, Products, Purchased, Referral, and Account; do not reduce it to icon-only shortcuts. Keep wallet activity and history on Home, separate from the Overview dashboard. Show supplied daily/hourly amounts as unverified estimates, never as guaranteed payouts. Keep payouts inactive until their basis, eligibility, and terms are clear and verified; do not credit cash bonuses before rules are configured.
