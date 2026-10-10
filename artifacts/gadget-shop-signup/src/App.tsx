@@ -335,7 +335,7 @@ function HomePage() {
       </div>
 
       <article className="home-task-banner" data-testid="card-home-task-center">
-        <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy devices arranged together" loading="lazy" />
+        <img className="home-task-photo" src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip foldable smartphone" fetchPriority="high" />
         <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
         <div className="home-task-copy">
           <p className="home-task-eyebrow">Samsung Gadgets</p>
@@ -372,7 +372,15 @@ function HomePage() {
 
 function ProductsPage() {
   return <MemberFrame active="/products">
-    <ProductsCatalog products={productCatalog} formatPrice={(price) => money.format(price)} imageUrl={`${basePath}/samsung-referral-banner.jpg`} />
+    <ProductsCatalog
+      products={productCatalog}
+      formatPrice={(price) => money.format(price)}
+      imageUrl={`${basePath}/samsung-s26-ultra-banner.jpeg`}
+      productImages={{
+        'galaxy-s-ultra': `${basePath}/samsung-s26-ultra.jpg`,
+        'galaxy-z-fold': `${basePath}/samsung-fold8-banner.jpg`,
+      }}
+    />
   </MemberFrame>;
 }
 

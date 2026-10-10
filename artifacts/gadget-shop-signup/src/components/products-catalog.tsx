@@ -6,9 +6,10 @@ type ProductsCatalogProps = {
   products: readonly ProductCatalogItem[];
   formatPrice: (amount: number) => string;
   imageUrl: string;
+  productImages: Readonly<Record<string, string>>;
 };
 
-export function ProductsCatalog({ products, formatPrice, imageUrl }: ProductsCatalogProps) {
+export function ProductsCatalog({ products, formatPrice, imageUrl, productImages }: ProductsCatalogProps) {
   const prices = products.map((product) => product.price);
   const lowestPrice = Math.min(...prices);
   const highestPrice = Math.max(...prices);
@@ -46,8 +47,17 @@ export function ProductsCatalog({ products, formatPrice, imageUrl }: ProductsCat
           >
             <h3 className="product-card-title">{product.name}</h3>
             <div className="product-card-art">
-              <ProductIllustration kind={product.illustration} name={product.name} />
-              <span>Illustration · exact model to confirm</span>
+              {productImages[product.id] ? (
+                <>
+                  <img src={productImages[product.id]} alt={product.name} loading="lazy" />
+                  <span>Product photo · availability to confirm</span>
+                </>
+              ) : (
+                <>
+                  <ProductIllustration kind={product.illustration} name={product.name} />
+                  <span>Illustration · exact model to confirm</span>
+                </>
+              )}
             </div>
             <div className="product-card-price-row">
               <div>
@@ -75,7 +85,7 @@ export function ProductsCatalog({ products, formatPrice, imageUrl }: ProductsCat
       </section>
 
       <p id="product-checkout-note" className="product-checkout-note">
-        Checkout is not connected yet. Product pictures are illustrations; exact product models and stock need confirmation before ordering.
+        Checkout is not connected yet. Some products use illustrative images; exact product models and stock need confirmation before ordering.
       </p>
     </>
   );
