@@ -18,6 +18,8 @@ import {
   AddAdminAccountResponse,
   CreateAdminWalletAdjustmentBody,
   CreateAdminWalletAdjustmentResponse,
+  GetAdminProductsResponse,
+  GetProductCatalogResponse,
   GetAdminAccountsResponse,
   GetAdminAuditLogsResponse,
   GetAdminTaskCenterSettingsResponse,
@@ -29,8 +31,8 @@ import {
   GetTaskCenterSettingsResponse,
   UpdateAdminTaskCenterSettingsBody,
   UpdateAdminTaskCenterSettingsResponse,
-  ProductCatalogInput,
-  ProductCatalogResponse,
+  UpdateAdminProductsBody,
+  UpdateAdminProductsResponse,
 } from "@workspace/api-zod";
 import {
   calculateLevelOneToThreeTeamDeposits,
@@ -147,7 +149,7 @@ router.get("/products/catalog", async (_req, res): Promise<void> => {
   try {
     await ensureProductCatalog();
     const products = await db.select().from(productCatalogTable);
-    res.json(ProductCatalogResponse.parse({ products: products.filter((product) => product.isActive) }));
+    res.json(GetProductCatalogResponse.parse({ products: products.filter((product) => product.isActive) }));
   } catch {
     res.status(500).json({ error: "Could not load the product catalog." });
   }
@@ -157,7 +159,7 @@ router.get("/admin/products", async (req, res): Promise<void> => {
   if (!await requireAdmin(req, res)) return;
   try {
     await ensureProductCatalog();
-    res.json(ProductCatalogResponse.parse({ products: await db.select().from(productCatalogTable) }));
+    res.json(GetAdminProductsResponse.parse({ products: await db.select().from(productCatalogTable) }));
   } catch {
     res.status(500).json({ error: "Could not load products." });
   }
@@ -166,7 +168,7 @@ router.get("/admin/products", async (req, res): Promise<void> => {
 router.put("/admin/products", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
-  const parsed = ProductCatalogInput.safeParse(req.body);
+  const parsed = UpdateAdminProductsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Enter a product name and a valid listed UGX price." });
     return;
@@ -195,7 +197,7 @@ router.put("/admin/products", async (req, res): Promise<void> => {
         details: JSON.stringify({ products: parsed.data.products.map(({ id, name, priceUgx, isActive }) => ({ id, name, priceUgx, isActive })) }),
       });
     });
-    res.json(ProductCatalogResponse.parse({ products: await db.select().from(productCatalogTable) }));
+    res.json(UpdateAdminProductsResponse.parse({ products: await db.select().from(productCatalogTable) }));
   } catch (error) {
     req.log.error({ error, route: "admin.products.put" }, "Could not update product catalog");
     res.status(500).json({ error: "Could not save product changes." });
