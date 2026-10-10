@@ -45,7 +45,7 @@ Every account receives a persistent referral code automatically. Signup links pr
 
 The user chose a separate UGX wallet with customer top-ups and withdrawals, named PesaJet as the desired gateway, set the minimum withdrawal to UGX 10,000, and confirmed a 20% withdrawal fee. They earlier chose MTN/Airtel for payouts but later supplied withdrawal screenshots with bank-account/card pages. Follow the latest screenshot for the member-page layout; confirm the destination before enabling real payouts. PesaJet payout submission and verified wallet totals/history are not connected.
 
-Recharge amounts use UGX. Do not add deposit presets, minimums, or payment-channel claims unless the user provides them.
+All displayed currency is UGX. Remove non-Uganda recharge country choices; do not add country-specific payment channels or other payment claims unless the user confirms them.
 
 **Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers.
 

@@ -523,9 +523,7 @@ function WithdrawalHistoryPage() {
 function RechargePage() {
   const { user, status } = useAuth();
   const [amount, setAmount] = useState('7000');
-  const [channel, setChannel] = useState('Togo');
   const amounts = [2000, 7000, 15000, 30000, 65000, 150000, 350000, 750000];
-  const channels = ['Togo', 'Ivory Coast', 'Burkina Faso', 'Senegal'];
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Recharge — Samsung Gadgets';
@@ -552,12 +550,6 @@ function RechargePage() {
         <div>{amounts.map((preset) => <button type="button" key={preset} aria-pressed={amount === String(preset)} onClick={() => setAmount(String(preset))}>{money.format(preset)}</button>)}</div>
       </section>
       <section className="recharge-channel">
-        <h2>Choose the charging channel</h2>
-        <div className="recharge-network-list">{channels.map((item) =>
-          <button type="button" key={item} className={channel === item ? 'selected' : ''} aria-pressed={channel === item} onClick={() => setChannel(item)}>
-            <CreditCard aria-hidden="true" /><span>{item}</span>{channel === item && <Check aria-hidden="true" />}
-          </button>
-        )}</div>
         <button className="recharge-confirm" type="button" disabled>Confirm</button>
         <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <Link href="/account">click here</Link>.</p>
         <ol className="recharge-terms">
