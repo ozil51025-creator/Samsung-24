@@ -1,9 +1,10 @@
-import { createHash } from "node:crypto";
-import { and, count, desc, eq, gt, isNotNull, sql, sum } from "drizzle-orm";
+import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
+import { and, count, desc, eq, gt, inArray, isNotNull, sql, sum } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
   adminAccountsTable,
+  adminAuditLogsTable,
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
@@ -14,10 +15,16 @@ import {
 import {
   AddAdminAccountBody,
   AddAdminAccountResponse,
+  CreateAdminWalletAdjustmentBody,
+  CreateAdminWalletAdjustmentResponse,
   GetAdminAccountsResponse,
+  GetAdminAuditLogsResponse,
   GetAdminTaskCenterSettingsResponse,
   GetAdminMembersResponse,
   GetAdminOverviewResponse,
+  ResetAdminMemberPasswordResponse,
+  UpdateAdminMemberStatusBody,
+  UpdateAdminMemberStatusResponse,
   GetTaskCenterSettingsResponse,
   UpdateAdminTaskCenterSettingsBody,
   UpdateAdminTaskCenterSettingsResponse,
@@ -57,6 +64,17 @@ function normalizePhone(value: string): string | null {
   return /^7\d{8}$/.test(national) ? `+256${national}` : null;
 }
 
+const ADMIN_SCRYPT_COST = 32_768;
+function hashTemporaryPassword(password: string): Promise<string> {
+  const salt = randomBytes(16);
+  return new Promise((resolve, reject) => {
+    scryptCallback(password, salt, 64, { N: ADMIN_SCRYPT_COST, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }, (error, key) => {
+      if (error) reject(error);
+      else resolve(`scrypt$${ADMIN_SCRYPT_COST}$8$1$${salt.toString("base64url")}$${key.toString("base64url")}`);
+    });
+  });
+}
+
 async function requireAdmin(req: Request, res: Response): Promise<{ id: string } | null> {
   const configuredPhone = typeof process.env.ADMIN_PHONE === "string"
     ? normalizePhone(process.env.ADMIN_PHONE)
@@ -74,12 +92,13 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string }
 
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const [account] = await db
-    .select({ id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber })
+    .select({ id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber, isActive: phoneAccountsTable.isActive })
     .from(phoneSessionsTable)
     .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))
     .where(and(
       eq(phoneSessionsTable.tokenHash, tokenHash),
       gt(phoneSessionsTable.expiresAt, new Date()),
+      eq(phoneAccountsTable.isActive, true),
     ))
     .limit(1);
 
@@ -132,6 +151,7 @@ router.get("/admin/members", async (req, res): Promise<void> => {
         createdAt: phoneAccountsTable.createdAt,
         referralCode: phoneReferralCodesTable.referralCode,
         referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+        isActive: phoneAccountsTable.isActive,
       })
       .from(phoneAccountsTable)
       .leftJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
@@ -141,6 +161,144 @@ router.get("/admin/members", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
+  }
+});
+
+router.post("/admin/members/:memberId/password-reset", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const memberId = req.params.memberId;
+  if (!/^[0-9a-f-]{36}$/i.test(memberId)) {
+    res.status(400).json({ error: "Invalid member account." });
+    return;
+  }
+  try {
+    const [member] = await db.select({ id: phoneAccountsTable.id }).from(phoneAccountsTable).where(eq(phoneAccountsTable.id, memberId)).limit(1);
+    if (!member) {
+      res.status(404).json({ error: "Member account was not found." });
+      return;
+    }
+    const temporaryPassword = randomBytes(18).toString("base64url");
+    const passwordHash = await hashTemporaryPassword(temporaryPassword);
+    await db.transaction(async (tx) => {
+      await tx.update(phoneAccountsTable).set({ passwordHash }).where(eq(phoneAccountsTable.id, memberId));
+      await tx.delete(phoneSessionsTable).where(eq(phoneSessionsTable.accountId, memberId));
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: memberId,
+        action: "member.password_reset",
+        reason: "Administrator issued a temporary password",
+      });
+    });
+    res.json(ResetAdminMemberPasswordResponse.parse({ memberId, temporaryPassword }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.member.password-reset" }, "Could not reset member password");
+    res.status(500).json({ error: "Could not reset the member password." });
+  }
+});
+
+router.patch("/admin/members/:memberId/status", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const memberId = req.params.memberId;
+  const parsed = UpdateAdminMemberStatusBody.safeParse(req.body);
+  if (!/^[0-9a-f-]{36}$/i.test(memberId) || !parsed.success) {
+    res.status(400).json({ error: "Choose an account status and enter a reason." });
+    return;
+  }
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [member] = await tx.update(phoneAccountsTable)
+        .set({ isActive: parsed.data.isActive })
+        .where(eq(phoneAccountsTable.id, memberId))
+        .returning({ id: phoneAccountsTable.id, isActive: phoneAccountsTable.isActive });
+      if (!member) return null;
+      if (!parsed.data.isActive) await tx.delete(phoneSessionsTable).where(eq(phoneSessionsTable.accountId, memberId));
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: memberId,
+        action: parsed.data.isActive ? "member.activated" : "member.deactivated",
+        reason: parsed.data.reason,
+      });
+      return member;
+    });
+    if (!result) {
+      res.status(404).json({ error: "Member account was not found." });
+      return;
+    }
+    res.json(UpdateAdminMemberStatusResponse.parse({ memberId, isActive: result.isActive }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.member.status" }, "Could not update member status");
+    res.status(500).json({ error: "Could not update member status." });
+  }
+});
+
+router.post("/admin/members/:memberId/wallet-adjustments", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const memberId = req.params.memberId;
+  const parsed = CreateAdminWalletAdjustmentBody.safeParse(req.body);
+  if (!/^[0-9a-f-]{36}$/i.test(memberId) || !parsed.success) {
+    res.status(400).json({ error: "Enter a positive whole-UGX amount and a reason." });
+    return;
+  }
+  try {
+    const result = await db.transaction(async (tx) => {
+      const { amountUgx, direction, reason } = parsed.data;
+      const [member] = await tx.update(phoneAccountsTable)
+        .set({ walletBalanceUgx: direction === "credit"
+          ? sql`${phoneAccountsTable.walletBalanceUgx} + ${amountUgx}`
+          : sql`${phoneAccountsTable.walletBalanceUgx} - ${amountUgx}` })
+        .where(and(
+          eq(phoneAccountsTable.id, memberId),
+          direction === "debit" ? sql`${phoneAccountsTable.walletBalanceUgx} >= ${amountUgx}` : sql`true`,
+        ))
+        .returning({ walletBalanceUgx: phoneAccountsTable.walletBalanceUgx });
+      if (!member) return null;
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: memberId,
+        action: `wallet.${direction}`,
+        amountUgx,
+        reason,
+        details: "Available wallet balance adjustment; accumulated earnings and deposit totals were not changed.",
+      });
+      return member;
+    });
+    if (!result) {
+      res.status(400).json({ error: "Member was not found or the debit exceeds the available wallet balance." });
+      return;
+    }
+    res.json(CreateAdminWalletAdjustmentResponse.parse({ memberId, walletBalanceUgx: result.walletBalanceUgx }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.member.wallet-adjustment" }, "Could not adjust member wallet");
+    res.status(500).json({ error: "Could not adjust the member wallet." });
+  }
+});
+
+router.get("/admin/audit-logs", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    const logs = await db.select().from(adminAuditLogsTable).orderBy(desc(adminAuditLogsTable.createdAt)).limit(100);
+    const ids = [...new Set(logs.flatMap((log) => [log.adminAccountId, log.targetAccountId].filter((id): id is string => Boolean(id))))];
+    const accounts = ids.length
+      ? await db.select({ id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber }).from(phoneAccountsTable).where(inArray(phoneAccountsTable.id, ids))
+      : [];
+    const phones = new Map(accounts.map((account) => [account.id, account.phoneNumber]));
+    res.json(GetAdminAuditLogsResponse.parse({ logs: logs.map((log) => ({
+      id: log.id,
+      action: log.action,
+      performedByPhone: phones.get(log.adminAccountId) ?? "+256700000000",
+      targetPhone: log.targetAccountId ? phones.get(log.targetAccountId) ?? null : null,
+      amountUgx: log.amountUgx,
+      reason: log.reason,
+      details: log.details,
+      createdAt: log.createdAt,
+    })) }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.audit-logs" }, "Could not load administrator audit history");
+    res.status(500).json({ error: "Could not load administrator audit history." });
   }
 });
 
