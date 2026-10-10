@@ -320,16 +320,38 @@ function HomePage() {
     { label: 'Customer service', icon: Headphones, href: customerServiceUrl },
     { label: 'Presence', icon: CalendarDays, href: '/presence' },
   ];
+  const homeBalances = [
+    {
+      label: 'Pay',
+      value: `UGX ${user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}`,
+      image: `${basePath}/samsung-s26-ultra.jpg`,
+      className: 'home-balance-tile-primary',
+    },
+    {
+      label: 'Cumulative',
+      value: `UGX ${user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}`,
+      image: `${basePath}/samsung-fold8-banner.jpg`,
+      className: '',
+    },
+    {
+      label: 'Withdrawal',
+      value: 'UGX —',
+      image: `${basePath}/samsung-s26-ultra-banner.jpeg`,
+      className: '',
+    },
+  ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
-      <header className="home-account-heading">
-        <div><span>Account overview</span><strong>{user?.phoneNumber ?? 'Member account'}</strong></div>
-        <Link href="/account" aria-label="Account settings"><UserRound aria-hidden="true" /></Link>
-      </header>
-      <section className="home-balance-panel" aria-label="Account balances">
-        <div><span>Wallet balance</span><strong>UGX {user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}</strong></div>
-        <div><span>Total accumulated</span><strong>UGX {user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}</strong></div>
+      <section className="home-top-hero" aria-label="Featured Samsung devices">
+        <img src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip smartphone" fetchPriority="high" />
+        <div className="home-top-hero-copy">
+          <p>Samsung Galaxy</p>
+          <h1>Explore Galaxy devices</h1>
+          <span>Samsung products · prices in UGX</span>
+        </div>
+        <Link href="/products" className="home-top-hero-button">Buy</Link>
       </section>
+
       <div className="home-money-actions" aria-label="Account shortcuts">
         {homeActions.map(({ label, icon: Icon, href }) => (
           href
@@ -355,10 +377,21 @@ function HomePage() {
         </div>
       </article>
 
-      <section className="home-history-panel" aria-label="Account activity">
-        <div className="home-section-heading"><h2>Account activity</h2><History aria-hidden="true" /></div>
-        <p>No wallet transactions are recorded yet.</p>
-        <Link href="/withdrawal-history" className="home-history-link">View withdrawal history <ArrowRight aria-hidden="true" /></Link>
+      <div className="home-activity-strip" role="status" aria-label="Wallet activity">
+        <History aria-hidden="true" />
+        <span>No wallet transactions are recorded yet.</span>
+      </div>
+
+      <section className="home-balance-tiles" aria-label="Account balance summary">
+        {homeBalances.map((balance) => (
+          <article className={`home-balance-tile ${balance.className}`} key={balance.label} data-testid={`card-home-balance-${balance.label.toLowerCase()}`}>
+            <img src={balance.image} alt="" aria-hidden="true" loading="lazy" />
+            <div className="home-balance-tile-copy">
+              <strong>{balance.value}</strong>
+              <span>{balance.label}</span>
+            </div>
+          </article>
+        ))}
       </section>
       <p className="home-retailer-note">Independent gadget retailer · Not Samsung’s official store</p>
     </section>
