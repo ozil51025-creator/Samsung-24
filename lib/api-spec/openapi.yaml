@@ -590,6 +590,8 @@ components:
         products:
           type: array
           items: { $ref: "#/components/schemas/ProductCatalogItem" }
+        purchasedCount: { type: integer, minimum: 0 }
+        totalCollectedUgx: { type: integer, minimum: 0 }
     ProductCatalogInput:
       type: object
       additionalProperties: false
