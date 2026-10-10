@@ -1459,3 +1459,62 @@ button.account-menu-row {
     backdrop-filter: none;
   }
 }
+
+.home-shell {
+  position: relative;
+  overflow-x: clip;
+  color: #f7f9ff;
+  background:
+    radial-gradient(ellipse at 84% 2%, rgba(53, 91, 196, .24), transparent 31rem),
+    radial-gradient(ellipse at 10% 55%, rgba(44, 132, 177, .16), transparent 32rem),
+    linear-gradient(160deg, #101b3a 0%, #0c1530 53%, #081322 100%);
+}
+
+.home-shell .member-frame > header {
+  border-color: rgba(210, 225, 255, .17) !important;
+}
+
+.home-shell .member-frame > header button[data-testid="button-sign-out"] {
+  border-color: rgba(222, 233, 255, .2) !important;
+  background: rgba(12, 24, 48, .46) !important;
+  color: rgba(245, 248, 255, .88) !important;
+  backdrop-filter: blur(14px);
+}
+
+.home-shell .home-intro {
+  padding: 1.4rem;
+  border: 1px solid rgba(175, 198, 255, .18);
+  border-radius: 23px;
+  background: linear-gradient(145deg, rgba(54, 83, 160, .27), rgba(16, 29, 67, .25));
+  backdrop-filter: blur(18px);
+}
+
+.home-eyebrow {
+  color: #b8cbff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.home-shell [class*="bg-[#14201b]"] {
+  border-color: rgba(167, 193, 255, .22) !important;
+  background: linear-gradient(145deg, rgba(37, 65, 131, .68), rgba(13, 27, 65, .6)) !important;
+  backdrop-filter: blur(18px);
+}
+
+.home-shell [class*="bg-[#e3b67a]"] {
+  background-color: rgba(107, 145, 245, .22) !important;
+}
+
+.home-shell [class*="bg-[#e9b975]"] {
+  background-color: rgba(49, 88, 212, .54) !important;
+  color: rgba(235, 242, 255, .7) !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .home-shell .home-intro {
+    background: rgba(14, 27, 60, .95);
+    backdrop-filter: none;
+  }
+}

@@ -7,7 +7,7 @@ import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -141,10 +141,11 @@ function HomeRedirect() {
 
 const memberNav = [
   { href: '/overview', label: 'Overview', shortLabel: 'Overview', icon: LayoutDashboard },
+  { href: '/home', label: 'Home', shortLabel: 'Home', icon: Wallet },
   { href: '/products', label: 'Products', shortLabel: 'Products', icon: ShoppingBag },
-  { href: '/purchased-products', label: 'Purchased Products', shortLabel: 'Purchased', icon: PackageOpen },
+  { href: '/purchased-products', label: 'Purchased', shortLabel: 'Purchased', icon: PackageOpen },
   { href: '/referral', label: 'Referral', shortLabel: 'Referral', icon: UsersRound },
-  { href: '/account', label: 'My Account', shortLabel: 'Account', icon: UserRound },
+  { href: '/account', label: 'Account', shortLabel: 'Account', icon: UserRound },
 ];
 
 function MemberFrame({ active, children }: { active: string; children: ReactNode }) {
@@ -154,6 +155,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   const [signOutError, setSignOutError] = useState('');
   const activePage = memberNav.find((item) => item.href === active);
   const isOverview = active === '/overview';
+  const isHome = active === '/home';
   const isReferral = active === '/referral';
   const isProducts = active === '/products';
   const isAccount = active === '/account';
@@ -200,17 +202,17 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
   return (
     <>
-        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
+        <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
             <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
-              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isAccount} /></Link>
+              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isHome || isAccount} /></Link>
               <div className="flex items-center gap-3">
-                 <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
-                 <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
+                   <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview || isHome ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
+                 <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview || isHome ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
-                {memberNav.map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
+                 {memberNav.map(({ href, label, icon: Icon }) => (
+                   <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview || isHome ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
@@ -228,7 +230,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               Independent retailer · Not affiliated with Samsung · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
-          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-5 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),520px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
+          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-6 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
             {memberNav.map(({ href, shortLabel, icon: Icon }) => (
               <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${isProducts ? (active === href ? 'text-[#142438]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : (active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
                 <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-white text-[#10151a]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
@@ -290,8 +292,6 @@ function OverviewPage() {
             </article>
           </div>
 
-          <OverviewWalletPanel />
-
           <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-[460px] text-[11px] leading-5 text-white/45">Purchases are not accepted here. Pending amounts are informational only and do not represent an available balance.</p>
             <Link href="/products" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#e9b975] px-5 text-[12px] font-bold text-[#211d18] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" data-testid="link-overview-browse">
@@ -300,6 +300,19 @@ function OverviewPage() {
           </div>
         </div>
       </div>
+    </section>
+  </MemberFrame>;
+}
+
+function HomePage() {
+  return <MemberFrame active="/home">
+    <section className="home-dashboard mx-auto max-w-[850px]" data-testid="page-home">
+      <div className="home-intro">
+        <p className="home-eyebrow">UGX wallet</p>
+        <h1 className="mt-2 font-[Syne] text-[28px] font-semibold tracking-[-.05em] text-white sm:text-[34px]">Your money activity</h1>
+        <p className="mt-2 max-w-[620px] text-[13px] leading-6 text-white/65">View deposits, withdrawals, account history, and accumulated amounts in one place.</p>
+      </div>
+      <OverviewWalletPanel />
     </section>
   </MemberFrame>;
 }
@@ -676,6 +689,7 @@ function AppRoutes() {
         <Route path="/" component={HomeRedirect} />
         <Route path="/user-portal"><Redirect to="/overview" /></Route>
         <Route path="/overview" component={OverviewPage} />
+        <Route path="/home" component={HomePage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/purchased-products" component={PurchasedProductsPage} />
         <Route path="/referral" component={ReferralPage} />
