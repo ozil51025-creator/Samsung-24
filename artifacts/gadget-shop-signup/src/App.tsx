@@ -1040,8 +1040,6 @@ function AppRoutes() {
         <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />
         <Route path="/bank-accounts" component={BankAccountsPage} />
         <Route path="/link-bank-card" component={LinkBankCardPage} />
-        <Route path="/bank-accounts" component={BankAccountsPage} />
-        <Route path="/link-bank-card" component={LinkBankCardPage} />
         <Route path="/recharge" component={RechargePage} />
         <Route path="/recharge-history" component={RechargeHistoryPage} />
         <Route path="/products" component={ProductsPage} />
