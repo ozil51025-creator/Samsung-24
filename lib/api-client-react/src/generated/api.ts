@@ -24,17 +24,23 @@ import type {
   AdminAccountInput,
   AdminAccounts,
   AdminAuditLogs,
+  AdminGiftCode,
+  AdminGiftCodeInput,
+  AdminGiftCodes,
   AdminMemberStatus,
   AdminMemberStatusInput,
   AdminMembers,
   AdminOverview,
   AdminPasswordReset,
   AdminProcessWithdrawalInput,
+  AdminSiteSettings,
   AdminWalletAdjustment,
   AdminWalletAdjustmentInput,
   AdminWithdrawalListResponse,
   AdminWithdrawalRecord,
   ErrorResponse,
+  GetAdminTransactions200,
+  GiftCodeRedemptionResult,
   HealthStatus,
   PayoutAccountInput,
   PayoutAccountResponse,
@@ -44,6 +50,7 @@ import type {
   ProductCatalogResponse,
   ProductOrdersResponse,
   ProductPurchaseResponse,
+  RedeemGiftCodeInput,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
   TaskCenterSettingsInput,
@@ -78,6 +85,83 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetPublicSiteSettingsUrl = () => {
+
+
+
+
+  return `/api/site-settings`
+}
+
+/**
+ * @summary Get member-visible business settings and access state
+ */
+export const getPublicSiteSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSettings> => {
+
+  return customFetch<AdminSiteSettings>(getGetPublicSiteSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicSiteSettingsQueryKey = () => {
+    return [
+    `/api/site-settings`
+    ] as const;
+    }
+
+
+export const getGetPublicSiteSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicSiteSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicSiteSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicSiteSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicSiteSettings>>> = ({ signal }) => getPublicSiteSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicSiteSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicSiteSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicSiteSettings>>>
+export type GetPublicSiteSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get member-visible business settings and access state
+ */
+
+export function useGetPublicSiteSettings<TData = Awaited<ReturnType<typeof getPublicSiteSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicSiteSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicSiteSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getHealthCheckUrl = () => {
 
@@ -2042,7 +2126,7 @@ export const getGetAdminWithdrawalsQueryKey = () => {
     }
 
 
-export const getGetAdminWithdrawalsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminWithdrawals>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminWithdrawals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminWithdrawalsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminWithdrawals>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminWithdrawals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -2061,19 +2145,96 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetAdminWithdrawalsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminWithdrawals>>>
-export type GetAdminWithdrawalsQueryError = ErrorType<ErrorResponse>
+export type GetAdminWithdrawalsQueryError = ErrorType<unknown>
 
 
 /**
  * @summary List withdrawal requests for manual payout
  */
 
-export function useGetAdminWithdrawals<TData = Awaited<ReturnType<typeof getAdminWithdrawals>>, TError = ErrorType<ErrorResponse>>(
+export function useGetAdminWithdrawals<TData = Awaited<ReturnType<typeof getAdminWithdrawals>>, TError = ErrorType<unknown>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminWithdrawals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetAdminWithdrawalsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminTransactionsUrl = () => {
+
+
+
+
+  return `/api/admin/transactions`
+}
+
+/**
+ * @summary List wallet activity recorded by the platform
+ */
+export const getAdminTransactions = async ( options?: Parameters<typeof customFetch>[1]): Promise<GetAdminTransactions200> => {
+
+  return customFetch<GetAdminTransactions200>(getGetAdminTransactionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminTransactionsQueryKey = () => {
+    return [
+    `/api/admin/transactions`
+    ] as const;
+    }
+
+
+export const getGetAdminTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTransactions>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminTransactionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTransactions>>> = ({ signal }) => getAdminTransactions({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTransactions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTransactions>>>
+export type GetAdminTransactionsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List wallet activity recorded by the platform
+ */
+
+export function useGetAdminTransactions<TData = Awaited<ReturnType<typeof getAdminTransactions>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminTransactions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminTransactionsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2338,5 +2499,423 @@ export const useUpdateAdminProducts = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getUpdateAdminProductsMutationOptions(options));
+    }
+
+export const getGetAdminGiftCodesUrl = () => {
+
+
+
+
+  return `/api/admin/gift-codes`
+}
+
+/**
+ * @summary List issued gift codes and their redemption status
+ */
+export const getAdminGiftCodes = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminGiftCodes> => {
+
+  return customFetch<AdminGiftCodes>(getGetAdminGiftCodesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminGiftCodesQueryKey = () => {
+    return [
+    `/api/admin/gift-codes`
+    ] as const;
+    }
+
+
+export const getGetAdminGiftCodesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminGiftCodes>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminGiftCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminGiftCodesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminGiftCodes>>> = ({ signal }) => getAdminGiftCodes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminGiftCodes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminGiftCodesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminGiftCodes>>>
+export type GetAdminGiftCodesQueryError = ErrorType<void>
+
+
+/**
+ * @summary List issued gift codes and their redemption status
+ */
+
+export function useGetAdminGiftCodes<TData = Awaited<ReturnType<typeof getAdminGiftCodes>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminGiftCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminGiftCodesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminSiteSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/settings`
+}
+
+/**
+ * @summary Get editable site-wide business and access settings
+ */
+export const getAdminSiteSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSettings> => {
+
+  return customFetch<AdminSiteSettings>(getGetAdminSiteSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminSiteSettingsQueryKey = () => {
+    return [
+    `/api/admin/settings`
+    ] as const;
+    }
+
+
+export const getGetAdminSiteSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSiteSettings>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminSiteSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminSiteSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSiteSettings>>> = ({ signal }) => getAdminSiteSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSiteSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminSiteSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSiteSettings>>>
+export type GetAdminSiteSettingsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get editable site-wide business and access settings
+ */
+
+export function useGetAdminSiteSettings<TData = Awaited<ReturnType<typeof getAdminSiteSettings>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminSiteSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminSiteSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminSiteSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/settings`
+}
+
+/**
+ * @summary Save site-wide business and access settings
+ */
+export const updateAdminSiteSettings = async (adminSiteSettings: AdminSiteSettings, options?: Parameters<typeof customFetch>[1]): Promise<AdminSiteSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminSiteSettings>(getUpdateAdminSiteSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminSiteSettings)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminSiteSettingsMutationKey = () => ['updateAdminSiteSettings'] as const;
+
+export const getUpdateAdminSiteSettingsMutationOptions = <TError = ErrorType<ErrorResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminSiteSettings>>, TError,UpdateAdminSiteSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminSiteSettings>>, TError,UpdateAdminSiteSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminSiteSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminSiteSettings>>, UpdateAdminSiteSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminSiteSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminSiteSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminSiteSettings>>>
+    export type UpdateAdminSiteSettingsMutationBody = BodyType<AdminSiteSettings>
+    export type UpdateAdminSiteSettingsMutationError = ErrorType<ErrorResponse | void>
+    export type UpdateAdminSiteSettingsMutationVariables = {data: BodyType<AdminSiteSettings>}
+
+    /**
+ * @summary Save site-wide business and access settings
+ */
+export const useUpdateAdminSiteSettings = <TError = ErrorType<ErrorResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminSiteSettings>>, TError,UpdateAdminSiteSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminSiteSettings>>,
+        TError,
+        UpdateAdminSiteSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminSiteSettingsMutationOptions(options));
+    }
+
+export const getCreateAdminGiftCodeUrl = () => {
+
+
+
+
+  return `/api/admin/settings`
+}
+
+/**
+ * @summary Issue a single-use gift code
+ */
+export const createAdminGiftCode = async (adminGiftCodeInput: AdminGiftCodeInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminGiftCode> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminGiftCode>(getCreateAdminGiftCodeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminGiftCodeInput)
+  }
+);}
+
+
+
+
+
+export const getCreateAdminGiftCodeMutationKey = () => ['createAdminGiftCode'] as const;
+
+export const getCreateAdminGiftCodeMutationOptions = <TError = ErrorType<ErrorResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminGiftCode>>, TError,CreateAdminGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminGiftCode>>, TError,CreateAdminGiftCodeMutationVariables, TContext> => {
+
+const mutationKey = getCreateAdminGiftCodeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminGiftCode>>, CreateAdminGiftCodeMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAdminGiftCode(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAdminGiftCodeMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminGiftCode>>>
+    export type CreateAdminGiftCodeMutationBody = BodyType<AdminGiftCodeInput>
+    export type CreateAdminGiftCodeMutationError = ErrorType<ErrorResponse | void>
+    export type CreateAdminGiftCodeMutationVariables = {data: BodyType<AdminGiftCodeInput>}
+
+    /**
+ * @summary Issue a single-use gift code
+ */
+export const useCreateAdminGiftCode = <TError = ErrorType<ErrorResponse | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminGiftCode>>, TError,CreateAdminGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAdminGiftCode>>,
+        TError,
+        CreateAdminGiftCodeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateAdminGiftCodeMutationOptions(options));
+    }
+
+export const getRedeemGiftCodeUrl = () => {
+
+
+
+
+  return `/api/gift-codes/redeem`
+}
+
+/**
+ * @summary Redeem a single-use gift code into the signed-in member wallet
+ */
+export const redeemGiftCode = async (redeemGiftCodeInput: RedeemGiftCodeInput, options?: Parameters<typeof customFetch>[1]): Promise<GiftCodeRedemptionResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GiftCodeRedemptionResult>(getRedeemGiftCodeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(redeemGiftCodeInput)
+  }
+);}
+
+
+
+
+
+export const getRedeemGiftCodeMutationKey = () => ['redeemGiftCode'] as const;
+
+export const getRedeemGiftCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemGiftCode>>, TError,RedeemGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof redeemGiftCode>>, TError,RedeemGiftCodeMutationVariables, TContext> => {
+
+const mutationKey = getRedeemGiftCodeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemGiftCode>>, RedeemGiftCodeMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  redeemGiftCode(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RedeemGiftCodeMutationResult = NonNullable<Awaited<ReturnType<typeof redeemGiftCode>>>
+    export type RedeemGiftCodeMutationBody = BodyType<RedeemGiftCodeInput>
+    export type RedeemGiftCodeMutationError = ErrorType<ErrorResponse>
+    export type RedeemGiftCodeMutationVariables = {data: BodyType<RedeemGiftCodeInput>}
+
+    /**
+ * @summary Redeem a single-use gift code into the signed-in member wallet
+ */
+export const useRedeemGiftCode = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemGiftCode>>, TError,RedeemGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof redeemGiftCode>>,
+        TError,
+        RedeemGiftCodeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRedeemGiftCodeMutationOptions(options));
     }
 

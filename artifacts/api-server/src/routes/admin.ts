@@ -1,13 +1,16 @@
 import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
-import { and, count, desc, eq, gt, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
   adminAccountsTable,
   adminAuditLogsTable,
+  giftCodesTable,
+  adminSiteSettingsTable,
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  presenceClaimsTable,
   productCatalogTable,
   productOrdersTable,
   rechargeRequestsTable,
@@ -20,6 +23,13 @@ import {
   AddAdminAccountResponse,
   CreateAdminWalletAdjustmentBody,
   CreateAdminWalletAdjustmentResponse,
+  GetAdminGiftCodesResponse,
+  CreateAdminGiftCodeBody,
+  CreateAdminGiftCodeResponse,
+  RedeemGiftCodeBody,
+  RedeemGiftCodeResponse,
+  GetAdminSiteSettingsResponse,
+  UpdateAdminSiteSettingsBody,
   GetAdminProductsResponse,
   GetProductCatalogResponse,
   GetAdminAccountsResponse,
@@ -44,6 +54,7 @@ import {
   getReferralAncestorsThroughLevelThree,
   TEAM_DEPOSIT_MILESTONES,
 } from "../lib/team-deposit-milestones";
+import { readSiteSettings } from "../lib/site-settings";
 
 const router: IRouter = Router();
 const defaultTaskDefinitions = [
@@ -682,6 +693,39 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
   }
 });
 
+router.get("/admin/transactions", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    const [orders, deposits, checkins, withdrawals, milestones, adjustments] = await Promise.all([
+      db.select({ id: productOrdersTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: productOrdersTable.priceUgx, status: productOrdersTable.status, createdAt: productOrdersTable.createdAt })
+        .from(productOrdersTable).innerJoin(phoneAccountsTable, eq(productOrdersTable.buyerAccountId, phoneAccountsTable.id)).limit(500),
+      db.select({ id: rechargeRequestsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: rechargeRequestsTable.amountUgx, status: rechargeRequestsTable.status, createdAt: rechargeRequestsTable.createdAt })
+        .from(rechargeRequestsTable).innerJoin(phoneAccountsTable, eq(rechargeRequestsTable.accountId, phoneAccountsTable.id)).where(eq(rechargeRequestsTable.status, "verified")).limit(500),
+      db.select({ id: presenceClaimsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: presenceClaimsTable.rewardUgx, createdAt: presenceClaimsTable.createdAt })
+        .from(presenceClaimsTable).innerJoin(phoneAccountsTable, eq(presenceClaimsTable.accountId, phoneAccountsTable.id)).limit(500),
+      db.select({ id: withdrawalRequestsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: withdrawalRequestsTable.amountUgx, status: withdrawalRequestsTable.status, createdAt: withdrawalRequestsTable.createdAt })
+        .from(withdrawalRequestsTable).innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id)).limit(500),
+      db.select({ id: teamDepositMilestoneClaimsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: teamDepositMilestoneClaimsTable.rewardUgx, createdAt: teamDepositMilestoneClaimsTable.createdAt })
+        .from(teamDepositMilestoneClaimsTable).innerJoin(phoneAccountsTable, eq(teamDepositMilestoneClaimsTable.accountId, phoneAccountsTable.id)).limit(500),
+      db.select({ id: adminAuditLogsTable.id, member: adminAuditLogsTable.targetAccountId, amountUgx: adminAuditLogsTable.amountUgx, action: adminAuditLogsTable.action, createdAt: adminAuditLogsTable.createdAt })
+        .from(adminAuditLogsTable).where(and(inArray(adminAuditLogsTable.action, ["wallet.credit", "wallet.debit"]), isNotNull(adminAuditLogsTable.targetAccountId))).limit(500),
+    ]);
+    const transactions = [
+      ...orders.map((item) => ({ ...item, type: "Product Purchase", amountUgx: -item.amountUgx })),
+      ...deposits.map((item) => ({ ...item, type: "Deposit Credit" })),
+      ...checkins.map((item) => ({ ...item, type: "Check-in", status: "credited" })),
+      ...withdrawals.map((item) => ({ ...item, type: item.status === "failed" ? "Withdrawal Refund" : "Withdrawal", amountUgx: item.status === "failed" ? item.amountUgx : -item.amountUgx })),
+      ...milestones.map((item) => ({ ...item, type: "Team Deposit Milestone", status: "credited" })),
+      ...adjustments.map((item) => ({ id: String(item.id), member: item.member ?? "Unknown member", amountUgx: item.action === "wallet.debit" ? -(item.amountUgx ?? 0) : (item.amountUgx ?? 0), type: item.action === "wallet.debit" ? "Admin Debit" : "Admin Credit", status: "completed", createdAt: item.createdAt })),
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 500);
+    res.json({ transactions });
+  } catch (error) {
+    req.log.error({ error, route: "admin.transactions.get" }, "Could not load transaction history");
+    res.status(500).json({ error: "Could not load transactions." });
+  }
+});
+
 router.get("/admin/withdrawals", async (req, res): Promise<void> => {
   if (!await requireAdmin(req, res)) return;
   try {
@@ -761,6 +805,40 @@ router.post("/admin/withdrawals/:withdrawalId", async (req, res): Promise<void> 
   } catch (error) {
     req.log.error({ error, route: "admin.withdrawals.process" }, "Could not process withdrawal request");
     res.status(500).json({ error: "Could not process the withdrawal request." });
+  }
+});
+
+router.get("/admin/settings", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    res.json(await readSiteSettings());
+  } catch (error) {
+    req.log.error({ error, route: "admin.settings.get" }, "Could not load site settings");
+    res.status(500).json({ error: "Could not load site settings." });
+  }
+});
+
+router.put("/admin/settings", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = UpdateAdminSiteSettingsBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Check the site settings and try again." });
+    return;
+  }
+  try {
+    const settings = parsed.data;
+    await db.insert(adminSiteSettingsTable).values({ id: "default", settings, updatedAt: new Date() })
+      .onConflictDoUpdate({ target: adminSiteSettingsTable.id, set: { settings, updatedAt: new Date() } });
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id, action: "site_settings.updated",
+      details: "Administrator updated site-wide settings.",
+    });
+    res.json(GetAdminSiteSettingsResponse.parse(settings));
+  } catch (error) {
+    req.log.error({ error, route: "admin.settings.update" }, "Could not save site settings");
+    res.status(500).json({ error: "Could not save site settings." });
   }
 });
 

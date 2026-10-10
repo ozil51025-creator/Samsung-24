@@ -43,6 +43,27 @@ type AdminSectionId = typeof adminSections[number]['id'];
 type AdminCatalogItem = { id: string; name: string; priceUgx: number; illustration: ProductIllustrationKind; isActive: boolean };
 type CatalogProduct = Pick<AdminCatalogItem, 'id' | 'name' | 'illustration'> & { price: number };
 type PayoutAccount = { provider: 'airtel' | 'mtn'; holderName: string; phoneNumber: string; updatedAt: string };
+type AdminSiteSettings = {
+  brandName: string; currencyCode: string; mtnMobileMoneyNumber: string; airtelMobileMoneyNumber: string; payeeName: string;
+  supportHandle: string; telegramUrl: string; termsAndConditions: string; minimumDepositUgx: number; minimumWithdrawalUgx: number;
+  signupBonusUgx: number; dailyCheckinBonusUgx: number; withdrawalFeePercent: number; referralCommissionLevel1Percent: number;
+  referralCommissionLevel2Percent: number; referralCommissionLevel3Percent: number; maximumPlanReturnMultiple: number;
+  maximumWithdrawalsPerMemberPerDay: number; limitWithdrawalsToHours: boolean; withdrawalWindowStart: string;
+  withdrawalWindowEnd: string; requireReferralCode: boolean; allowedWebsiteDomains: string; maintenanceMode: boolean;
+  maintenanceMessage: string; showOpeningCountdown: boolean; openingDateTime: string | null; showAnnouncement: boolean;
+  announcementTitle: string; announcementMessage: string;
+};
+const defaultAdminSiteSettings: AdminSiteSettings = {
+  brandName: 'samsung', currencyCode: 'UGX', mtnMobileMoneyNumber: '', airtelMobileMoneyNumber: '', payeeName: '',
+  supportHandle: 'kalljem', telegramUrl: 'https://t.me/kalljem', termsAndConditions: '',
+  minimumDepositUgx: 30000, minimumWithdrawalUgx: 3000, signupBonusUgx: 5000, dailyCheckinBonusUgx: 500,
+  withdrawalFeePercent: 0, referralCommissionLevel1Percent: 35, referralCommissionLevel2Percent: 2,
+  referralCommissionLevel3Percent: 1, maximumPlanReturnMultiple: 4, maximumWithdrawalsPerMemberPerDay: 0,
+  limitWithdrawalsToHours: false, withdrawalWindowStart: '08:00', withdrawalWindowEnd: '17:00',
+  requireReferralCode: false, allowedWebsiteDomains: '', maintenanceMode: false,
+  maintenanceMessage: 'We’re performing maintenance. Please check back shortly.',
+  showOpeningCountdown: false, openingDateTime: null, showAnnouncement: false, announcementTitle: '', announcementMessage: '',
+};
 
 function queueMemberNotice() {
   try {
@@ -63,12 +84,20 @@ function consumeMemberNotice() {
 }
 
 function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: boolean }) {
+  const [brandName, setBrandName] = useState('samsung');
+  useEffect(() => {
+    fetch('/api/site-settings').then(async (response) => {
+      if (!response.ok) return;
+      const settings = await response.json();
+      if (typeof settings.brandName === 'string' && settings.brandName.trim()) setBrandName(settings.brandName.trim());
+    }).catch(() => {});
+  }, []);
   return (
     <span className="inline-flex items-center gap-3">
       <span aria-hidden="true" className={`brand-mark flex items-center justify-center rounded-[12px] text-[#f7f1dc] ${small ? 'h-9 w-9' : 'h-10 w-10'}`}>
-        <span className="font-[Syne] text-[18px] font-bold leading-none">S</span>
+        <span className="font-[Syne] text-[18px] font-bold leading-none">{brandName.slice(0, 1).toUpperCase()}</span>
       </span>
-      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>samsung</span>
+      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>{brandName}</span>
     </span>
   );
 }
@@ -209,6 +238,21 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
   const [showMemberNotice, setShowMemberNotice] = useState(consumeMemberNotice);
+  const [memberSettings, setMemberSettings] = useState<AdminSiteSettings | null>(null);
+  const [showSiteAnnouncement, setShowSiteAnnouncement] = useState(false);
+  useEffect(() => {
+    fetch('/api/site-settings').then(async (response) => {
+      if (response.ok) setMemberSettings(await response.json() as AdminSiteSettings);
+    }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!memberSettings?.showAnnouncement) {
+      setShowSiteAnnouncement(false);
+      return;
+    }
+    const key = `announcement-dismissed:${memberSettings.announcementTitle}:${memberSettings.announcementMessage}`;
+    setShowSiteAnnouncement(localStorage.getItem(key) !== 'yes');
+  }, [memberSettings]);
   const activePage = memberNav.find((item) => item.href === active);
   const isOverview = false;
   const isHome = active === '/home';
@@ -257,6 +301,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     return <main className="shop-shell min-h-[100dvh] p-6 text-center text-sm text-[#657168]"><p>We couldn’t check your account right now.</p><Link href="/sign-in" className="mt-3 inline-block font-semibold text-[#315f49]">Try signing in</Link></main>;
   }
   if (!user) return <Redirect to="/sign-in" />;
+  if (memberSettings?.maintenanceMode) return <main className="shop-shell min-h-[100dvh] grid place-items-center p-6 text-center"><section className="max-w-lg rounded-2xl bg-white p-8 shadow"><h1 className="text-xl font-bold">Temporarily unavailable</h1><p className="mt-3">{memberSettings.maintenanceMessage}</p></section></main>;
 
   return (
     <>
@@ -301,7 +346,25 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
           </nav>
           }
         </main>
-        {showMemberNotice && (
+        {memberSettings?.showOpeningCountdown && memberSettings.openingDateTime && new Date(memberSettings.openingDateTime).getTime() > Date.now() && (
+          <aside className="fixed bottom-24 left-1/2 z-40 -translate-x-1/2 rounded-xl bg-white px-4 py-3 text-center text-sm shadow-lg">Portal opening: {new Date(memberSettings.openingDateTime).toLocaleString('en-UG', { timeZone: 'Africa/Kampala' })} · Uganda time</aside>
+        )}
+        {showSiteAnnouncement && memberSettings?.showAnnouncement && (
+          <div className="member-notice-overlay">
+            <section className="member-notice-dialog" role="dialog" aria-modal="true" aria-labelledby="site-announcement-title">
+              <div className="member-notice-content">
+                <p className="member-notice-eyebrow">{memberSettings.brandName}</p>
+                <h2 id="site-announcement-title">{memberSettings.announcementTitle || 'Announcement'}</h2>
+                <p className="member-notice-intro whitespace-pre-wrap">{memberSettings.announcementMessage}</p>
+                <button type="button" onClick={() => {
+                  localStorage.setItem(`announcement-dismissed:${memberSettings.announcementTitle}:${memberSettings.announcementMessage}`, 'yes');
+                  setShowSiteAnnouncement(false);
+                }} className="member-notice-dismiss">OK</button>
+              </div>
+            </section>
+          </div>
+        )}
+        {showMemberNotice && !memberSettings?.showAnnouncement && (
           <div className="member-notice-overlay">
             <section className="member-notice-dialog" role="dialog" aria-modal="true" aria-labelledby="member-notice-title">
               <div className="member-notice-banner">
@@ -311,12 +374,12 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               <div className="member-notice-content">
                 <p className="member-notice-eyebrow">samsung</p>
                 <h2 id="member-notice-title">Welcome to your account</h2>
-                <p className="member-notice-intro">Important information about current products and account services:</p>
+              <p className="member-notice-intro">Important information about current products and account services:</p>
                 <ul>
-                  <li>Catalog prices are shown in UGX. Exact product models and stock still need confirmation.</li>
-                  <li>Product checkout, deposits, and withdrawals are not enabled yet.</li>
-                  <li>No daily earnings or welcome cash bonus are active. This site does not offer guaranteed investment returns.</li>
-                  <li>Referral rates are displayed as 35% / 2% / 1%; referral rewards are not active until their terms are confirmed.</li>
+                  <li>Product purchases are paid from your wallet and require enough available balance. Fulfillment is handled by the shop.</li>
+                  <li>Deposits are manually verified. A request is not credited until an administrator confirms the payment.</li>
+                  <li>Withdrawals are paid manually by an administrator. Check your withdrawal history for the status.</li>
+                  <li>Presence and eligible referral rewards follow the current site settings. This site does not promise investment returns.</li>
                 </ul>
                 <a
                   href="https://t.me/+pvicn7-rhzg2NGNh"
@@ -605,16 +668,23 @@ function TaskCenterPage() {
 function WithdrawalPage() {
   const { user, status: authStatus, refresh } = useAuth();
   const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
+  const [withdrawalRules, setWithdrawalRules] = useState({ minimumWithdrawalUgx: 3000, withdrawalFeePercent: 0 });
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const fee = Math.round((Number(amount) || 0) * 0.2);
+  const fee = Math.round((Number(amount) || 0) * withdrawalRules.withdrawalFeePercent / 100);
   useEffect(() => {
     fetch('/api/payout-account', { credentials: 'include' }).then(async (response) => {
       const data = await response.json();
       if (response.ok) setPayoutAccount(data.payoutAccount);
     }).catch(() => setPayoutAccount(null));
+    fetch('/api/site-settings').then(async (response) => {
+      if (response.ok) {
+        const data = await response.json();
+        setWithdrawalRules({ minimumWithdrawalUgx: data.minimumWithdrawalUgx, withdrawalFeePercent: data.withdrawalFeePercent });
+      }
+    }).catch(() => {});
   }, []);
   useEffect(() => {
     const previousTitle = document.title;
@@ -630,14 +700,14 @@ function WithdrawalPage() {
       <section className="withdraw-hero">
         <p>UGX {money.format(user?.walletBalanceUgx ?? 0)}</p><span>Available wallet balance</span>
         <img src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" />
-        <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min="10000" max={user?.walletBalanceUgx ?? 0} step="1" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
+        <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min={withdrawalRules.minimumWithdrawalUgx} max={user?.walletBalanceUgx ?? 0} step="1" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
       </section>
       <section className="withdraw-details">
         <h2>Manual payout destination</h2>
         <div className="withdraw-bank-select"><CreditCard /><span>{payoutAccount ? `${payoutAccount.provider.toUpperCase()} Money · ${payoutAccount.holderName} · ${payoutAccount.phoneNumber}` : user?.phoneNumber ?? 'Registered phone number'}</span></div>
         <Link className="payout-destination-link" href="/bank-accounts">{payoutAccount ? 'Change payout destination' : 'Add Airtel or MTN payout number'}</Link>
         <p className="withdraw-estimate">You receive: <strong>UGX {money.format(Math.max(0, Number(amount || 0) - fee))}</strong> · fee: UGX {money.format(fee)}</p>
-        <button className="withdraw-confirm" type="button" disabled={submitting || !Number.isSafeInteger(Number(amount)) || Number(amount) < 10000 || Number(amount) > (user?.walletBalanceUgx ?? 0)} onClick={async () => {
+        <button className="withdraw-confirm" type="button" disabled={submitting || !Number.isSafeInteger(Number(amount)) || Number(amount) < withdrawalRules.minimumWithdrawalUgx || Number(amount) > (user?.walletBalanceUgx ?? 0)} onClick={async () => {
           setSubmitting(true); setError(''); setMessage('');
           try {
             const response = await fetch('/api/withdrawals', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUgx: Number(amount) }) });
@@ -812,6 +882,7 @@ function RechargePage() {
 function RechargePaymentPage() {
   const { user, status } = useAuth();
   const [phone, setPhone] = useState('');
+  const [depositDetails, setDepositDetails] = useState({ mtnMobileMoneyNumber: '', airtelMobileMoneyNumber: '', payeeName: '', telegramUrl: '' });
   const [requestId, setRequestId] = useState('');
   const [requestError, setRequestError] = useState('');
   const [creatingRequest, setCreatingRequest] = useState(false);
@@ -841,6 +912,19 @@ function RechargePaymentPage() {
     const previousTitle = document.title;
     document.title = 'Payment — samsung';
     return () => { document.title = previousTitle; };
+  }, []);
+  useEffect(() => {
+    fetch('/api/site-settings').then(async (response) => {
+      if (response.ok) {
+        const settings = await response.json();
+        setDepositDetails({
+          mtnMobileMoneyNumber: settings.mtnMobileMoneyNumber ?? '',
+          airtelMobileMoneyNumber: settings.airtelMobileMoneyNumber ?? '',
+          payeeName: settings.payeeName ?? '',
+          telegramUrl: settings.telegramUrl ?? '',
+        });
+      }
+    }).catch(() => {});
   }, []);
 
   if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
@@ -873,13 +957,15 @@ function RechargePaymentPage() {
       <button type="button" disabled={!validPhone || creatingRequest || Boolean(requestId)} onClick={createRechargeRequest} data-testid="button-recharge-payment-continue">{creatingRequest ? 'Please wait…' : 'Continue'}</button>
       {requestError && <p role="alert">{requestError}</p>}
       {requestId && <section className="recharge-manual-instructions" aria-live="polite" data-testid="recharge-manual-instructions">
-        <h2>Manual Airtel Money transfer</h2>
+        <h2>Manual mobile money transfer</h2>
         <p>Recharge request pending verification.</p>
         <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
-        <p>Send to: <strong>0743240195</strong></p>
-        <p>Account name: <strong>Nakaliba Martha</strong></p>
+        {depositDetails.airtelMobileMoneyNumber && <p>Airtel Money: <strong>{depositDetails.airtelMobileMoneyNumber}</strong></p>}
+        {depositDetails.mtnMobileMoneyNumber && <p>MTN Mobile Money: <strong>{depositDetails.mtnMobileMoneyNumber}</strong></p>}
+        <p>Account name: <strong>{depositDetails.payeeName || 'Not configured'}</strong></p>
         <p>Reference: <strong>{requestId.slice(0, 8).toUpperCase()}</strong></p>
         <p>After sending, contact customer service for verification. This page does not confirm payment or add funds automatically.</p>
+        {depositDetails.telegramUrl && <a href={depositDetails.telegramUrl} target="_blank" rel="noopener noreferrer">Contact support</a>}
       </section>}
     </section>
   </main>;
@@ -896,6 +982,60 @@ function RechargeHistoryPage() {
     </main>;
 }
 
+type AdminLedgerTransaction = {
+  id: string;
+  type: string;
+  member: string;
+  amountUgx: number;
+  status: string;
+  createdAt: string;
+};
+
+function AdminTransactionsSection() {
+  const [transactions, setTransactions] = useState<AdminLedgerTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('/api/admin/transactions', { credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load transactions.');
+      setTransactions(data.transactions ?? []);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load transactions.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { void load(); }, []);
+  return <div className="mt-5 overflow-hidden rounded-3xl border border-[#e6e2d7] bg-[#fffefa]">
+    <div className="border-b border-[#e6e2d7] p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#7e897f]">Ledger</p>
+      <h3 className="mt-1 font-serif text-3xl font-semibold text-[#18251f]">Transactions.</h3>
+      <p className="mt-1 text-sm text-[#67736b]">Recorded wallet activity across members.</p>
+      <button type="button" onClick={() => void load()} disabled={loading} className="mt-3 rounded-full border border-[#d9ded9] px-4 py-2 text-xs font-semibold disabled:opacity-50">{loading ? 'Refreshing…' : 'Refresh'}</button>
+    </div>
+    {loading && <p className="p-5 text-sm text-[#67736b]" role="status">Loading transaction history…</p>}
+    {!loading && error && <p className="p-5 text-sm text-red-700" role="alert">{error}</p>}
+    {!loading && !error && transactions.length === 0 && <p className="p-6 text-sm text-[#67736b]">No wallet transactions have been recorded yet.</p>}
+    {!loading && !error && transactions.map((transaction) => <article key={`${transaction.type}-${transaction.id}`} className="flex items-center justify-between gap-4 border-t border-[#e9e6df] px-5 py-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f0eee6] text-[#17392d]" aria-hidden="true"><CircleDollarSign size={18} /></span>
+        <div className="min-w-0">
+          <strong className="block truncate text-sm text-[#18251f]">{transaction.type}</strong>
+          <span className="block truncate text-xs text-[#67736b]">{transaction.member} · {new Date(transaction.createdAt).toLocaleString('en-UG')}</span>
+          <span className="text-[11px] capitalize text-[#8a918b]">{transaction.status}</span>
+        </div>
+      </div>
+      <strong className={`shrink-0 whitespace-nowrap font-mono text-sm ${transaction.amountUgx < 0 ? 'text-[#a23f36]' : 'text-[#17241e]'}`}>
+        UGX {transaction.amountUgx < 0 ? '−' : ''}{money.format(Math.abs(transaction.amountUgx))}
+      </strong>
+    </article>)}
+  </div>;
+}
+
 function AdminTaskCenterPage() {
   const [activeSection, setActiveSection] = useState<AdminSectionId>('dashboard');
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
@@ -909,6 +1049,10 @@ function AdminTaskCenterPage() {
   const [productStatus, setProductStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [savingProducts, setSavingProducts] = useState(false);
   const [productMessage, setProductMessage] = useState('');
+  const [siteSettings, setSiteSettings] = useState<AdminSiteSettings>(defaultAdminSiteSettings);
+  const [siteSettingsStatus, setSiteSettingsStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [savingSiteSettings, setSavingSiteSettings] = useState(false);
+  const [siteSettingsMessage, setSiteSettingsMessage] = useState('');
   const [admins, setAdmins] = useState<Array<{ id: string; phoneNumber: string; createdAt: string }>>([]);
   const [adminPhone, setAdminPhone] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
@@ -916,6 +1060,34 @@ function AdminTaskCenterPage() {
   const [directoryStatus, setDirectoryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [directoryMessage, setDirectoryMessage] = useState('');
   const [directoryRequiresSignIn, setDirectoryRequiresSignIn] = useState(false);
+  useEffect(() => {
+    fetch('/api/admin/settings', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load settings.');
+        setSiteSettings(await response.json() as AdminSiteSettings);
+        setSiteSettingsStatus('ready');
+      })
+      .catch(() => setSiteSettingsStatus('error'));
+  }, []);
+  const saveSiteSettings = async (event: FormEvent) => {
+    event.preventDefault();
+    setSavingSiteSettings(true);
+    setSiteSettingsMessage('');
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteSettings),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? 'Could not save settings.');
+      setSiteSettings(result as AdminSiteSettings);
+      setSiteSettingsMessage('Settings saved.');
+    } catch (error) {
+      setSiteSettingsMessage(error instanceof Error ? error.message : 'Could not save settings.');
+    } finally {
+      setSavingSiteSettings(false);
+    }
+  };
   const [rechargeStatus, setRechargeStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [message, setMessage] = useState('');
@@ -1319,13 +1491,61 @@ function AdminTaskCenterPage() {
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'transactions'}>
         <h2>Transactions</h2>
-        <p className="admin-connection-state"><CircleDollarSign /> There is no unified financial ledger yet. Manual recharge requests are available under Payments; purchases, withdrawals, and wallet transaction history are not connected.</p>
-        <button type="button" className="admin-panel-link-button" onClick={() => setActiveSection('payments')}>View payment requests <ArrowRight /></button>
+        <AdminTransactionsSection />
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'referrals'}>
         <h2>Referrals</h2>
         {overview && <div className="admin-overview-grid"><article><span>Members from referrals</span><strong>{overview.referredUsers.toLocaleString()}</strong></article><article><span>Direct signups</span><strong>{Math.max(0, overview.totalUsers - overview.referredUsers).toLocaleString()}</strong></article></div>}
         <p className="admin-task-note">Referral commission and team deposit totals are not presented as settled money until verified deposit and purchase records are connected.</p>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'settings'}>
+        <h2>Settings</h2>
+        <p className="admin-section-subtitle">Edit portal identity, money rules, access, maintenance, and member messages.</p>
+        {siteSettingsStatus === 'loading' && <p role="status">Loading settings…</p>}
+        {siteSettingsStatus === 'error' && <p role="alert">Settings could not be loaded. Check admin access and reload.</p>}
+        {siteSettingsStatus === 'ready' && <form className="admin-product-editor" onSubmit={saveSiteSettings}>
+          <fieldset><legend>Brand and contact</legend>
+            <label>Brand name<input required value={siteSettings.brandName} onChange={(e) => setSiteSettings({ ...siteSettings, brandName: e.target.value })} /></label>
+            <label>Currency code<input required maxLength={3} value={siteSettings.currencyCode} onChange={(e) => setSiteSettings({ ...siteSettings, currencyCode: e.target.value.toUpperCase() })} /></label>
+            <label>MTN mobile money number<input value={siteSettings.mtnMobileMoneyNumber} onChange={(e) => setSiteSettings({ ...siteSettings, mtnMobileMoneyNumber: e.target.value })} /></label>
+            <label>Airtel Money number<input value={siteSettings.airtelMobileMoneyNumber} onChange={(e) => setSiteSettings({ ...siteSettings, airtelMobileMoneyNumber: e.target.value })} /></label>
+            <label>Payee name<input value={siteSettings.payeeName} onChange={(e) => setSiteSettings({ ...siteSettings, payeeName: e.target.value })} /></label>
+            <label>Support handle<input value={siteSettings.supportHandle} onChange={(e) => setSiteSettings({ ...siteSettings, supportHandle: e.target.value })} /></label>
+            <label>Telegram URL<input type="url" value={siteSettings.telegramUrl} onChange={(e) => setSiteSettings({ ...siteSettings, telegramUrl: e.target.value })} /></label>
+            <label>Terms and conditions<textarea maxLength={20000} value={siteSettings.termsAndConditions} onChange={(e) => setSiteSettings({ ...siteSettings, termsAndConditions: e.target.value })} /></label>
+          </fieldset>
+          <fieldset><legend>Rates and limits · Uganda</legend>
+            <p className="admin-task-note">Changing these values does not rewrite previous account activity.</p>
+            <label>Minimum deposit (UGX)<input type="number" min="0" value={siteSettings.minimumDepositUgx} onChange={(e) => setSiteSettings({ ...siteSettings, minimumDepositUgx: Number(e.target.value) })} /></label>
+            <label>Minimum withdrawal (UGX)<input type="number" min="0" value={siteSettings.minimumWithdrawalUgx} onChange={(e) => setSiteSettings({ ...siteSettings, minimumWithdrawalUgx: Number(e.target.value) })} /></label>
+            <label>Signup bonus (UGX)<input type="number" min="0" value={siteSettings.signupBonusUgx} onChange={(e) => setSiteSettings({ ...siteSettings, signupBonusUgx: Number(e.target.value) })} /></label>
+            <label>Daily check-in bonus (UGX)<input type="number" min="0" value={siteSettings.dailyCheckinBonusUgx} onChange={(e) => setSiteSettings({ ...siteSettings, dailyCheckinBonusUgx: Number(e.target.value) })} /></label>
+            <label>Withdrawal fee (%)<input type="number" min="0" max="100" step="0.01" value={siteSettings.withdrawalFeePercent} onChange={(e) => setSiteSettings({ ...siteSettings, withdrawalFeePercent: Number(e.target.value) })} /></label>
+            <label>Referral commission · Level 1 (%)<input type="number" min="0" max="100" step="0.01" value={siteSettings.referralCommissionLevel1Percent} onChange={(e) => setSiteSettings({ ...siteSettings, referralCommissionLevel1Percent: Number(e.target.value) })} /></label>
+            <label>Referral commission · Level 2 (%)<input type="number" min="0" max="100" step="0.01" value={siteSettings.referralCommissionLevel2Percent} onChange={(e) => setSiteSettings({ ...siteSettings, referralCommissionLevel2Percent: Number(e.target.value) })} /></label>
+            <label>Referral commission · Level 3 (%)<input type="number" min="0" max="100" step="0.01" value={siteSettings.referralCommissionLevel3Percent} onChange={(e) => setSiteSettings({ ...siteSettings, referralCommissionLevel3Percent: Number(e.target.value) })} /></label>
+            <label>Maximum plan return multiple<input type="number" min="0" step="0.1" value={siteSettings.maximumPlanReturnMultiple} onChange={(e) => setSiteSettings({ ...siteSettings, maximumPlanReturnMultiple: Number(e.target.value) })} /></label>
+            <label>Maximum withdrawals per member per day (0 = unlimited)<input type="number" min="0" step="1" value={siteSettings.maximumWithdrawalsPerMemberPerDay} onChange={(e) => setSiteSettings({ ...siteSettings, maximumWithdrawalsPerMemberPerDay: Number(e.target.value) })} /></label>
+            <label className="admin-task-toggle"><input type="checkbox" checked={siteSettings.limitWithdrawalsToHours} onChange={(e) => setSiteSettings({ ...siteSettings, limitWithdrawalsToHours: e.target.checked })} /> Limit withdrawals to set hours</label>
+            <label>Withdrawal window starts · Uganda time<input type="time" value={siteSettings.withdrawalWindowStart} onChange={(e) => setSiteSettings({ ...siteSettings, withdrawalWindowStart: e.target.value })} /></label>
+            <label>Withdrawal window ends · Uganda time<input type="time" value={siteSettings.withdrawalWindowEnd} onChange={(e) => setSiteSettings({ ...siteSettings, withdrawalWindowEnd: e.target.value })} /></label>
+          </fieldset>
+          <fieldset><legend>Referrals and access</legend>
+            <label className="admin-task-toggle"><input type="checkbox" checked={siteSettings.requireReferralCode} onChange={(e) => setSiteSettings({ ...siteSettings, requireReferralCode: e.target.checked })} /> Require a referral code to sign up</label>
+            <label>Allowed website domains<textarea placeholder="example.com&#10;members.example.com" value={siteSettings.allowedWebsiteDomains} onChange={(e) => setSiteSettings({ ...siteSettings, allowedWebsiteDomains: e.target.value })} /></label>
+            <label className="admin-task-toggle"><input type="checkbox" checked={siteSettings.maintenanceMode} onChange={(e) => setSiteSettings({ ...siteSettings, maintenanceMode: e.target.checked })} /> Turn on maintenance mode</label>
+            <label>Maintenance message<textarea value={siteSettings.maintenanceMessage} onChange={(e) => setSiteSettings({ ...siteSettings, maintenanceMessage: e.target.value })} /></label>
+            <label className="admin-task-toggle"><input type="checkbox" checked={siteSettings.showOpeningCountdown} onChange={(e) => setSiteSettings({ ...siteSettings, showOpeningCountdown: e.target.checked })} /> Show opening countdown</label>
+            <label>Opening date and time · Uganda time<input type="datetime-local" value={siteSettings.openingDateTime?.slice(0, 16) ?? ''} onChange={(e) => setSiteSettings({ ...siteSettings, openingDateTime: e.target.value ? new Date(e.target.value).toISOString() : null })} /></label>
+          </fieldset>
+          <fieldset><legend>Member announcement</legend>
+            <label className="admin-task-toggle"><input type="checkbox" checked={siteSettings.showAnnouncement} onChange={(e) => setSiteSettings({ ...siteSettings, showAnnouncement: e.target.checked })} /> Show announcement dialog</label>
+            <label>Announcement title<input maxLength={120} value={siteSettings.announcementTitle} onChange={(e) => setSiteSettings({ ...siteSettings, announcementTitle: e.target.value })} /></label>
+            <label>Announcement message<textarea maxLength={2000} value={siteSettings.announcementMessage} onChange={(e) => setSiteSettings({ ...siteSettings, announcementMessage: e.target.value })} /></label>
+          </fieldset>
+          <button type="submit" disabled={savingSiteSettings}>{savingSiteSettings ? 'Saving…' : 'Save all settings'}</button>
+          {siteSettingsMessage && <p role="status">{siteSettingsMessage}</p>}
+        </form>}
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'countries'}>
         <h2>Countries</h2>
@@ -1504,7 +1724,7 @@ function ReferralPage() {
       </section>
 
       <p className="referral-terms-note">
-        Displayed rates are not active yet. Reward eligibility, calculation basis, and payout terms still need confirmation.
+        Eligible commissions are calculated from confirmed product purchases using the current site settings; deposits alone do not trigger referral commissions.
       </p>
     </section>
   </MemberFrame>;
@@ -1514,13 +1734,19 @@ function AccountPage() {
   const { user, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
+  const [accountSettings, setAccountSettings] = useState<AdminSiteSettings | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
+  useEffect(() => {
+    fetch('/api/site-settings').then(async (response) => {
+      if (response.ok) setAccountSettings(await response.json() as AdminSiteSettings);
+    }).catch(() => {});
+  }, []);
   const accountActions = [
     { id: 'about', label: 'About us', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
-    { id: 'help', label: 'Customer service', icon: Headphones, href: customerServiceUrl },
+    { id: 'help', label: 'Customer service', icon: Headphones, href: accountSettings?.telegramUrl || customerServiceUrl },
     { id: 'history', label: 'History', icon: History, detail: 'No verified wallet transactions are available yet.' },
-    { id: 'terms', label: 'Regulations', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
+    { id: 'terms', label: 'Regulations', icon: FileText, detail: accountSettings?.termsAndConditions || 'Terms have not been published yet.' },
     { id: 'install', label: 'Download app', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
     { id: 'link-card', label: 'Link a card', icon: CreditCard, detail: 'Card linking is not available yet.' },
     { id: 'password', label: 'Change password', icon: ShieldCheck, detail: 'Password changes are handled by an administrator. Self-service password changes are not available yet.' },

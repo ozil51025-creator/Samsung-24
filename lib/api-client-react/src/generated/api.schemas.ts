@@ -5,6 +5,143 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AdminSiteSettings {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  brandName: string;
+  /** @pattern ^[A-Z]{3}$ */
+  currencyCode: string;
+  /** @maxLength 32 */
+  mtnMobileMoneyNumber: string;
+  /** @maxLength 32 */
+  airtelMobileMoneyNumber: string;
+  /** @maxLength 100 */
+  payeeName: string;
+  /** @maxLength 100 */
+  supportHandle: string;
+  /** @maxLength 300 */
+  telegramUrl: string;
+  /** @maxLength 20000 */
+  termsAndConditions: string;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  minimumDepositUgx: number;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  minimumWithdrawalUgx: number;
+  /**
+     * @minimum 0
+     * @maximum 100000000
+     */
+  signupBonusUgx: number;
+  /**
+     * @minimum 0
+     * @maximum 100000000
+     */
+  dailyCheckinBonusUgx: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  withdrawalFeePercent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  referralCommissionLevel1Percent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  referralCommissionLevel2Percent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  referralCommissionLevel3Percent: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  maximumPlanReturnMultiple: number;
+  /**
+     * @minimum 0
+     * @maximum 1000
+     */
+  maximumWithdrawalsPerMemberPerDay: number;
+  limitWithdrawalsToHours: boolean;
+  /** @pattern ^[0-2][0-9]:[0-5][0-9]$ */
+  withdrawalWindowStart: string;
+  /** @pattern ^[0-2][0-9]:[0-5][0-9]$ */
+  withdrawalWindowEnd: string;
+  requireReferralCode: boolean;
+  /** @maxLength 4000 */
+  allowedWebsiteDomains: string;
+  maintenanceMode: boolean;
+  /** @maxLength 2000 */
+  maintenanceMessage: string;
+  showOpeningCountdown: boolean;
+  /** @nullable */
+  openingDateTime: string | null;
+  showAnnouncement: boolean;
+  /** @maxLength 120 */
+  announcementTitle: string;
+  /** @maxLength 2000 */
+  announcementMessage: string;
+}
+
+export interface AdminGiftCode {
+  id: string;
+  /**
+     * @minLength 12
+     * @maxLength 32
+     */
+  code: string;
+  /**
+     * @minimum 1
+     * @maximum 100000000
+     */
+  amountUgx: number;
+  createdAt: string;
+  /** @nullable */
+  redeemedAt: string | null;
+  /** @nullable */
+  redeemedByPhone: string | null;
+}
+
+export interface AdminGiftCodes {
+  codes: AdminGiftCode[];
+}
+
+export interface AdminGiftCodeInput {
+  /**
+     * @minimum 1
+     * @maximum 100000000
+     */
+  amountUgx: number;
+}
+
+export interface RedeemGiftCodeInput {
+  /**
+     * @minLength 12
+     * @maxLength 32
+     */
+  code: string;
+}
+
+export interface GiftCodeRedemptionResult {
+  /** @minimum 1 */
+  amountUgx: number;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+}
+
 export type ProductCatalogItemIllustration = typeof ProductCatalogItemIllustration[keyof typeof ProductCatalogItemIllustration];
 
 
@@ -146,7 +283,7 @@ export interface AdminWithdrawalListResponse {
 
 export interface WithdrawalRequestInput {
   /**
-     * @minimum 10000
+     * @minimum 1
      * @maximum 1000000000
      */
   amountUgx: number;
@@ -462,4 +599,17 @@ export interface TaskCenterSettingsInput {
 export interface ErrorResponse {
   error: string;
 }
+
+export type GetAdminTransactions200TransactionsItem = {
+  id: string;
+  type: string;
+  member: string;
+  amountUgx: number;
+  status: string;
+  createdAt: string;
+};
+
+export type GetAdminTransactions200 = {
+  transactions: GetAdminTransactions200TransactionsItem[];
+};
 

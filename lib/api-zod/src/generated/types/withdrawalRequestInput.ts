@@ -8,7 +8,7 @@
 
 export interface WithdrawalRequestInput {
   /**
-     * @minimum 10000
+     * @minimum 1
      * @maximum 1000000000
      */
   amountUgx: number;

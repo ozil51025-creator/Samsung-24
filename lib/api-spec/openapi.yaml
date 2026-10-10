@@ -15,6 +15,18 @@ tags:
   - name: admin
     description: Server-authorized administration operations
 paths:
+  /site-settings:
+    get:
+      operationId: getPublicSiteSettings
+      tags: [auth]
+      summary: Get member-visible business settings and access state
+      responses:
+        "200":
+          description: Public settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
   /healthz:
     get:
       operationId: healthCheck
@@ -633,6 +645,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminWithdrawalListResponse"
+  /admin/transactions:
+    get:
+      operationId: getAdminTransactions
+      tags: [admin]
+      summary: List wallet activity recorded by the platform
+      responses:
+        "200":
+          description: Recent transaction events
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactions]
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, type, member, amountUgx, status, createdAt]
+                      properties:
+                        id: { type: string }
+                        type: { type: string }
+                        member: { type: string }
+                        amountUgx: { type: integer }
+                        status: { type: string }
+                        createdAt: { type: string, format: date-time }
         "401":
           description: Admin sign in required
           content:
@@ -721,8 +759,189 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/gift-codes:
+    get:
+      operationId: getAdminGiftCodes
+      tags: [admin]
+      summary: List issued gift codes and their redemption status
+      responses:
+        "200":
+          description: Gift-code inventory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCodes"
+        "401":
+          description: Administrator sign in required
+  /admin/settings:
+    get:
+      operationId: getAdminSiteSettings
+      tags: [admin]
+      summary: Get editable site-wide business and access settings
+      responses:
+        "200":
+          description: Current site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
+        "401":
+          description: Administrator sign in required
+    put:
+      operationId: updateAdminSiteSettings
+      tags: [admin]
+      summary: Save site-wide business and access settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSiteSettings"
+      responses:
+        "200":
+          description: Saved settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
+        "400":
+          description: Invalid settings values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Administrator sign in required
+    post:
+      operationId: createAdminGiftCode
+      tags: [admin]
+      summary: Issue a single-use gift code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminGiftCodeInput"
+      responses:
+        "201":
+          description: Issued gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCode"
+        "400":
+          description: Invalid gift-code value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Administrator sign in required
+  /gift-codes/redeem:
+    post:
+      operationId: redeemGiftCode
+      tags: [auth]
+      summary: Redeem a single-use gift code into the signed-in member wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedeemGiftCodeInput"
+      responses:
+        "200":
+          description: Gift code redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCodeRedemptionResult"
+        "400":
+          description: Invalid or already redeemed gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    AdminSiteSettings:
+      type: object
+      additionalProperties: false
+      required: [brandName, currencyCode, mtnMobileMoneyNumber, airtelMobileMoneyNumber, payeeName, supportHandle, telegramUrl, termsAndConditions, minimumDepositUgx, minimumWithdrawalUgx, signupBonusUgx, dailyCheckinBonusUgx, withdrawalFeePercent, referralCommissionLevel1Percent, referralCommissionLevel2Percent, referralCommissionLevel3Percent, maximumPlanReturnMultiple, maximumWithdrawalsPerMemberPerDay, limitWithdrawalsToHours, withdrawalWindowStart, withdrawalWindowEnd, requireReferralCode, allowedWebsiteDomains, maintenanceMode, maintenanceMessage, showOpeningCountdown, openingDateTime, showAnnouncement, announcementTitle, announcementMessage]
+      properties:
+        brandName: { type: string, minLength: 1, maxLength: 80 }
+        currencyCode: { type: string, pattern: "^[A-Z]{3}$" }
+        mtnMobileMoneyNumber: { type: string, maxLength: 32 }
+        airtelMobileMoneyNumber: { type: string, maxLength: 32 }
+        payeeName: { type: string, maxLength: 100 }
+        supportHandle: { type: string, maxLength: 100 }
+        telegramUrl: { type: string, maxLength: 300 }
+        termsAndConditions: { type: string, maxLength: 20000 }
+        minimumDepositUgx: { type: integer, minimum: 0, maximum: 1000000000 }
+        minimumWithdrawalUgx: { type: integer, minimum: 0, maximum: 1000000000 }
+        signupBonusUgx: { type: integer, minimum: 0, maximum: 100000000 }
+        dailyCheckinBonusUgx: { type: integer, minimum: 0, maximum: 100000000 }
+        withdrawalFeePercent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel1Percent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel2Percent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel3Percent: { type: number, minimum: 0, maximum: 100 }
+        maximumPlanReturnMultiple: { type: number, minimum: 0, maximum: 100 }
+        maximumWithdrawalsPerMemberPerDay: { type: integer, minimum: 0, maximum: 1000 }
+        limitWithdrawalsToHours: { type: boolean }
+        withdrawalWindowStart: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$" }
+        withdrawalWindowEnd: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$" }
+        requireReferralCode: { type: boolean }
+        allowedWebsiteDomains: { type: string, maxLength: 4000 }
+        maintenanceMode: { type: boolean }
+        maintenanceMessage: { type: string, maxLength: 2000 }
+        showOpeningCountdown: { type: boolean }
+        openingDateTime: { type: ["string", "null"], format: date-time }
+        showAnnouncement: { type: boolean }
+        announcementTitle: { type: string, maxLength: 120 }
+        announcementMessage: { type: string, maxLength: 2000 }
+    AdminGiftCode:
+      type: object
+      additionalProperties: false
+      required: [id, code, amountUgx, createdAt, redeemedAt, redeemedByPhone]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, minLength: 12, maxLength: 32 }
+        amountUgx: { type: integer, minimum: 1, maximum: 100000000 }
+        createdAt: { type: string, format: date-time }
+        redeemedAt: { type: ["string", "null"], format: date-time }
+        redeemedByPhone: { type: ["string", "null"] }
+    AdminGiftCodes:
+      type: object
+      additionalProperties: false
+      required: [codes]
+      properties:
+        codes:
+          type: array
+          items: { $ref: "#/components/schemas/AdminGiftCode" }
+    AdminGiftCodeInput:
+      type: object
+      additionalProperties: false
+      required: [amountUgx]
+      properties:
+        amountUgx: { type: integer, minimum: 1, maximum: 100000000 }
+    RedeemGiftCodeInput:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code: { type: string, minLength: 12, maxLength: 32 }
+    GiftCodeRedemptionResult:
+      type: object
+      additionalProperties: false
+      required: [amountUgx, walletBalanceUgx]
+      properties:
+        amountUgx: { type: integer, minimum: 1 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
     ProductCatalogItem:
       type: object
       additionalProperties: false
@@ -835,7 +1054,7 @@ components:
       additionalProperties: false
       required: [amountUgx]
       properties:
-        amountUgx: { type: integer, minimum: 10000, maximum: 1000000000 }
+        amountUgx: { type: integer, minimum: 1, maximum: 1000000000 }
     PayoutAccount:
       type: object
       additionalProperties: false

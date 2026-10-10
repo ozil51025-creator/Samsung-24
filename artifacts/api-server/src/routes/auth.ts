@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
-import { and, eq, gt, sql, sum } from "drizzle-orm";
+import { and, count, eq, gt, sql, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
@@ -30,8 +30,10 @@ import {
   RegisterPhoneAccountBody,
   RegisterPhoneAccountResponse,
   PurchaseProductResponse,
+  GetAdminSiteSettingsResponse,
 } from "@workspace/api-zod";
 import { calculateLevelOneToThreeTeamDeposits, getReferralAncestorsThroughLevelThree, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
+import { readSiteSettings } from "../lib/site-settings";
 
 const router: IRouter = Router();
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -255,7 +257,7 @@ function isRateLimited(req: Request, res: Response, scope: string, phoneNumber?:
   return true;
 }
 
-function requireSameOrigin(
+async function requireSameOrigin(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -267,6 +269,13 @@ function requireSameOrigin(
   try {
     if (!origin || !requestHost || new URL(origin).host.toLowerCase() !== requestHost.toLowerCase()) {
       res.status(403).json({ error: "Request origin was not accepted." });
+      return;
+    }
+    const allowed = (await readSiteSettings()).allowedWebsiteDomains
+      .split(/[\n,]/).map((domain) => domain.trim().toLowerCase()).filter(Boolean);
+    const originHost = new URL(origin).hostname.toLowerCase();
+    if (allowed.length && !allowed.includes(originHost)) {
+      res.status(403).json({ error: "This website domain is not allowed." });
       return;
     }
   } catch {
@@ -327,7 +336,16 @@ router.post("/auth/register", requireSameOrigin, async (req, res) => {
   if (isRateLimited(req, res, "register", phoneNumber)) return;
 
   try {
+    const siteSettings = await readSiteSettings();
+    if (siteSettings.maintenanceMode) {
+      res.status(503).json({ error: siteSettings.maintenanceMessage });
+      return;
+    }
     const suppliedReferralCode = parsed.data.referralCode?.trim().toUpperCase();
+    if (siteSettings.requireReferralCode && !suppliedReferralCode) {
+      res.status(400).json({ error: "A referral code is required to create an account." });
+      return;
+    }
     let referredByAccountId: string | null = null;
     if (suppliedReferralCode) {
       const [referrer] = await db
@@ -370,7 +388,7 @@ router.post("/auth/register", requireSameOrigin, async (req, res) => {
         account = await db.transaction(async (tx) => {
           const [created] = await tx
             .insert(phoneAccountsTable)
-            .values({ phoneNumber, passwordHash, walletBalanceUgx: 5000, totalAccumulatedUgx: 5000 })
+            .values({ phoneNumber, passwordHash, walletBalanceUgx: siteSettings.signupBonusUgx, totalAccumulatedUgx: siteSettings.signupBonusUgx })
             .returning({
               id: phoneAccountsTable.id,
               phoneNumber: phoneAccountsTable.phoneNumber,
@@ -547,11 +565,25 @@ router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
   }
 });
 
+router.get("/site-settings", async (req, res): Promise<void> => {
+  try {
+    res.json(GetAdminSiteSettingsResponse.parse(await readSiteSettings()));
+  } catch (error) {
+    req.log.error({ error, route: "site-settings.get" }, "Could not load public site settings");
+    res.status(500).json({ error: "Could not load site settings." });
+  }
+});
+
 router.get("/presence", async (req, res) => {
   try {
     const accountId = await currentAccountId(req, res);
     if (!accountId) return;
-    const task = await currentPresenceTask();
+    const siteSettings = await readSiteSettings();
+    if (siteSettings.maintenanceMode) {
+      res.status(503).json({ error: siteSettings.maintenanceMessage });
+      return;
+    }
+    const task = { ...(await currentPresenceTask()), rewardUgx: siteSettings.dailyCheckinBonusUgx };
     const claims = await db
       .select({ attendanceDate: presenceClaimsTable.attendanceDate, rewardUgx: presenceClaimsTable.rewardUgx })
       .from(presenceClaimsTable)
@@ -624,6 +656,11 @@ router.post("/products/:productId/purchase", requireSameOrigin, async (req, res)
   }
   const productId = rawProductId;
   try {
+    const siteSettings = await readSiteSettings();
+    if (siteSettings.maintenanceMode) {
+      res.status(503).json({ error: siteSettings.maintenanceMessage });
+      return;
+    }
     const result = await db.transaction(async (tx) => {
       const [product] = await tx.select({
         id: productCatalogTable.id,
@@ -667,7 +704,11 @@ router.post("/products/:productId/purchase", requireSameOrigin, async (req, res)
           referredByAccountId: phoneReferralCodesTable.referredByAccountId,
         }).from(phoneReferralCodesTable);
         const ancestors = getReferralAncestorsThroughLevelThree(accountId, referrals);
-        const rates = [35, 2, 1];
+        const rates = [
+          siteSettings.referralCommissionLevel1Percent,
+          siteSettings.referralCommissionLevel2Percent,
+          siteSettings.referralCommissionLevel3Percent,
+        ];
         for (const [index, ancestorId] of ancestors.entries()) {
           const amountUgx = Math.floor(product.priceUgx * (rates[index] ?? 0) / 100);
           if (amountUgx <= 0) continue;
@@ -734,8 +775,13 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
     const amount = req.body?.amount;
     const rawPhone = typeof req.body?.phone === "string" ? req.body.phone.trim().replace(/[\s().-]/g, "") : "";
     const nationalPhone = rawPhone.startsWith("+256") ? rawPhone.slice(4) : rawPhone.startsWith("256") ? rawPhone.slice(3) : rawPhone.startsWith("0") ? rawPhone.slice(1) : rawPhone;
-    if (!Number.isSafeInteger(amount) || amount < 2000 || !/^7\d{8}$/.test(nationalPhone)) {
-      res.status(400).json({ error: "Enter a valid Ugandan mobile number and recharge amount of at least UGX 2,000." });
+    const settings = await readSiteSettings();
+    if (settings.maintenanceMode) {
+      res.status(503).json({ error: settings.maintenanceMessage });
+      return;
+    }
+    if (!Number.isSafeInteger(amount) || amount < settings.minimumDepositUgx || !/^7\d{8}$/.test(nationalPhone)) {
+      res.status(400).json({ error: `Enter a valid Ugandan mobile number and recharge amount of at least UGX ${settings.minimumDepositUgx.toLocaleString()}.` });
       return;
     }
     const [request] = await db
@@ -839,11 +885,29 @@ router.get("/withdrawals", async (req, res): Promise<void> => {
 router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> => {
   const accountId = await currentAccountId(req, res);
   if (!accountId) return;
-  const parsed = CreateWithdrawalBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Enter a whole-UGX withdrawal amount of at least UGX 10,000." });
+  const settings = await readSiteSettings();
+  if (settings.maintenanceMode) {
+    res.status(503).json({ error: settings.maintenanceMessage });
     return;
   }
+  const parsed = CreateWithdrawalBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a valid whole-UGX withdrawal amount." });
+    return;
+  }
+  if (parsed.data.amountUgx < settings.minimumWithdrawalUgx) {
+    res.status(400).json({ error: `Minimum withdrawal is UGX ${settings.minimumWithdrawalUgx.toLocaleString()}.` });
+    return;
+  }
+  const nowKampala = new Date().toLocaleTimeString("en-GB", { timeZone: "Africa/Kampala", hour: "2-digit", minute: "2-digit", hour12: false });
+  const inWindow = settings.withdrawalWindowStart <= settings.withdrawalWindowEnd
+    ? nowKampala >= settings.withdrawalWindowStart && nowKampala <= settings.withdrawalWindowEnd
+    : nowKampala >= settings.withdrawalWindowStart || nowKampala <= settings.withdrawalWindowEnd;
+  if (settings.limitWithdrawalsToHours && !inWindow) {
+    res.status(409).json({ error: `Withdrawals are available between ${settings.withdrawalWindowStart} and ${settings.withdrawalWindowEnd} Uganda time.` });
+    return;
+  }
+  const kampalaDayStart = new Date(`${kampalaDate()}T00:00:00+03:00`);
   try {
     const result = await db.transaction(async (tx) => {
       const [account] = await tx.select({
@@ -855,9 +919,14 @@ router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> =
         .limit(1);
       if (!account) return { kind: "missing" as const };
       if (account.walletBalanceUgx < parsed.data.amountUgx) return { kind: "insufficient" as const };
+      if (settings.maximumWithdrawalsPerMemberPerDay > 0) {
+        const [daily] = await tx.select({ total: count() }).from(withdrawalRequestsTable)
+          .where(and(eq(withdrawalRequestsTable.accountId, accountId), gt(withdrawalRequestsTable.createdAt, kampalaDayStart)));
+        if ((daily?.total ?? 0) >= settings.maximumWithdrawalsPerMemberPerDay) return { kind: "daily-limit" as const };
+      }
       const [destination] = await tx.select().from(payoutAccountsTable)
         .where(eq(payoutAccountsTable.accountId, accountId)).limit(1);
-      const feeUgx = Math.round(parsed.data.amountUgx * 0.2);
+      const feeUgx = Math.round(parsed.data.amountUgx * settings.withdrawalFeePercent / 100);
       const receivedUgx = parsed.data.amountUgx - feeUgx;
       const [withdrawal] = await tx.insert(withdrawalRequestsTable).values({
         accountId,
@@ -891,6 +960,10 @@ router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> =
     }
     if (result.kind === "insufficient") {
       res.status(409).json({ error: "Your available wallet balance is too low for this withdrawal." });
+      return;
+    }
+    if (result.kind === "daily-limit") {
+      res.status(409).json({ error: "You have reached the daily withdrawal limit." });
       return;
     }
     res.status(201).json(CreateWithdrawalResponse.parse({ withdrawals: [result.withdrawal] }));

@@ -9,6 +9,100 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Get member-visible business settings and access state
+ */
+export const getPublicSiteSettingsResponseBrandNameMax = 80;
+
+export const getPublicSiteSettingsResponseCurrencyCodeRegExp = new RegExp('^[A-Z]{3}$');
+export const getPublicSiteSettingsResponseMtnMobileMoneyNumberMax = 32;
+
+export const getPublicSiteSettingsResponseAirtelMobileMoneyNumberMax = 32;
+
+export const getPublicSiteSettingsResponsePayeeNameMax = 100;
+
+export const getPublicSiteSettingsResponseSupportHandleMax = 100;
+
+export const getPublicSiteSettingsResponseTelegramUrlMax = 300;
+
+export const getPublicSiteSettingsResponseTermsAndConditionsMax = 20000;
+
+export const getPublicSiteSettingsResponseMinimumDepositUgxMin = 0;
+export const getPublicSiteSettingsResponseMinimumDepositUgxMax = 1000000000;
+
+export const getPublicSiteSettingsResponseMinimumWithdrawalUgxMin = 0;
+export const getPublicSiteSettingsResponseMinimumWithdrawalUgxMax = 1000000000;
+
+export const getPublicSiteSettingsResponseSignupBonusUgxMin = 0;
+export const getPublicSiteSettingsResponseSignupBonusUgxMax = 100000000;
+
+export const getPublicSiteSettingsResponseDailyCheckinBonusUgxMin = 0;
+export const getPublicSiteSettingsResponseDailyCheckinBonusUgxMax = 100000000;
+
+export const getPublicSiteSettingsResponseWithdrawalFeePercentMin = 0;
+export const getPublicSiteSettingsResponseWithdrawalFeePercentMax = 100;
+
+export const getPublicSiteSettingsResponseReferralCommissionLevel1PercentMin = 0;
+export const getPublicSiteSettingsResponseReferralCommissionLevel1PercentMax = 100;
+
+export const getPublicSiteSettingsResponseReferralCommissionLevel2PercentMin = 0;
+export const getPublicSiteSettingsResponseReferralCommissionLevel2PercentMax = 100;
+
+export const getPublicSiteSettingsResponseReferralCommissionLevel3PercentMin = 0;
+export const getPublicSiteSettingsResponseReferralCommissionLevel3PercentMax = 100;
+
+export const getPublicSiteSettingsResponseMaximumPlanReturnMultipleMin = 0;
+export const getPublicSiteSettingsResponseMaximumPlanReturnMultipleMax = 100;
+
+export const getPublicSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin = 0;
+export const getPublicSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax = 1000;
+
+export const getPublicSiteSettingsResponseWithdrawalWindowStartRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const getPublicSiteSettingsResponseWithdrawalWindowEndRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const getPublicSiteSettingsResponseAllowedWebsiteDomainsMax = 4000;
+
+export const getPublicSiteSettingsResponseMaintenanceMessageMax = 2000;
+
+export const getPublicSiteSettingsResponseAnnouncementTitleMax = 120;
+
+export const getPublicSiteSettingsResponseAnnouncementMessageMax = 2000;
+
+
+
+export const GetPublicSiteSettingsResponse = zod.object({
+  "brandName": zod.string().min(1).max(getPublicSiteSettingsResponseBrandNameMax),
+  "currencyCode": zod.string().regex(getPublicSiteSettingsResponseCurrencyCodeRegExp),
+  "mtnMobileMoneyNumber": zod.string().max(getPublicSiteSettingsResponseMtnMobileMoneyNumberMax),
+  "airtelMobileMoneyNumber": zod.string().max(getPublicSiteSettingsResponseAirtelMobileMoneyNumberMax),
+  "payeeName": zod.string().max(getPublicSiteSettingsResponsePayeeNameMax),
+  "supportHandle": zod.string().max(getPublicSiteSettingsResponseSupportHandleMax),
+  "telegramUrl": zod.string().max(getPublicSiteSettingsResponseTelegramUrlMax),
+  "termsAndConditions": zod.string().max(getPublicSiteSettingsResponseTermsAndConditionsMax),
+  "minimumDepositUgx": zod.number().int().min(getPublicSiteSettingsResponseMinimumDepositUgxMin).max(getPublicSiteSettingsResponseMinimumDepositUgxMax),
+  "minimumWithdrawalUgx": zod.number().int().min(getPublicSiteSettingsResponseMinimumWithdrawalUgxMin).max(getPublicSiteSettingsResponseMinimumWithdrawalUgxMax),
+  "signupBonusUgx": zod.number().int().min(getPublicSiteSettingsResponseSignupBonusUgxMin).max(getPublicSiteSettingsResponseSignupBonusUgxMax),
+  "dailyCheckinBonusUgx": zod.number().int().min(getPublicSiteSettingsResponseDailyCheckinBonusUgxMin).max(getPublicSiteSettingsResponseDailyCheckinBonusUgxMax),
+  "withdrawalFeePercent": zod.number().min(getPublicSiteSettingsResponseWithdrawalFeePercentMin).max(getPublicSiteSettingsResponseWithdrawalFeePercentMax),
+  "referralCommissionLevel1Percent": zod.number().min(getPublicSiteSettingsResponseReferralCommissionLevel1PercentMin).max(getPublicSiteSettingsResponseReferralCommissionLevel1PercentMax),
+  "referralCommissionLevel2Percent": zod.number().min(getPublicSiteSettingsResponseReferralCommissionLevel2PercentMin).max(getPublicSiteSettingsResponseReferralCommissionLevel2PercentMax),
+  "referralCommissionLevel3Percent": zod.number().min(getPublicSiteSettingsResponseReferralCommissionLevel3PercentMin).max(getPublicSiteSettingsResponseReferralCommissionLevel3PercentMax),
+  "maximumPlanReturnMultiple": zod.number().min(getPublicSiteSettingsResponseMaximumPlanReturnMultipleMin).max(getPublicSiteSettingsResponseMaximumPlanReturnMultipleMax),
+  "maximumWithdrawalsPerMemberPerDay": zod.number().int().min(getPublicSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin).max(getPublicSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax),
+  "limitWithdrawalsToHours": zod.boolean(),
+  "withdrawalWindowStart": zod.string().regex(getPublicSiteSettingsResponseWithdrawalWindowStartRegExp),
+  "withdrawalWindowEnd": zod.string().regex(getPublicSiteSettingsResponseWithdrawalWindowEndRegExp),
+  "requireReferralCode": zod.boolean(),
+  "allowedWebsiteDomains": zod.string().max(getPublicSiteSettingsResponseAllowedWebsiteDomainsMax),
+  "maintenanceMode": zod.boolean(),
+  "maintenanceMessage": zod.string().max(getPublicSiteSettingsResponseMaintenanceMessageMax),
+  "showOpeningCountdown": zod.boolean(),
+  "openingDateTime": zod.coerce.date().nullable(),
+  "showAnnouncement": zod.boolean(),
+  "announcementTitle": zod.string().max(getPublicSiteSettingsResponseAnnouncementTitleMax),
+  "announcementMessage": zod.string().max(getPublicSiteSettingsResponseAnnouncementMessageMax)
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */
@@ -577,13 +671,12 @@ export const SaveMyPayoutAccountResponse = zod.object({
 /**
  * @summary Submit a manual withdrawal request
  */
-export const createWithdrawalBodyAmountUgxMin = 10000;
 export const createWithdrawalBodyAmountUgxMax = 1000000000;
 
 
 
 export const CreateWithdrawalBody = zod.object({
-  "amountUgx": zod.number().int().min(createWithdrawalBodyAmountUgxMin).max(createWithdrawalBodyAmountUgxMax)
+  "amountUgx": zod.number().int().min(1).max(createWithdrawalBodyAmountUgxMax)
 })
 
 export const CreateWithdrawalResponse = zod.object({
@@ -622,6 +715,21 @@ export const GetAdminWithdrawalsResponse = zod.object({
 }).and(zod.object({
   "memberPhone": zod.string()
 })))
+})
+
+
+/**
+ * @summary List wallet activity recorded by the platform
+ */
+export const GetAdminTransactionsResponse = zod.object({
+  "transactions": zod.array(zod.object({
+  "id": zod.string(),
+  "type": zod.string(),
+  "member": zod.string(),
+  "amountUgx": zod.number().int(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
 })
 
 
@@ -741,6 +849,357 @@ export const UpdateAdminProductsResponse = zod.object({
 })),
   "purchasedCount": zod.number().int().min(updateAdminProductsResponsePurchasedCountMin).optional(),
   "totalCollectedUgx": zod.number().int().min(updateAdminProductsResponseTotalCollectedUgxMin).optional()
+})
+
+
+/**
+ * @summary List issued gift codes and their redemption status
+ */
+export const getAdminGiftCodesResponseCodesItemCodeMin = 12;
+export const getAdminGiftCodesResponseCodesItemCodeMax = 32;
+
+export const getAdminGiftCodesResponseCodesItemAmountUgxMax = 100000000;
+
+
+
+export const GetAdminGiftCodesResponse = zod.object({
+  "codes": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "code": zod.string().min(getAdminGiftCodesResponseCodesItemCodeMin).max(getAdminGiftCodesResponseCodesItemCodeMax),
+  "amountUgx": zod.number().int().min(1).max(getAdminGiftCodesResponseCodesItemAmountUgxMax),
+  "createdAt": zod.coerce.date(),
+  "redeemedAt": zod.coerce.date().nullable(),
+  "redeemedByPhone": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Get editable site-wide business and access settings
+ */
+export const getAdminSiteSettingsResponseBrandNameMax = 80;
+
+export const getAdminSiteSettingsResponseCurrencyCodeRegExp = new RegExp('^[A-Z]{3}$');
+export const getAdminSiteSettingsResponseMtnMobileMoneyNumberMax = 32;
+
+export const getAdminSiteSettingsResponseAirtelMobileMoneyNumberMax = 32;
+
+export const getAdminSiteSettingsResponsePayeeNameMax = 100;
+
+export const getAdminSiteSettingsResponseSupportHandleMax = 100;
+
+export const getAdminSiteSettingsResponseTelegramUrlMax = 300;
+
+export const getAdminSiteSettingsResponseTermsAndConditionsMax = 20000;
+
+export const getAdminSiteSettingsResponseMinimumDepositUgxMin = 0;
+export const getAdminSiteSettingsResponseMinimumDepositUgxMax = 1000000000;
+
+export const getAdminSiteSettingsResponseMinimumWithdrawalUgxMin = 0;
+export const getAdminSiteSettingsResponseMinimumWithdrawalUgxMax = 1000000000;
+
+export const getAdminSiteSettingsResponseSignupBonusUgxMin = 0;
+export const getAdminSiteSettingsResponseSignupBonusUgxMax = 100000000;
+
+export const getAdminSiteSettingsResponseDailyCheckinBonusUgxMin = 0;
+export const getAdminSiteSettingsResponseDailyCheckinBonusUgxMax = 100000000;
+
+export const getAdminSiteSettingsResponseWithdrawalFeePercentMin = 0;
+export const getAdminSiteSettingsResponseWithdrawalFeePercentMax = 100;
+
+export const getAdminSiteSettingsResponseReferralCommissionLevel1PercentMin = 0;
+export const getAdminSiteSettingsResponseReferralCommissionLevel1PercentMax = 100;
+
+export const getAdminSiteSettingsResponseReferralCommissionLevel2PercentMin = 0;
+export const getAdminSiteSettingsResponseReferralCommissionLevel2PercentMax = 100;
+
+export const getAdminSiteSettingsResponseReferralCommissionLevel3PercentMin = 0;
+export const getAdminSiteSettingsResponseReferralCommissionLevel3PercentMax = 100;
+
+export const getAdminSiteSettingsResponseMaximumPlanReturnMultipleMin = 0;
+export const getAdminSiteSettingsResponseMaximumPlanReturnMultipleMax = 100;
+
+export const getAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin = 0;
+export const getAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax = 1000;
+
+export const getAdminSiteSettingsResponseWithdrawalWindowStartRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const getAdminSiteSettingsResponseWithdrawalWindowEndRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const getAdminSiteSettingsResponseAllowedWebsiteDomainsMax = 4000;
+
+export const getAdminSiteSettingsResponseMaintenanceMessageMax = 2000;
+
+export const getAdminSiteSettingsResponseAnnouncementTitleMax = 120;
+
+export const getAdminSiteSettingsResponseAnnouncementMessageMax = 2000;
+
+
+
+export const GetAdminSiteSettingsResponse = zod.object({
+  "brandName": zod.string().min(1).max(getAdminSiteSettingsResponseBrandNameMax),
+  "currencyCode": zod.string().regex(getAdminSiteSettingsResponseCurrencyCodeRegExp),
+  "mtnMobileMoneyNumber": zod.string().max(getAdminSiteSettingsResponseMtnMobileMoneyNumberMax),
+  "airtelMobileMoneyNumber": zod.string().max(getAdminSiteSettingsResponseAirtelMobileMoneyNumberMax),
+  "payeeName": zod.string().max(getAdminSiteSettingsResponsePayeeNameMax),
+  "supportHandle": zod.string().max(getAdminSiteSettingsResponseSupportHandleMax),
+  "telegramUrl": zod.string().max(getAdminSiteSettingsResponseTelegramUrlMax),
+  "termsAndConditions": zod.string().max(getAdminSiteSettingsResponseTermsAndConditionsMax),
+  "minimumDepositUgx": zod.number().int().min(getAdminSiteSettingsResponseMinimumDepositUgxMin).max(getAdminSiteSettingsResponseMinimumDepositUgxMax),
+  "minimumWithdrawalUgx": zod.number().int().min(getAdminSiteSettingsResponseMinimumWithdrawalUgxMin).max(getAdminSiteSettingsResponseMinimumWithdrawalUgxMax),
+  "signupBonusUgx": zod.number().int().min(getAdminSiteSettingsResponseSignupBonusUgxMin).max(getAdminSiteSettingsResponseSignupBonusUgxMax),
+  "dailyCheckinBonusUgx": zod.number().int().min(getAdminSiteSettingsResponseDailyCheckinBonusUgxMin).max(getAdminSiteSettingsResponseDailyCheckinBonusUgxMax),
+  "withdrawalFeePercent": zod.number().min(getAdminSiteSettingsResponseWithdrawalFeePercentMin).max(getAdminSiteSettingsResponseWithdrawalFeePercentMax),
+  "referralCommissionLevel1Percent": zod.number().min(getAdminSiteSettingsResponseReferralCommissionLevel1PercentMin).max(getAdminSiteSettingsResponseReferralCommissionLevel1PercentMax),
+  "referralCommissionLevel2Percent": zod.number().min(getAdminSiteSettingsResponseReferralCommissionLevel2PercentMin).max(getAdminSiteSettingsResponseReferralCommissionLevel2PercentMax),
+  "referralCommissionLevel3Percent": zod.number().min(getAdminSiteSettingsResponseReferralCommissionLevel3PercentMin).max(getAdminSiteSettingsResponseReferralCommissionLevel3PercentMax),
+  "maximumPlanReturnMultiple": zod.number().min(getAdminSiteSettingsResponseMaximumPlanReturnMultipleMin).max(getAdminSiteSettingsResponseMaximumPlanReturnMultipleMax),
+  "maximumWithdrawalsPerMemberPerDay": zod.number().int().min(getAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin).max(getAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax),
+  "limitWithdrawalsToHours": zod.boolean(),
+  "withdrawalWindowStart": zod.string().regex(getAdminSiteSettingsResponseWithdrawalWindowStartRegExp),
+  "withdrawalWindowEnd": zod.string().regex(getAdminSiteSettingsResponseWithdrawalWindowEndRegExp),
+  "requireReferralCode": zod.boolean(),
+  "allowedWebsiteDomains": zod.string().max(getAdminSiteSettingsResponseAllowedWebsiteDomainsMax),
+  "maintenanceMode": zod.boolean(),
+  "maintenanceMessage": zod.string().max(getAdminSiteSettingsResponseMaintenanceMessageMax),
+  "showOpeningCountdown": zod.boolean(),
+  "openingDateTime": zod.coerce.date().nullable(),
+  "showAnnouncement": zod.boolean(),
+  "announcementTitle": zod.string().max(getAdminSiteSettingsResponseAnnouncementTitleMax),
+  "announcementMessage": zod.string().max(getAdminSiteSettingsResponseAnnouncementMessageMax)
+})
+
+
+/**
+ * @summary Save site-wide business and access settings
+ */
+export const updateAdminSiteSettingsBodyBrandNameMax = 80;
+
+export const updateAdminSiteSettingsBodyCurrencyCodeRegExp = new RegExp('^[A-Z]{3}$');
+export const updateAdminSiteSettingsBodyMtnMobileMoneyNumberMax = 32;
+
+export const updateAdminSiteSettingsBodyAirtelMobileMoneyNumberMax = 32;
+
+export const updateAdminSiteSettingsBodyPayeeNameMax = 100;
+
+export const updateAdminSiteSettingsBodySupportHandleMax = 100;
+
+export const updateAdminSiteSettingsBodyTelegramUrlMax = 300;
+
+export const updateAdminSiteSettingsBodyTermsAndConditionsMax = 20000;
+
+export const updateAdminSiteSettingsBodyMinimumDepositUgxMin = 0;
+export const updateAdminSiteSettingsBodyMinimumDepositUgxMax = 1000000000;
+
+export const updateAdminSiteSettingsBodyMinimumWithdrawalUgxMin = 0;
+export const updateAdminSiteSettingsBodyMinimumWithdrawalUgxMax = 1000000000;
+
+export const updateAdminSiteSettingsBodySignupBonusUgxMin = 0;
+export const updateAdminSiteSettingsBodySignupBonusUgxMax = 100000000;
+
+export const updateAdminSiteSettingsBodyDailyCheckinBonusUgxMin = 0;
+export const updateAdminSiteSettingsBodyDailyCheckinBonusUgxMax = 100000000;
+
+export const updateAdminSiteSettingsBodyWithdrawalFeePercentMin = 0;
+export const updateAdminSiteSettingsBodyWithdrawalFeePercentMax = 100;
+
+export const updateAdminSiteSettingsBodyReferralCommissionLevel1PercentMin = 0;
+export const updateAdminSiteSettingsBodyReferralCommissionLevel1PercentMax = 100;
+
+export const updateAdminSiteSettingsBodyReferralCommissionLevel2PercentMin = 0;
+export const updateAdminSiteSettingsBodyReferralCommissionLevel2PercentMax = 100;
+
+export const updateAdminSiteSettingsBodyReferralCommissionLevel3PercentMin = 0;
+export const updateAdminSiteSettingsBodyReferralCommissionLevel3PercentMax = 100;
+
+export const updateAdminSiteSettingsBodyMaximumPlanReturnMultipleMin = 0;
+export const updateAdminSiteSettingsBodyMaximumPlanReturnMultipleMax = 100;
+
+export const updateAdminSiteSettingsBodyMaximumWithdrawalsPerMemberPerDayMin = 0;
+export const updateAdminSiteSettingsBodyMaximumWithdrawalsPerMemberPerDayMax = 1000;
+
+export const updateAdminSiteSettingsBodyWithdrawalWindowStartRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const updateAdminSiteSettingsBodyWithdrawalWindowEndRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const updateAdminSiteSettingsBodyAllowedWebsiteDomainsMax = 4000;
+
+export const updateAdminSiteSettingsBodyMaintenanceMessageMax = 2000;
+
+export const updateAdminSiteSettingsBodyAnnouncementTitleMax = 120;
+
+export const updateAdminSiteSettingsBodyAnnouncementMessageMax = 2000;
+
+
+
+export const UpdateAdminSiteSettingsBody = zod.object({
+  "brandName": zod.string().min(1).max(updateAdminSiteSettingsBodyBrandNameMax),
+  "currencyCode": zod.string().regex(updateAdminSiteSettingsBodyCurrencyCodeRegExp),
+  "mtnMobileMoneyNumber": zod.string().max(updateAdminSiteSettingsBodyMtnMobileMoneyNumberMax),
+  "airtelMobileMoneyNumber": zod.string().max(updateAdminSiteSettingsBodyAirtelMobileMoneyNumberMax),
+  "payeeName": zod.string().max(updateAdminSiteSettingsBodyPayeeNameMax),
+  "supportHandle": zod.string().max(updateAdminSiteSettingsBodySupportHandleMax),
+  "telegramUrl": zod.string().max(updateAdminSiteSettingsBodyTelegramUrlMax),
+  "termsAndConditions": zod.string().max(updateAdminSiteSettingsBodyTermsAndConditionsMax),
+  "minimumDepositUgx": zod.number().int().min(updateAdminSiteSettingsBodyMinimumDepositUgxMin).max(updateAdminSiteSettingsBodyMinimumDepositUgxMax),
+  "minimumWithdrawalUgx": zod.number().int().min(updateAdminSiteSettingsBodyMinimumWithdrawalUgxMin).max(updateAdminSiteSettingsBodyMinimumWithdrawalUgxMax),
+  "signupBonusUgx": zod.number().int().min(updateAdminSiteSettingsBodySignupBonusUgxMin).max(updateAdminSiteSettingsBodySignupBonusUgxMax),
+  "dailyCheckinBonusUgx": zod.number().int().min(updateAdminSiteSettingsBodyDailyCheckinBonusUgxMin).max(updateAdminSiteSettingsBodyDailyCheckinBonusUgxMax),
+  "withdrawalFeePercent": zod.number().min(updateAdminSiteSettingsBodyWithdrawalFeePercentMin).max(updateAdminSiteSettingsBodyWithdrawalFeePercentMax),
+  "referralCommissionLevel1Percent": zod.number().min(updateAdminSiteSettingsBodyReferralCommissionLevel1PercentMin).max(updateAdminSiteSettingsBodyReferralCommissionLevel1PercentMax),
+  "referralCommissionLevel2Percent": zod.number().min(updateAdminSiteSettingsBodyReferralCommissionLevel2PercentMin).max(updateAdminSiteSettingsBodyReferralCommissionLevel2PercentMax),
+  "referralCommissionLevel3Percent": zod.number().min(updateAdminSiteSettingsBodyReferralCommissionLevel3PercentMin).max(updateAdminSiteSettingsBodyReferralCommissionLevel3PercentMax),
+  "maximumPlanReturnMultiple": zod.number().min(updateAdminSiteSettingsBodyMaximumPlanReturnMultipleMin).max(updateAdminSiteSettingsBodyMaximumPlanReturnMultipleMax),
+  "maximumWithdrawalsPerMemberPerDay": zod.number().int().min(updateAdminSiteSettingsBodyMaximumWithdrawalsPerMemberPerDayMin).max(updateAdminSiteSettingsBodyMaximumWithdrawalsPerMemberPerDayMax),
+  "limitWithdrawalsToHours": zod.boolean(),
+  "withdrawalWindowStart": zod.string().regex(updateAdminSiteSettingsBodyWithdrawalWindowStartRegExp),
+  "withdrawalWindowEnd": zod.string().regex(updateAdminSiteSettingsBodyWithdrawalWindowEndRegExp),
+  "requireReferralCode": zod.boolean(),
+  "allowedWebsiteDomains": zod.string().max(updateAdminSiteSettingsBodyAllowedWebsiteDomainsMax),
+  "maintenanceMode": zod.boolean(),
+  "maintenanceMessage": zod.string().max(updateAdminSiteSettingsBodyMaintenanceMessageMax),
+  "showOpeningCountdown": zod.boolean(),
+  "openingDateTime": zod.coerce.date().nullable(),
+  "showAnnouncement": zod.boolean(),
+  "announcementTitle": zod.string().max(updateAdminSiteSettingsBodyAnnouncementTitleMax),
+  "announcementMessage": zod.string().max(updateAdminSiteSettingsBodyAnnouncementMessageMax)
+})
+
+export const updateAdminSiteSettingsResponseBrandNameMax = 80;
+
+export const updateAdminSiteSettingsResponseCurrencyCodeRegExp = new RegExp('^[A-Z]{3}$');
+export const updateAdminSiteSettingsResponseMtnMobileMoneyNumberMax = 32;
+
+export const updateAdminSiteSettingsResponseAirtelMobileMoneyNumberMax = 32;
+
+export const updateAdminSiteSettingsResponsePayeeNameMax = 100;
+
+export const updateAdminSiteSettingsResponseSupportHandleMax = 100;
+
+export const updateAdminSiteSettingsResponseTelegramUrlMax = 300;
+
+export const updateAdminSiteSettingsResponseTermsAndConditionsMax = 20000;
+
+export const updateAdminSiteSettingsResponseMinimumDepositUgxMin = 0;
+export const updateAdminSiteSettingsResponseMinimumDepositUgxMax = 1000000000;
+
+export const updateAdminSiteSettingsResponseMinimumWithdrawalUgxMin = 0;
+export const updateAdminSiteSettingsResponseMinimumWithdrawalUgxMax = 1000000000;
+
+export const updateAdminSiteSettingsResponseSignupBonusUgxMin = 0;
+export const updateAdminSiteSettingsResponseSignupBonusUgxMax = 100000000;
+
+export const updateAdminSiteSettingsResponseDailyCheckinBonusUgxMin = 0;
+export const updateAdminSiteSettingsResponseDailyCheckinBonusUgxMax = 100000000;
+
+export const updateAdminSiteSettingsResponseWithdrawalFeePercentMin = 0;
+export const updateAdminSiteSettingsResponseWithdrawalFeePercentMax = 100;
+
+export const updateAdminSiteSettingsResponseReferralCommissionLevel1PercentMin = 0;
+export const updateAdminSiteSettingsResponseReferralCommissionLevel1PercentMax = 100;
+
+export const updateAdminSiteSettingsResponseReferralCommissionLevel2PercentMin = 0;
+export const updateAdminSiteSettingsResponseReferralCommissionLevel2PercentMax = 100;
+
+export const updateAdminSiteSettingsResponseReferralCommissionLevel3PercentMin = 0;
+export const updateAdminSiteSettingsResponseReferralCommissionLevel3PercentMax = 100;
+
+export const updateAdminSiteSettingsResponseMaximumPlanReturnMultipleMin = 0;
+export const updateAdminSiteSettingsResponseMaximumPlanReturnMultipleMax = 100;
+
+export const updateAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin = 0;
+export const updateAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax = 1000;
+
+export const updateAdminSiteSettingsResponseWithdrawalWindowStartRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const updateAdminSiteSettingsResponseWithdrawalWindowEndRegExp = new RegExp('^[0-2][0-9]:[0-5][0-9]$');
+export const updateAdminSiteSettingsResponseAllowedWebsiteDomainsMax = 4000;
+
+export const updateAdminSiteSettingsResponseMaintenanceMessageMax = 2000;
+
+export const updateAdminSiteSettingsResponseAnnouncementTitleMax = 120;
+
+export const updateAdminSiteSettingsResponseAnnouncementMessageMax = 2000;
+
+
+
+export const UpdateAdminSiteSettingsResponse = zod.object({
+  "brandName": zod.string().min(1).max(updateAdminSiteSettingsResponseBrandNameMax),
+  "currencyCode": zod.string().regex(updateAdminSiteSettingsResponseCurrencyCodeRegExp),
+  "mtnMobileMoneyNumber": zod.string().max(updateAdminSiteSettingsResponseMtnMobileMoneyNumberMax),
+  "airtelMobileMoneyNumber": zod.string().max(updateAdminSiteSettingsResponseAirtelMobileMoneyNumberMax),
+  "payeeName": zod.string().max(updateAdminSiteSettingsResponsePayeeNameMax),
+  "supportHandle": zod.string().max(updateAdminSiteSettingsResponseSupportHandleMax),
+  "telegramUrl": zod.string().max(updateAdminSiteSettingsResponseTelegramUrlMax),
+  "termsAndConditions": zod.string().max(updateAdminSiteSettingsResponseTermsAndConditionsMax),
+  "minimumDepositUgx": zod.number().int().min(updateAdminSiteSettingsResponseMinimumDepositUgxMin).max(updateAdminSiteSettingsResponseMinimumDepositUgxMax),
+  "minimumWithdrawalUgx": zod.number().int().min(updateAdminSiteSettingsResponseMinimumWithdrawalUgxMin).max(updateAdminSiteSettingsResponseMinimumWithdrawalUgxMax),
+  "signupBonusUgx": zod.number().int().min(updateAdminSiteSettingsResponseSignupBonusUgxMin).max(updateAdminSiteSettingsResponseSignupBonusUgxMax),
+  "dailyCheckinBonusUgx": zod.number().int().min(updateAdminSiteSettingsResponseDailyCheckinBonusUgxMin).max(updateAdminSiteSettingsResponseDailyCheckinBonusUgxMax),
+  "withdrawalFeePercent": zod.number().min(updateAdminSiteSettingsResponseWithdrawalFeePercentMin).max(updateAdminSiteSettingsResponseWithdrawalFeePercentMax),
+  "referralCommissionLevel1Percent": zod.number().min(updateAdminSiteSettingsResponseReferralCommissionLevel1PercentMin).max(updateAdminSiteSettingsResponseReferralCommissionLevel1PercentMax),
+  "referralCommissionLevel2Percent": zod.number().min(updateAdminSiteSettingsResponseReferralCommissionLevel2PercentMin).max(updateAdminSiteSettingsResponseReferralCommissionLevel2PercentMax),
+  "referralCommissionLevel3Percent": zod.number().min(updateAdminSiteSettingsResponseReferralCommissionLevel3PercentMin).max(updateAdminSiteSettingsResponseReferralCommissionLevel3PercentMax),
+  "maximumPlanReturnMultiple": zod.number().min(updateAdminSiteSettingsResponseMaximumPlanReturnMultipleMin).max(updateAdminSiteSettingsResponseMaximumPlanReturnMultipleMax),
+  "maximumWithdrawalsPerMemberPerDay": zod.number().int().min(updateAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMin).max(updateAdminSiteSettingsResponseMaximumWithdrawalsPerMemberPerDayMax),
+  "limitWithdrawalsToHours": zod.boolean(),
+  "withdrawalWindowStart": zod.string().regex(updateAdminSiteSettingsResponseWithdrawalWindowStartRegExp),
+  "withdrawalWindowEnd": zod.string().regex(updateAdminSiteSettingsResponseWithdrawalWindowEndRegExp),
+  "requireReferralCode": zod.boolean(),
+  "allowedWebsiteDomains": zod.string().max(updateAdminSiteSettingsResponseAllowedWebsiteDomainsMax),
+  "maintenanceMode": zod.boolean(),
+  "maintenanceMessage": zod.string().max(updateAdminSiteSettingsResponseMaintenanceMessageMax),
+  "showOpeningCountdown": zod.boolean(),
+  "openingDateTime": zod.coerce.date().nullable(),
+  "showAnnouncement": zod.boolean(),
+  "announcementTitle": zod.string().max(updateAdminSiteSettingsResponseAnnouncementTitleMax),
+  "announcementMessage": zod.string().max(updateAdminSiteSettingsResponseAnnouncementMessageMax)
+})
+
+
+/**
+ * @summary Issue a single-use gift code
+ */
+export const createAdminGiftCodeBodyAmountUgxMax = 100000000;
+
+
+
+export const CreateAdminGiftCodeBody = zod.object({
+  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeBodyAmountUgxMax)
+})
+
+export const createAdminGiftCodeResponseCodeMin = 12;
+export const createAdminGiftCodeResponseCodeMax = 32;
+
+export const createAdminGiftCodeResponseAmountUgxMax = 100000000;
+
+
+
+export const CreateAdminGiftCodeResponse = zod.object({
+  "id": zod.string().uuid(),
+  "code": zod.string().min(createAdminGiftCodeResponseCodeMin).max(createAdminGiftCodeResponseCodeMax),
+  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeResponseAmountUgxMax),
+  "createdAt": zod.coerce.date(),
+  "redeemedAt": zod.coerce.date().nullable(),
+  "redeemedByPhone": zod.string().nullable()
+})
+
+
+/**
+ * @summary Redeem a single-use gift code into the signed-in member wallet
+ */
+export const redeemGiftCodeBodyCodeMin = 12;
+export const redeemGiftCodeBodyCodeMax = 32;
+
+
+
+export const RedeemGiftCodeBody = zod.object({
+  "code": zod.string().min(redeemGiftCodeBodyCodeMin).max(redeemGiftCodeBodyCodeMax)
+})
+
+
+export const redeemGiftCodeResponseWalletBalanceUgxMin = 0;
+
+
+
+export const RedeemGiftCodeResponse = zod.object({
+  "amountUgx": zod.number().int().min(1),
+  "walletBalanceUgx": zod.number().int().min(redeemGiftCodeResponseWalletBalanceUgxMin)
 })
 
 
