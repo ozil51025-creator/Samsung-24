@@ -5,9 +5,10 @@ import type { ProductCatalogItem } from '@/data/product-catalog';
 type ProductsCatalogProps = {
   products: readonly ProductCatalogItem[];
   formatPrice: (amount: number) => string;
+  imageUrl: string;
 };
 
-export function ProductsCatalog({ products, formatPrice }: ProductsCatalogProps) {
+export function ProductsCatalog({ products, formatPrice, imageUrl }: ProductsCatalogProps) {
   const prices = products.map((product) => product.price);
   const lowestPrice = Math.min(...prices);
   const highestPrice = Math.max(...prices);
@@ -15,6 +16,7 @@ export function ProductsCatalog({ products, formatPrice }: ProductsCatalogProps)
   return (
     <>
       <section className="product-summary-banner" aria-label="Catalog summary">
+        <img className="product-summary-photo" src={imageUrl} alt="" aria-hidden="true" loading="lazy" />
         <div>
           <p className="product-summary-eyebrow">Samsung Gadgets · Uganda</p>
           <p className="product-summary-value">{products.length}</p>

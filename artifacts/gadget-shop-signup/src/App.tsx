@@ -335,6 +335,7 @@ function HomePage() {
       </div>
 
       <article className="home-task-banner" data-testid="card-home-task-center">
+        <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy devices arranged together" loading="lazy" />
         <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
         <div className="home-task-copy">
           <p className="home-task-eyebrow">Samsung Gadgets</p>
@@ -371,7 +372,7 @@ function HomePage() {
 
 function ProductsPage() {
   return <MemberFrame active="/products">
-    <ProductsCatalog products={productCatalog} formatPrice={(price) => money.format(price)} />
+    <ProductsCatalog products={productCatalog} formatPrice={(price) => money.format(price)} imageUrl={`${basePath}/samsung-referral-banner.jpg`} />
   </MemberFrame>;
 }
 

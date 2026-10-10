@@ -1485,7 +1485,10 @@ button.account-menu-row {
 .home-money-actions button:disabled { cursor: not-allowed; opacity: .62; }
 .home-money-actions button svg,.home-money-actions a svg { width: 25px; height: 25px; color: #5368b5; }
 .home-money-actions a:hover { background: #eceff7; color: #1428a0; }
-.home-task-banner { position: relative; display: flex; min-height: 174px; align-items: center; gap: 17px; overflow: hidden; padding: 23px; border: 1px solid rgba(20,40,160,.14); border-radius: 22px; background: radial-gradient(circle at 88% 18%, rgba(255,255,255,.24), transparent 10rem), linear-gradient(120deg,#243ea9,#4468cc 58%,#7b91d7); color: #fff; box-shadow: 0 12px 28px rgba(34,61,164,.15); }
+.home-task-banner { position: relative; isolation: isolate; display: flex; min-height: 174px; align-items: center; gap: 17px; overflow: hidden; padding: 23px; border: 1px solid rgba(20,40,160,.14); border-radius: 22px; background: linear-gradient(120deg,#243ea9,#4468cc 58%,#7b91d7); color: #fff; box-shadow: 0 12px 28px rgba(34,61,164,.15); }
+.home-task-photo { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 53%; opacity: .68; }
+.home-task-banner::before { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg,rgba(8,19,59,.92),rgba(15,36,112,.78) 58%,rgba(17,34,94,.34)); content: ""; }
+.home-task-banner > *:not(.home-task-photo) { position: relative; z-index: 2; }
 .home-task-mark { display: grid; width: 52px; height: 52px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255,255,255,.27); border-radius: 17px; background: rgba(255,255,255,.16); }
 .home-task-mark svg { width: 25px; height: 25px; }
 .home-task-copy { max-width: 470px; }
@@ -1517,6 +1520,8 @@ button.account-menu-row {
 }
 
 .product-summary-banner {
+  position: relative;
+  isolation: isolate;
   display: flex;
   min-height: 122px;
   align-items: center;
@@ -1531,6 +1536,9 @@ button.account-menu-row {
   color: #fff;
   box-shadow: 0 9px 24px rgba(35,57,126,.11);
 }
+.product-summary-photo { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 55%; opacity: .58; }
+.product-summary-banner::before { position: absolute; z-index: 1; inset: 0; border-radius: inherit; background: linear-gradient(90deg,rgba(24,48,132,.92),rgba(42,64,142,.72) 62%,rgba(15,31,83,.35)); content: ""; }
+.product-summary-banner > div { position: relative; z-index: 2; }
 
 .product-summary-range { text-align: right; }
 .product-summary-eyebrow { color: rgba(255,255,255,.75); font-size: 9px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
