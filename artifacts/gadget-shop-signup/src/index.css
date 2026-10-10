@@ -1685,11 +1685,25 @@ button.account-menu-row {
 .withdraw-bank-select span { flex: 1; font-size: 14px; }
 .withdraw-bank-select svg { width: 20px; height: 20px; }
 .withdraw-confirm { width: 76%; min-height: 54px; justify-self: center; margin-top: 8px; border: 0; border-radius: 28px; background: #000; color: #fff; font-size: 18px; }
-.withdraw-confirm:disabled { opacity: 1; }
+.withdraw-confirm:disabled { opacity: .45; }
+.withdraw-estimate { margin: 0; padding: 12px 14px; border-radius: 12px; background: #fff; color: #646b73; font-size: 13px; }
+.withdraw-estimate strong { color: #315f49; }
 .withdraw-terms { display: grid; gap: 2px; margin: 8px 0 0; padding-left: 20px; color: #535866; font-size: 12px; line-height: 1.55; }
 .withdrawal-history-page { background: #fff; }
+.withdraw-history-item { display: grid; gap: 9px; margin: 0 0 8px; padding: 20px 18px; border-bottom: 1px solid #e5e5e5; color: #555b61; font-size: 14px; }
+.withdraw-history-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 3px; color: #202328; }
+.withdraw-history-title strong { font-weight: 600; }
+.withdraw-history-item p { margin: 0; }
+.withdraw-history-item p span { color: #6a6f74; }
+.withdraw-history-item small { color: #767c83; }
+.withdraw-status-pending { color: #cfaa16; }
+.withdraw-status-paid { color: #269c84; }
+.withdraw-status-failed { color: #bb3337; }
 .bank-list-page,.bank-link-page { width: min(100%,680px); min-height: 100dvh; margin: 0 auto; background: #f1f1f1; color: #17171b; }
 .bank-add-button { display: flex; width: 76%; min-height: 48px; align-items: center; justify-content: center; margin: 32px auto; border-radius: 25px; background: #000; color: #fff; font-size: 19px; font-weight: 600; text-decoration: none; }
+.bank-payout-summary { display: grid; gap: 8px; margin: 20px 18px; padding: 18px; border-radius: 14px; background: #fff; color: #34495f; }
+.bank-payout-summary span { color: #68717b; }
+.payout-destination-link { justify-self: center; color: #315f8c; font-size: 13px; text-decoration: underline; }
 .bank-link-page { background: #34495f; }
 .bank-device-image { display: block; width: 100%; height: 200px; object-fit: cover; }
 .bank-link-form { display: grid; gap: 4px; padding: 32px 36px 70px; background: #34495f; color: #fff; }

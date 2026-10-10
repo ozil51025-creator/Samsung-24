@@ -13,6 +13,7 @@ import {
   rechargeRequestsTable,
   teamDepositMilestoneClaimsTable,
   taskCenterSettingsTable,
+  withdrawalRequestsTable,
 } from "@workspace/db";
 import {
   AddAdminAccountBody,
@@ -34,6 +35,9 @@ import {
   UpdateAdminTaskCenterSettingsResponse,
   UpdateAdminProductsBody,
   UpdateAdminProductsResponse,
+  GetAdminWithdrawalsResponse,
+  ProcessAdminWithdrawalBody,
+  ProcessAdminWithdrawalResponse,
 } from "@workspace/api-zod";
 import {
   calculateLevelOneToThreeTeamDeposits,
@@ -649,6 +653,88 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
   } catch (error) {
     req.log.error({ error, route: "admin.recharge-requests.verify" }, "Could not verify recharge request");
     res.status(500).json({ error: "Could not verify recharge request." });
+  }
+});
+
+router.get("/admin/withdrawals", async (req, res): Promise<void> => {
+  if (!await requireAdmin(req, res)) return;
+  try {
+    const withdrawals = await db.select({
+      id: withdrawalRequestsTable.id,
+      amountUgx: withdrawalRequestsTable.amountUgx,
+      feeUgx: withdrawalRequestsTable.feeUgx,
+      receivedUgx: withdrawalRequestsTable.receivedUgx,
+      payoutPhone: withdrawalRequestsTable.payoutPhone,
+      payoutProvider: withdrawalRequestsTable.payoutProvider,
+      payoutHolderName: withdrawalRequestsTable.payoutHolderName,
+      status: withdrawalRequestsTable.status,
+      createdAt: withdrawalRequestsTable.createdAt,
+      processedAt: withdrawalRequestsTable.processedAt,
+      resolutionNote: withdrawalRequestsTable.resolutionNote,
+      memberPhone: phoneAccountsTable.phoneNumber,
+    }).from(withdrawalRequestsTable)
+      .innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id))
+      .orderBy(sql`${withdrawalRequestsTable.createdAt} DESC`)
+      .limit(100);
+    res.json(GetAdminWithdrawalsResponse.parse({ withdrawals }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.withdrawals.get" }, "Could not load withdrawal requests");
+    res.status(500).json({ error: "Could not load withdrawal requests." });
+  }
+});
+
+router.post("/admin/withdrawals/:withdrawalId", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = ProcessAdminWithdrawalBody.safeParse(req.body);
+  const id = req.params.withdrawalId;
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id) || !parsed.success) {
+    res.status(400).json({ error: "Choose a valid outcome and enter a short processing note." });
+    return;
+  }
+  try {
+    const withdrawal = await db.transaction(async (tx) => {
+      const [current] = await tx.select({
+        id: withdrawalRequestsTable.id,
+        accountId: withdrawalRequestsTable.accountId,
+        amountUgx: withdrawalRequestsTable.amountUgx,
+        status: withdrawalRequestsTable.status,
+      }).from(withdrawalRequestsTable)
+        .where(eq(withdrawalRequestsTable.id, id))
+        .for("update")
+        .limit(1);
+      if (!current || current.status !== "pending") return null;
+      if (parsed.data.status === "failed") {
+        await tx.update(phoneAccountsTable)
+          .set({ walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${current.amountUgx}` })
+          .where(eq(phoneAccountsTable.id, current.accountId));
+      }
+      const [updated] = await tx.update(withdrawalRequestsTable).set({
+        status: parsed.data.status,
+        resolutionNote: parsed.data.resolutionNote.trim(),
+        processedByAccountId: admin.id,
+        processedAt: new Date(),
+      }).where(eq(withdrawalRequestsTable.id, id)).returning();
+      const [member] = await tx.select({ phoneNumber: phoneAccountsTable.phoneNumber })
+        .from(phoneAccountsTable).where(eq(phoneAccountsTable.id, current.accountId)).limit(1);
+      await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: current.accountId,
+        action: parsed.data.status === "paid" ? "withdrawal.paid_manually" : "withdrawal.failed_refunded",
+        amountUgx: current.amountUgx,
+        reason: parsed.data.resolutionNote.trim(),
+        details: `Withdrawal ${id}; ${parsed.data.status === "failed" ? "gross amount refunded" : "marked paid after manual transfer"}.`,
+      });
+      return { ...updated, memberPhone: member?.phoneNumber ?? "" };
+    });
+    if (!withdrawal) {
+      res.status(409).json({ error: "This request is missing or has already been processed." });
+      return;
+    }
+    res.json(ProcessAdminWithdrawalResponse.parse(withdrawal));
+  } catch (error) {
+    req.log.error({ error, route: "admin.withdrawals.process" }, "Could not process withdrawal request");
+    res.status(500).json({ error: "Could not process the withdrawal request." });
   }
 });
 

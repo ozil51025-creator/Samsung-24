@@ -539,6 +539,141 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /withdrawals:
+    get:
+      operationId: getMyWithdrawals
+      tags: [wallet]
+      summary: Get the signed-in member's withdrawal requests
+      responses:
+        "200":
+          description: Member withdrawal history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalHistoryResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /payout-account:
+    get:
+      operationId: getMyPayoutAccount
+      tags: [wallet]
+      summary: Get the signed-in member's saved mobile-money payout destination
+      responses:
+        "200":
+          description: Saved destination, if one exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutAccountResponse"
+    put:
+      operationId: saveMyPayoutAccount
+      tags: [wallet]
+      summary: Save or update the signed-in member's manual payout destination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayoutAccountInput"
+      responses:
+        "200":
+          description: Saved payout destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutAccountResponse"
+        "400":
+          description: Invalid destination details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createWithdrawal
+      tags: [wallet]
+      summary: Submit a manual withdrawal request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalRequestInput"
+      responses:
+        "201":
+          description: Withdrawal request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalHistoryResponse"
+        "400":
+          description: Invalid amount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Insufficient available wallet balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: List withdrawal requests for manual payout
+      responses:
+        "200":
+          description: Withdrawal requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalListResponse"
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/withdrawals/{withdrawalId}:
+    post:
+      operationId: processAdminWithdrawal
+      tags: [admin]
+      summary: Record a manual payout or fail and refund a request
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminProcessWithdrawalInput"
+      responses:
+        "200":
+          description: Updated withdrawal request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalRecord"
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request has already been processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /admin/products:
     get:
       operationId: getAdminProducts
@@ -656,6 +791,84 @@ components:
         orders:
           type: array
           items: { $ref: "#/components/schemas/ProductOrder" }
+    WithdrawalRecord:
+      type: object
+      additionalProperties: false
+      required: [id, amountUgx, feeUgx, receivedUgx, payoutPhone, payoutProvider, payoutHolderName, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        amountUgx: { type: integer }
+        feeUgx: { type: integer }
+        receivedUgx: { type: integer }
+        payoutPhone: { type: string }
+        payoutProvider: { type: string, enum: [airtel, mtn, registered] }
+        payoutHolderName: { type: ["string", "null"] }
+        status: { type: string, enum: [pending, paid, failed] }
+        createdAt: { type: string, format: date-time }
+        processedAt: { type: [string, "null"], format: date-time }
+        resolutionNote: { type: [string, "null"] }
+    WithdrawalHistoryResponse:
+      type: object
+      additionalProperties: false
+      required: [withdrawals]
+      properties:
+        withdrawals:
+          type: array
+          items: { $ref: "#/components/schemas/WithdrawalRecord" }
+    AdminWithdrawalRecord:
+      allOf:
+        - $ref: "#/components/schemas/WithdrawalRecord"
+        - type: object
+          required: [memberPhone]
+          properties:
+            memberPhone: { type: string }
+    AdminWithdrawalListResponse:
+      type: object
+      additionalProperties: false
+      required: [withdrawals]
+      properties:
+        withdrawals:
+          type: array
+          items: { $ref: "#/components/schemas/AdminWithdrawalRecord" }
+    WithdrawalRequestInput:
+      type: object
+      additionalProperties: false
+      required: [amountUgx]
+      properties:
+        amountUgx: { type: integer, minimum: 10000, maximum: 1000000000 }
+    PayoutAccount:
+      type: object
+      additionalProperties: false
+      required: [provider, holderName, phoneNumber, updatedAt]
+      properties:
+        provider: { type: string, enum: [airtel, mtn] }
+        holderName: { type: string }
+        phoneNumber: { type: string }
+        updatedAt: { type: string, format: date-time }
+    PayoutAccountResponse:
+      type: object
+      additionalProperties: false
+      required: [payoutAccount]
+      properties:
+        payoutAccount:
+          oneOf:
+            - $ref: "#/components/schemas/PayoutAccount"
+            - type: "null"
+    PayoutAccountInput:
+      type: object
+      additionalProperties: false
+      required: [provider, holderName, phoneNumber]
+      properties:
+        provider: { type: string, enum: [airtel, mtn] }
+        holderName: { type: string, minLength: 2, maxLength: 100 }
+        phoneNumber: { type: string, minLength: 9, maxLength: 18 }
+    AdminProcessWithdrawalInput:
+      type: object
+      additionalProperties: false
+      required: [status, resolutionNote]
+      properties:
+        status: { type: string, enum: [paid, failed] }
+        resolutionNote: { type: string, minLength: 3, maxLength: 200 }
     HealthStatus:
       type: object
       properties:

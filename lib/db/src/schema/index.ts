@@ -9,3 +9,5 @@ export * from "./admin-accounts";
 export * from "./admin-audit-logs";
 export * from "./product-catalog";
 export * from "./product-orders";
+export * from "./withdrawal-requests";
+export * from "./payout-accounts";

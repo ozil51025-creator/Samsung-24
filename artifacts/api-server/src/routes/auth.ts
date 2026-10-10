@@ -9,11 +9,19 @@ import {
   presenceClaimsTable,
   productCatalogTable,
   productOrdersTable,
+  payoutAccountsTable,
   rechargeRequestsTable,
   taskCenterSettingsTable,
   teamDepositMilestoneClaimsTable,
+  withdrawalRequestsTable,
 } from "@workspace/db";
 import {
+  CreateWithdrawalBody,
+  CreateWithdrawalResponse,
+  GetMyWithdrawalsResponse,
+  GetMyPayoutAccountResponse,
+  SaveMyPayoutAccountBody,
+  SaveMyPayoutAccountResponse,
   GetCurrentPhoneAccountResponse,
   GetMyProductOrdersResponse,
   GetTeamDepositMilestonesResponse,
@@ -738,6 +746,157 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
   } catch (error) {
     req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");
     res.status(500).json({ error: "Could not create the recharge request." });
+  }
+});
+
+router.get("/payout-account", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const [payoutAccount] = await db.select({
+      provider: payoutAccountsTable.provider,
+      holderName: payoutAccountsTable.holderName,
+      phoneNumber: payoutAccountsTable.phoneNumber,
+      updatedAt: payoutAccountsTable.updatedAt,
+    }).from(payoutAccountsTable).where(eq(payoutAccountsTable.accountId, accountId)).limit(1);
+    res.json(GetMyPayoutAccountResponse.parse({ payoutAccount: payoutAccount ?? null }));
+  } catch (error) {
+    req.log.error({ error, route: "payout-account.get" }, "Could not load payout destination");
+    res.status(500).json({ error: "Could not load payout destination." });
+  }
+});
+
+router.put("/payout-account", requireSameOrigin, async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  const parsed = SaveMyPayoutAccountBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a provider, account-holder name, and valid Ugandan mobile-money number." });
+    return;
+  }
+  const compact = parsed.data.phoneNumber.trim().replace(/[\s().-]/g, "");
+  const national = compact.startsWith("+256") ? compact.slice(4)
+    : compact.startsWith("256") ? compact.slice(3)
+      : compact.startsWith("0") ? compact.slice(1) : compact;
+  if (!/^7\d{8}$/.test(national)) {
+    res.status(400).json({ error: "Enter a valid Ugandan mobile-money number." });
+    return;
+  }
+  try {
+    const [payoutAccount] = await db.insert(payoutAccountsTable).values({
+      accountId,
+      provider: parsed.data.provider,
+      holderName: parsed.data.holderName.trim(),
+      phoneNumber: `+256${national}`,
+    }).onConflictDoUpdate({
+      target: payoutAccountsTable.accountId,
+      set: {
+        provider: parsed.data.provider,
+        holderName: parsed.data.holderName.trim(),
+        phoneNumber: `+256${national}`,
+        updatedAt: new Date(),
+      },
+    }).returning({
+      provider: payoutAccountsTable.provider,
+      holderName: payoutAccountsTable.holderName,
+      phoneNumber: payoutAccountsTable.phoneNumber,
+      updatedAt: payoutAccountsTable.updatedAt,
+    });
+    res.json(SaveMyPayoutAccountResponse.parse({ payoutAccount }));
+  } catch (error) {
+    req.log.error({ error, route: "payout-account.save" }, "Could not save payout destination");
+    res.status(500).json({ error: "Could not save payout destination." });
+  }
+});
+
+router.get("/withdrawals", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const withdrawals = await db.select({
+      id: withdrawalRequestsTable.id,
+      amountUgx: withdrawalRequestsTable.amountUgx,
+      feeUgx: withdrawalRequestsTable.feeUgx,
+      receivedUgx: withdrawalRequestsTable.receivedUgx,
+      payoutPhone: withdrawalRequestsTable.payoutPhone,
+      payoutProvider: withdrawalRequestsTable.payoutProvider,
+      payoutHolderName: withdrawalRequestsTable.payoutHolderName,
+      status: withdrawalRequestsTable.status,
+      createdAt: withdrawalRequestsTable.createdAt,
+      processedAt: withdrawalRequestsTable.processedAt,
+      resolutionNote: withdrawalRequestsTable.resolutionNote,
+    }).from(withdrawalRequestsTable)
+      .where(eq(withdrawalRequestsTable.accountId, accountId))
+      .orderBy(sql`${withdrawalRequestsTable.createdAt} DESC`)
+      .limit(100);
+    res.json(GetMyWithdrawalsResponse.parse({ withdrawals }));
+  } catch (error) {
+    req.log.error({ error, route: "withdrawals.get" }, "Could not load member withdrawal history");
+    res.status(500).json({ error: "Could not load withdrawal history." });
+  }
+});
+
+router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  const parsed = CreateWithdrawalBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a whole-UGX withdrawal amount of at least UGX 10,000." });
+    return;
+  }
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [account] = await tx.select({
+        walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+        phoneNumber: phoneAccountsTable.phoneNumber,
+      }).from(phoneAccountsTable)
+        .where(eq(phoneAccountsTable.id, accountId))
+        .for("update")
+        .limit(1);
+      if (!account) return { kind: "missing" as const };
+      if (account.walletBalanceUgx < parsed.data.amountUgx) return { kind: "insufficient" as const };
+      const [destination] = await tx.select().from(payoutAccountsTable)
+        .where(eq(payoutAccountsTable.accountId, accountId)).limit(1);
+      const feeUgx = Math.round(parsed.data.amountUgx * 0.2);
+      const receivedUgx = parsed.data.amountUgx - feeUgx;
+      const [withdrawal] = await tx.insert(withdrawalRequestsTable).values({
+        accountId,
+        amountUgx: parsed.data.amountUgx,
+        feeUgx,
+        receivedUgx,
+        payoutPhone: destination?.phoneNumber ?? account.phoneNumber,
+        payoutProvider: destination?.provider ?? "registered",
+        payoutHolderName: destination?.holderName ?? null,
+      }).returning({
+        id: withdrawalRequestsTable.id,
+        amountUgx: withdrawalRequestsTable.amountUgx,
+        feeUgx: withdrawalRequestsTable.feeUgx,
+        receivedUgx: withdrawalRequestsTable.receivedUgx,
+        payoutPhone: withdrawalRequestsTable.payoutPhone,
+        payoutProvider: withdrawalRequestsTable.payoutProvider,
+        payoutHolderName: withdrawalRequestsTable.payoutHolderName,
+        status: withdrawalRequestsTable.status,
+        createdAt: withdrawalRequestsTable.createdAt,
+        processedAt: withdrawalRequestsTable.processedAt,
+        resolutionNote: withdrawalRequestsTable.resolutionNote,
+      });
+      await tx.update(phoneAccountsTable)
+        .set({ walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} - ${parsed.data.amountUgx}` })
+        .where(eq(phoneAccountsTable.id, accountId));
+      return { kind: "created" as const, withdrawal };
+    });
+    if (result.kind === "missing") {
+      res.status(404).json({ error: "Member account not found." });
+      return;
+    }
+    if (result.kind === "insufficient") {
+      res.status(409).json({ error: "Your available wallet balance is too low for this withdrawal." });
+      return;
+    }
+    res.status(201).json(CreateWithdrawalResponse.parse({ withdrawals: [result.withdrawal] }));
+  } catch (error) {
+    req.log.error({ error, route: "withdrawals.create" }, "Could not create withdrawal request");
+    res.status(500).json({ error: "Could not submit the withdrawal request." });
   }
 });
 

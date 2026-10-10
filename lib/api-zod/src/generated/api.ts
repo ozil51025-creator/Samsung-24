@@ -515,6 +515,151 @@ export const GetMyProductOrdersResponse = zod.object({
 
 
 /**
+ * @summary Get the signed-in member's withdrawal requests
+ */
+export const GetMyWithdrawalsResponse = zod.object({
+  "withdrawals": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "amountUgx": zod.number().int(),
+  "feeUgx": zod.number().int(),
+  "receivedUgx": zod.number().int(),
+  "payoutPhone": zod.string(),
+  "payoutProvider": zod.enum(['airtel', 'mtn', 'registered']),
+  "payoutHolderName": zod.string().nullable(),
+  "status": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "processedAt": zod.coerce.date().nullish(),
+  "resolutionNote": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Get the signed-in member's saved mobile-money payout destination
+ */
+export const GetMyPayoutAccountResponse = zod.object({
+  "payoutAccount": zod.union([zod.object({
+  "provider": zod.enum(['airtel', 'mtn']),
+  "holderName": zod.string(),
+  "phoneNumber": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Save or update the signed-in member's manual payout destination
+ */
+export const saveMyPayoutAccountBodyHolderNameMin = 2;
+export const saveMyPayoutAccountBodyHolderNameMax = 100;
+
+export const saveMyPayoutAccountBodyPhoneNumberMin = 9;
+export const saveMyPayoutAccountBodyPhoneNumberMax = 18;
+
+
+
+export const SaveMyPayoutAccountBody = zod.object({
+  "provider": zod.enum(['airtel', 'mtn']),
+  "holderName": zod.string().min(saveMyPayoutAccountBodyHolderNameMin).max(saveMyPayoutAccountBodyHolderNameMax),
+  "phoneNumber": zod.string().min(saveMyPayoutAccountBodyPhoneNumberMin).max(saveMyPayoutAccountBodyPhoneNumberMax)
+})
+
+export const SaveMyPayoutAccountResponse = zod.object({
+  "payoutAccount": zod.union([zod.object({
+  "provider": zod.enum(['airtel', 'mtn']),
+  "holderName": zod.string(),
+  "phoneNumber": zod.string(),
+  "updatedAt": zod.coerce.date()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Submit a manual withdrawal request
+ */
+export const createWithdrawalBodyAmountUgxMin = 10000;
+export const createWithdrawalBodyAmountUgxMax = 1000000000;
+
+
+
+export const CreateWithdrawalBody = zod.object({
+  "amountUgx": zod.number().int().min(createWithdrawalBodyAmountUgxMin).max(createWithdrawalBodyAmountUgxMax)
+})
+
+export const CreateWithdrawalResponse = zod.object({
+  "withdrawals": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "amountUgx": zod.number().int(),
+  "feeUgx": zod.number().int(),
+  "receivedUgx": zod.number().int(),
+  "payoutPhone": zod.string(),
+  "payoutProvider": zod.enum(['airtel', 'mtn', 'registered']),
+  "payoutHolderName": zod.string().nullable(),
+  "status": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "processedAt": zod.coerce.date().nullish(),
+  "resolutionNote": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary List withdrawal requests for manual payout
+ */
+export const GetAdminWithdrawalsResponse = zod.object({
+  "withdrawals": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "amountUgx": zod.number().int(),
+  "feeUgx": zod.number().int(),
+  "receivedUgx": zod.number().int(),
+  "payoutPhone": zod.string(),
+  "payoutProvider": zod.enum(['airtel', 'mtn', 'registered']),
+  "payoutHolderName": zod.string().nullable(),
+  "status": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "processedAt": zod.coerce.date().nullish(),
+  "resolutionNote": zod.string().nullish()
+}).and(zod.object({
+  "memberPhone": zod.string()
+})))
+})
+
+
+/**
+ * @summary Record a manual payout or fail and refund a request
+ */
+export const ProcessAdminWithdrawalParams = zod.object({
+  "withdrawalId": zod.coerce.string().uuid()
+})
+
+export const processAdminWithdrawalBodyResolutionNoteMin = 3;
+export const processAdminWithdrawalBodyResolutionNoteMax = 200;
+
+
+
+export const ProcessAdminWithdrawalBody = zod.object({
+  "status": zod.enum(['paid', 'failed']),
+  "resolutionNote": zod.string().min(processAdminWithdrawalBodyResolutionNoteMin).max(processAdminWithdrawalBodyResolutionNoteMax)
+})
+
+export const ProcessAdminWithdrawalResponse = zod.object({
+  "id": zod.string().uuid(),
+  "amountUgx": zod.number().int(),
+  "feeUgx": zod.number().int(),
+  "receivedUgx": zod.number().int(),
+  "payoutPhone": zod.string(),
+  "payoutProvider": zod.enum(['airtel', 'mtn', 'registered']),
+  "payoutHolderName": zod.string().nullable(),
+  "status": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "processedAt": zod.coerce.date().nullish(),
+  "resolutionNote": zod.string().nullish()
+}).and(zod.object({
+  "memberPhone": zod.string()
+}))
+
+
+/**
  * @summary Get all editable catalog products
  */
 export const getAdminProductsResponseProductsItemIdMax = 60;

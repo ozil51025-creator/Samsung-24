@@ -97,6 +97,119 @@ export interface ProductOrdersResponse {
   orders: ProductOrder[];
 }
 
+export type WithdrawalRecordPayoutProvider = typeof WithdrawalRecordPayoutProvider[keyof typeof WithdrawalRecordPayoutProvider];
+
+
+export const WithdrawalRecordPayoutProvider = {
+  airtel: 'airtel',
+  mtn: 'mtn',
+  registered: 'registered',
+} as const;
+
+export type WithdrawalRecordStatus = typeof WithdrawalRecordStatus[keyof typeof WithdrawalRecordStatus];
+
+
+export const WithdrawalRecordStatus = {
+  pending: 'pending',
+  paid: 'paid',
+  failed: 'failed',
+} as const;
+
+export interface WithdrawalRecord {
+  id: string;
+  amountUgx: number;
+  feeUgx: number;
+  receivedUgx: number;
+  payoutPhone: string;
+  payoutProvider: WithdrawalRecordPayoutProvider;
+  /** @nullable */
+  payoutHolderName: string | null;
+  status: WithdrawalRecordStatus;
+  createdAt: string;
+  /** @nullable */
+  processedAt?: string | null;
+  /** @nullable */
+  resolutionNote?: string | null;
+}
+
+export interface WithdrawalHistoryResponse {
+  withdrawals: WithdrawalRecord[];
+}
+
+export type AdminWithdrawalRecord = WithdrawalRecord & {
+  memberPhone: string;
+};
+
+export interface AdminWithdrawalListResponse {
+  withdrawals: AdminWithdrawalRecord[];
+}
+
+export interface WithdrawalRequestInput {
+  /**
+     * @minimum 10000
+     * @maximum 1000000000
+     */
+  amountUgx: number;
+}
+
+export type PayoutAccountProvider = typeof PayoutAccountProvider[keyof typeof PayoutAccountProvider];
+
+
+export const PayoutAccountProvider = {
+  airtel: 'airtel',
+  mtn: 'mtn',
+} as const;
+
+export interface PayoutAccount {
+  provider: PayoutAccountProvider;
+  holderName: string;
+  phoneNumber: string;
+  updatedAt: string;
+}
+
+export interface PayoutAccountResponse {
+  payoutAccount: PayoutAccount | null;
+}
+
+export type PayoutAccountInputProvider = typeof PayoutAccountInputProvider[keyof typeof PayoutAccountInputProvider];
+
+
+export const PayoutAccountInputProvider = {
+  airtel: 'airtel',
+  mtn: 'mtn',
+} as const;
+
+export interface PayoutAccountInput {
+  provider: PayoutAccountInputProvider;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  holderName: string;
+  /**
+     * @minLength 9
+     * @maxLength 18
+     */
+  phoneNumber: string;
+}
+
+export type AdminProcessWithdrawalInputStatus = typeof AdminProcessWithdrawalInputStatus[keyof typeof AdminProcessWithdrawalInputStatus];
+
+
+export const AdminProcessWithdrawalInputStatus = {
+  paid: 'paid',
+  failed: 'failed',
+} as const;
+
+export interface AdminProcessWithdrawalInput {
+  status: AdminProcessWithdrawalInputStatus;
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  resolutionNote: string;
+}
+
 export interface HealthStatus {
   status: string;
 }

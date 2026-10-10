@@ -18,6 +18,7 @@ type AuthState = "loading" | "ready" | "error";
 type AuthContextValue = {
   user: PortalUser | null;
   status: AuthState;
+  refresh: () => Promise<void>;
   signIn: (credentials: PhoneCredentials) => Promise<void>;
   register: (credentials: PhoneRegistrationCredentials) => Promise<void>;
   signOut: () => Promise<void>;
@@ -86,6 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       status,
+      async refresh() {
+        const response = await getCurrentPhoneAccount({ credentials: "include" });
+        setUser(response.user);
+        setStatus("ready");
+      },
       async signIn(credentials) {
         const response = await loginPhoneAccount(credentials, { credentials: "include" });
         setUser(response.user);

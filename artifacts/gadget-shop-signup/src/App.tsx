@@ -42,6 +42,7 @@ const adminSections = [
 type AdminSectionId = typeof adminSections[number]['id'];
 type AdminCatalogItem = { id: string; name: string; priceUgx: number; illustration: ProductIllustrationKind; isActive: boolean };
 type CatalogProduct = Pick<AdminCatalogItem, 'id' | 'name' | 'illustration'> & { price: number };
+type PayoutAccount = { provider: 'airtel' | 'mtn'; holderName: string; phoneNumber: string; updatedAt: string };
 
 function queueMemberNotice() {
   try {
@@ -602,8 +603,19 @@ function TaskCenterPage() {
 }
 
 function WithdrawalPage() {
-  const { user, status: authStatus } = useAuth();
+  const { user, status: authStatus, refresh } = useAuth();
+  const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
   const [amount, setAmount] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const fee = Math.round((Number(amount) || 0) * 0.2);
+  useEffect(() => {
+    fetch('/api/payout-account', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (response.ok) setPayoutAccount(data.payoutAccount);
+    }).catch(() => setPayoutAccount(null));
+  }, []);
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Withdraw — samsung';
@@ -616,19 +628,37 @@ function WithdrawalPage() {
   return <main className="withdraw-content" data-testid="page-withdrawal">
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft /></Link><h1>Withdrawal</h1><Link href="/withdrawal-history" aria-label="Withdrawal history"><History /></Link></header>
       <section className="withdraw-hero">
-        <p>UGX —</p><span>My balance</span>
+        <p>UGX {money.format(user?.walletBalanceUgx ?? 0)}</p><span>Available wallet balance</span>
         <img src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" />
-        <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min="10000" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
+        <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min="10000" max={user?.walletBalanceUgx ?? 0} step="1" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
       </section>
       <section className="withdraw-details">
-        <h2>Select a bank card</h2>
-        <Link className="withdraw-bank-select" href="/bank-accounts"><CreditCard /><span>— — — — — — — —</span><ChevronRight /></Link>
-        <button className="withdraw-confirm" type="button" disabled>Confirm</button>
+        <h2>Manual payout destination</h2>
+        <div className="withdraw-bank-select"><CreditCard /><span>{payoutAccount ? `${payoutAccount.provider.toUpperCase()} Money · ${payoutAccount.holderName} · ${payoutAccount.phoneNumber}` : user?.phoneNumber ?? 'Registered phone number'}</span></div>
+        <Link className="payout-destination-link" href="/bank-accounts">{payoutAccount ? 'Change payout destination' : 'Add Airtel or MTN payout number'}</Link>
+        <p className="withdraw-estimate">You receive: <strong>UGX {money.format(Math.max(0, Number(amount || 0) - fee))}</strong> · fee: UGX {money.format(fee)}</p>
+        <button className="withdraw-confirm" type="button" disabled={submitting || !Number.isSafeInteger(Number(amount)) || Number(amount) < 10000 || Number(amount) > (user?.walletBalanceUgx ?? 0)} onClick={async () => {
+          setSubmitting(true); setError(''); setMessage('');
+          try {
+            const response = await fetch('/api/withdrawals', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUgx: Number(amount) }) });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error ?? 'Could not submit the withdrawal request.');
+            setMessage('Request submitted. An admin will pay it manually to the destination shown above.');
+            setAmount('');
+            await refresh().catch(() => undefined);
+          } catch (cause) {
+            setError(cause instanceof Error ? cause.message : 'Could not submit the withdrawal request.');
+          } finally {
+            setSubmitting(false);
+          }
+        }}>{submitting ? 'Submitting…' : 'Request withdrawal'}</button>
+        {message && <p role="status">{message} <Link href="/withdrawal-history">View history</Link></p>}
+        {error && <p role="alert">{error}</p>}
         <ol className="withdraw-terms">
           <li>The minimum withdrawal amount is UGX 10,000.</li>
-          <li>Withdrawal fees amount to 20% of the amount withdrawn.</li>
-          <li>You can make a withdrawal at any time; the funds will be credited within 4 to 24 hours.</li>
-          <li>In order to protect the interests of the platform and its members, you must own at least one device to activate the withdrawal function.</li>
+          <li>A 20% fee is deducted; the amount shown above is the amount you will receive.</li>
+          <li>Your request is paid manually by an administrator. The requested amount is reserved from your wallet while pending.</li>
+          <li>If a request cannot be paid, it is marked failed and the full requested amount is returned to your wallet.</li>
         </ol>
       </section>
     </main>;
@@ -636,47 +666,103 @@ function WithdrawalPage() {
 
 function BankAccountsPage() {
   const { user, status } = useAuth();
+  const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch('/api/payout-account', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load payout account.');
+      setPayoutAccount(data.payoutAccount);
+    }).catch(() => setPayoutAccount(null)).finally(() => setLoading(false));
+  }, []);
   if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
   return <main className="bank-list-page" data-testid="page-bank-accounts">
       <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>List of bank accounts</h1></header>
-      <Link className="bank-add-button" href="/link-bank-card">Add</Link>
+      {loading ? <p className="bank-payout-summary">Loading payout destination…</p> : payoutAccount ? <article className="bank-payout-summary">
+        <strong>{payoutAccount.provider.toUpperCase()} Money</strong>
+        <span>{payoutAccount.holderName}</span><span>{payoutAccount.phoneNumber}</span>
+      </article> : <p className="bank-payout-summary">No mobile-money payout destination saved.</p>}
+      <Link className="bank-add-button" href="/link-bank-card">{payoutAccount ? 'Update' : 'Add'}</Link>
     </main>;
 }
 
 function LinkBankCardPage() {
   const { user, status } = useAuth();
+  const [, navigate] = useLocation();
+  const [provider, setProvider] = useState<'airtel' | 'mtn'>('airtel');
+  const [holderName, setHolderName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    fetch('/api/payout-account', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok || !data.payoutAccount) return;
+      setProvider(data.payoutAccount.provider);
+      setHolderName(data.payoutAccount.holderName);
+      setPhoneNumber(data.payoutAccount.phoneNumber);
+    });
+  }, []);
   if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
   return <main className="bank-link-page" data-testid="page-link-bank-card">
       <header className="withdraw-heading"><Link href="/bank-accounts" aria-label="Back to bank accounts"><ArrowLeft /></Link><h1>Link a bank card</h1></header>
       <img className="bank-device-image" src={`${basePath}/samsung-fold8-banner.jpg`} alt="Samsung Galaxy Z Fold8" />
-      <form className="bank-link-form" onSubmit={(event) => event.preventDefault()}>
+      <form className="bank-link-form" onSubmit={async (event) => {
+        event.preventDefault(); setSaving(true); setError('');
+        try {
+          const response = await fetch('/api/payout-account', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, holderName, phoneNumber }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error ?? 'Could not save payout account.');
+          navigate('/bank-accounts');
+        } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save payout account.'); }
+        finally { setSaving(false); }
+      }}>
         <label htmlFor="bank-name">* Select the bank</label>
-        <select id="bank-name" defaultValue="">
-          <option value="">Please select</option>
+        <select id="bank-name" value={provider} onChange={(event) => setProvider(event.target.value as 'airtel' | 'mtn')}>
           <option value="airtel">Airtel</option>
           <option value="mtn">MTN</option>
         </select>
         <label htmlFor="bank-holder">* Name of the holder</label>
-        <input id="bank-holder" placeholder="Please enter the name of the account holder" />
+        <input id="bank-holder" required minLength={2} maxLength={100} value={holderName} onChange={(event) => setHolderName(event.target.value)} placeholder="Please enter the name of the account holder" />
         <label htmlFor="bank-account">* Bank account</label>
-        <input id="bank-account" inputMode="numeric" placeholder="Please enter the account number" />
-        <button type="button" disabled>Confirm</button>
+        <input id="bank-account" required type="tel" inputMode="tel" autoComplete="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="e.g. 07XX XXX XXX" />
+        <button type="submit" disabled={saving || holderName.trim().length < 2 || phoneNumber.trim().length < 9}>{saving ? 'Saving…' : 'Confirm'}</button>
+        {error && <p role="alert">{error}</p>}
       </form>
     </main>;
 }
 
 function WithdrawalHistoryPage() {
+  const [withdrawals, setWithdrawals] = useState<Array<{ id: string; amountUgx: number; feeUgx: number; receivedUgx: number; payoutPhone: string; payoutProvider: 'airtel' | 'mtn' | 'registered'; payoutHolderName: string | null; status: 'pending' | 'paid' | 'failed'; createdAt: string; processedAt: string | null; resolutionNote: string | null }>>([]);
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  useEffect(() => {
+    let active = true;
+    const load = () => fetch('/api/withdrawals', { credentials: 'include' }).then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load withdrawal history.');
+        if (active) { setWithdrawals(data.withdrawals); setState('ready'); }
+      }).catch(() => { if (active) setState('error'); });
+    void load();
+    const interval = window.setInterval(load, 30_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
   return <MemberFrame active="/withdrawal-history">
     <main className="withdraw-content withdrawal-history-page" data-testid="page-withdrawal-history">
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft aria-hidden="true" /></Link><h1>Withdrawal history</h1></header>
-      <section className="withdraw-history-empty" role="status">
-        <h2>No withdrawal history</h2>
-        <p>There are no recorded withdrawals for this account yet. History will appear here when withdrawals are available.</p>
-      </section>
+      {state === 'loading' && <section className="withdraw-history-empty" role="status"><p>Loading withdrawal history…</p></section>}
+      {state === 'error' && <section className="withdraw-history-empty" role="alert"><p>Could not load withdrawal history. Refresh and try again.</p></section>}
+      {state === 'ready' && withdrawals.length === 0 && <section className="withdraw-history-empty"><h2>No withdrawal history</h2><p>Your manual withdrawal requests will appear here.</p></section>}
+      {state === 'ready' && withdrawals.map((withdrawal) => <article className="withdraw-history-item" key={withdrawal.id}>
+        <div className="withdraw-history-title"><span>{withdrawal.id.slice(0, 18).toUpperCase()}</span><strong className={`withdraw-status-${withdrawal.status}`}>{withdrawal.status === 'paid' ? 'Successful' : withdrawal.status === 'failed' ? 'Failed' : 'Pending'}</strong></div>
+        <p>Amount <span>: UGX {money.format(withdrawal.amountUgx)}</span></p>
+        <p>Received <span>: UGX {money.format(withdrawal.receivedUgx)}</span></p>
+        <p>Date <span>: {new Date(withdrawal.createdAt).toLocaleString()}</span></p>
+        {withdrawal.resolutionNote && <small>{withdrawal.resolutionNote}</small>}
+      </article>)}
     </main>
   </MemberFrame>;
 }
@@ -814,6 +900,8 @@ function AdminTaskCenterPage() {
   const [activeSection, setActiveSection] = useState<AdminSectionId>('dashboard');
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<Array<{ id: string; amountUgx: number; feeUgx: number; receivedUgx: number; payoutPhone: string; payoutProvider: 'airtel' | 'mtn' | 'registered'; payoutHolderName: string | null; status: 'pending' | 'paid' | 'failed'; createdAt: string; processedAt: string | null; resolutionNote: string | null; memberPhone: string }>>([]);
+  const [withdrawalStatus, setWithdrawalStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
   const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null; isActive: boolean }>>([]);
   const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
@@ -895,6 +983,37 @@ function AdminTaskCenterPage() {
       .catch(() => setRechargeStatus('error'));
   };
   useEffect(() => { loadRechargeRequests(); }, []);
+  const loadWithdrawalRequests = () => {
+    setWithdrawalStatus('loading');
+    fetch('/api/admin/withdrawals', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load withdrawals.');
+      setWithdrawalRequests(data.withdrawals);
+      setWithdrawalStatus('ready');
+    }).catch(() => setWithdrawalStatus('error'));
+  };
+  useEffect(() => {
+    loadWithdrawalRequests();
+    const interval = window.setInterval(loadWithdrawalRequests, 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
+  const processWithdrawal = async (request: (typeof withdrawalRequests)[number], nextStatus: 'paid' | 'failed') => {
+    if (nextStatus === 'paid' && !window.confirm(`Confirm that UGX ${money.format(request.receivedUgx)} was sent manually to ${request.payoutProvider.toUpperCase()} ${request.payoutPhone}?`)) return;
+    const resolutionNote = window.prompt(nextStatus === 'paid' ? 'Enter the manual transfer reference or payment note:' : 'Why could this withdrawal not be paid?');
+    if (!resolutionNote?.trim()) return;
+    try {
+      const response = await fetch(`/api/admin/withdrawals/${encodeURIComponent(request.id)}`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, resolutionNote: resolutionNote.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not process withdrawal.');
+      loadWithdrawalRequests();
+      loadAdminDirectory();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not process withdrawal.');
+    }
+  };
   const verifyRecharge = async (id: string) => {
     const response = await fetch(`/api/admin/recharge-requests/${encodeURIComponent(id)}/verify`, {
       method: 'POST',
@@ -1009,7 +1128,7 @@ function AdminTaskCenterPage() {
     <header className="admin-dashboard-header">
       <Link href="/home" className="admin-dashboard-brand"><Brand small /><span><strong>Samsung</strong><small>ADMIN</small></span></Link>
       <span className="admin-live-badge"><i />Live</span>
-      <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminProducts(); loadRechargeRequests(); loadTasks(); }}><Bell /></button>
+       <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminProducts(); loadRechargeRequests(); loadWithdrawalRequests(); loadTasks(); }}><Bell /></button>
       <Link href="/home" className="admin-exit-button" aria-label="Return to member portal"><ArrowRight /></Link>
     </header>
     <div className="admin-task-body">
@@ -1124,7 +1243,21 @@ function AdminTaskCenterPage() {
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'withdrawals'}>
         <h2>Withdrawals</h2>
-        <p className="admin-connection-state"><WalletCards /> Withdrawal processing is not connected. No withdrawable balance or payout history is shown until verified payout records are available.</p>
+        <p className="admin-task-note">Pay members manually outside the site, then mark the request paid. Marking a request failed returns the reserved gross amount to the member’s wallet.</p>
+        {withdrawalStatus === 'loading' && <p role="status">Loading withdrawal requests…</p>}
+        {withdrawalStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load withdrawal requests.</p><button type="button" onClick={loadWithdrawalRequests}>Try again</button></div>}
+        {withdrawalStatus === 'ready' && withdrawalRequests.length === 0 && <p>No withdrawal requests.</p>}
+        {withdrawalRequests.map((request) => <article className="admin-recharge-review-item" key={request.id}>
+          <p><strong>UGX {money.format(request.amountUgx)}</strong> · {request.status}</p>
+          <p>Member: {request.memberPhone} · Pay to: {request.payoutProvider.toUpperCase()} {request.payoutHolderName ? `· ${request.payoutHolderName} · ` : '· '}{request.payoutPhone}</p>
+          <p>Fee: UGX {money.format(request.feeUgx)} · Member receives: UGX {money.format(request.receivedUgx)}</p>
+          <p>Requested: {new Date(request.createdAt).toLocaleString()}</p>
+          {request.resolutionNote && <p>Admin note: {request.resolutionNote}</p>}
+          {request.status === 'pending' && <div className="admin-member-actions">
+            <button type="button" onClick={() => void processWithdrawal(request, 'paid')}>Mark paid</button>
+            <button type="button" onClick={() => void processWithdrawal(request, 'failed')}>Fail and refund</button>
+          </div>}
+        </article>)}
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'products'}>
         <h2>Products</h2>
