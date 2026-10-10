@@ -32,7 +32,7 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
         <div className="product-summary-collected">
           <p className="product-summary-eyebrow">Total collected</p>
           <p className="product-summary-value">UGX {formatPrice(totalCollectedUgx)}</p>
-          <p className="product-summary-label">From product purchases</p>
+          <p className="product-summary-label">Product earnings received</p>
         </div>
       </section>
       <section className="product-catalog-list" aria-label="Samsung products">
@@ -59,6 +59,7 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
         ))}
       </section>
       {purchaseMessage && <p className="product-checkout-note" role="status" aria-live="polite">{purchaseMessage}</p>}
+      {totalCollectedUgx === 0 && <p className="product-checkout-note">No product earnings have been credited to your wallet yet.</p>}
       <p className="product-checkout-note">Daily and total figures are estimates only, not guaranteed returns. Purchased orders are recorded as pending fulfillment.</p>
     </>
   );
