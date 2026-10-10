@@ -992,6 +992,17 @@ function AccountPage() {
         </article>
       </section>
 
+      <section className="home-welcome-bonus account-welcome-bonus" aria-labelledby="account-welcome-bonus-title" data-testid="card-account-welcome-bonus">
+        <div>
+          <h2 id="account-welcome-bonus-title">Welcome bonus</h2>
+          <strong>UGX 5,000</strong>
+        </div>
+        <div className="home-welcome-bonus-status">
+          <span>Pending</span>
+          <small>Not credited until activation rules are confirmed.</small>
+        </div>
+      </section>
+
       <section className="account-wallet-actions" aria-label="Wallet actions">
         <Link href="/recharge" data-testid="button-account-deposit" aria-label="Deposit">
           <Download aria-hidden="true" /><span>Recharge</span>

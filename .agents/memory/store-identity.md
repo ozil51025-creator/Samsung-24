@@ -73,4 +73,4 @@ The UGX 5,000 welcome bonus must display as Pending until its activation rules a
 
 **Why:** The user specified that the welcome bonus status should be Pending.
 
-**How to apply:** Show the Pending status and clarify that no wallet credit has been issued while payout rules remain unconfirmed.
+**How to apply:** Show the Pending status on Home and Account, and clarify that no wallet credit has been issued while payout rules remain unconfirmed. Keep pending funds out of Pay and Accumulated totals until credited.
