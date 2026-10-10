@@ -503,7 +503,10 @@ function WithdrawalHistoryPage() {
 
 function RechargePage() {
   const { user, status } = useAuth();
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState('7000');
+  const [channel, setChannel] = useState('Togo');
+  const amounts = [2000, 7000, 15000, 30000, 65000, 150000, 350000, 750000];
+  const channels = ['Togo', 'Ivory Coast', 'Burkina Faso', 'Senegal'];
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Recharge — Samsung Gadgets';
@@ -524,6 +527,27 @@ function RechargePage() {
         <span>Top-up amount</span>
         <label htmlFor="recharge-amount">UGX</label>
         <input id="recharge-amount" type="number" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <img src={`${basePath}/recharge-earbuds.jpg`} alt="" aria-hidden="true" />
+      </section>
+      <section className="recharge-presets">
+        <h2>Quickly select the amount</h2>
+        <div>{amounts.map((preset) => <button type="button" key={preset} aria-pressed={amount === String(preset)} onClick={() => setAmount(String(preset))}>{money.format(preset)}</button>)}</div>
+      </section>
+      <section className="recharge-channel">
+        <h2>Choose the charging channel</h2>
+        <div className="recharge-network-list">{channels.map((item) =>
+          <button type="button" key={item} className={channel === item ? 'selected' : ''} aria-pressed={channel === item} onClick={() => setChannel(item)}>
+            <CreditCard aria-hidden="true" /><span>{item}</span>{channel === item && <Check aria-hidden="true" />}
+          </button>
+        )}</div>
+        <button className="recharge-confirm" type="button" disabled>Confirm</button>
+        <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <Link href="/account">click here</Link>.</p>
+        <ol className="recharge-terms">
+          <li>The minimum top-up amount is 2,000 UGX; amounts below this threshold cannot be credited to your account.</li>
+          <li>The order amount must match the actual payment amount.</li>
+          <li>Please ensure you use the most up-to-date bank details for each top-up; do not use outdated information.</li>
+          <li>Once the transfer is initiated, please allow 10 to 60 minutes for processing. If the funds have not arrived after this time, please enter your payment details on the top-up page or contact the official customer service for assistance.</li>
+        </ol>
       </section>
       <section className="recharge-channel">
         <button className="recharge-confirm" type="button" disabled>Confirm</button>
