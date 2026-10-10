@@ -521,6 +521,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /products/orders:
+    get:
+      operationId: getMyProductOrders
+      tags: [products]
+      summary: Get the signed-in member's product orders
+      responses:
+        "200":
+          description: Member product orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductOrdersResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /admin/products:
     get:
       operationId: getAdminProducts
@@ -620,6 +638,24 @@ components:
             properties:
               level: { type: integer, minimum: 1, maximum: 3 }
               amountUgx: { type: integer }
+    ProductOrder:
+      type: object
+      additionalProperties: false
+      required: [id, productName, priceUgx, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        productName: { type: string }
+        priceUgx: { type: integer }
+        status: { type: string, enum: [pending_fulfillment] }
+        createdAt: { type: string, format: date-time }
+    ProductOrdersResponse:
+      type: object
+      additionalProperties: false
+      required: [orders]
+      properties:
+        orders:
+          type: array
+          items: { $ref: "#/components/schemas/ProductOrder" }
     HealthStatus:
       type: object
       properties:
