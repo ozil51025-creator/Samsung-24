@@ -368,9 +368,9 @@ function HomePage() {
           <article key={label} className={`home-photo-card ${position}`}>
             <img src={image} alt="" aria-hidden="true" loading="lazy" />
             <span className="home-photo-card-copy">
-              <strong>— UGX</strong>
+              <strong>{label !== 'Withdrawal' ? 'UGX 5,000' : '— UGX'}</strong>
               <small>{label}</small>
-              {label !== 'Withdrawal' && <em className="home-summary-pending">UGX 5,000 pending</em>}
+              {label !== 'Withdrawal' && <em className="home-summary-pending">Pending bonus · not credited</em>}
             </span>
           </article>
         ))}
@@ -976,14 +976,14 @@ function AccountPage() {
 
       <section className="account-balance-row" aria-label="Wallet totals">
         <article>
-          <strong>UGX —</strong>
+          <strong>UGX 5,000</strong>
           <span>Wallet balance</span>
-          <small className="account-balance-pending">UGX 5,000 pending</small>
+          <small className="account-balance-pending">Pending bonus · not credited</small>
         </article>
         <article>
-          <strong>UGX —</strong>
+          <strong>UGX 5,000</strong>
           <span>Total accumulated</span>
-          <small className="account-balance-pending">UGX 5,000 pending</small>
+          <small className="account-balance-pending">Pending bonus · not credited</small>
         </article>
       </section>
 

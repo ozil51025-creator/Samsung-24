@@ -73,4 +73,4 @@ The UGX 5,000 welcome bonus is not credited until its activation rules are confi
 
 **Why:** The user asked to remove the standalone welcome-bonus card after it appeared on Home and Account.
 
-**How to apply:** Do not show a standalone bonus card. Show "UGX 5,000 pending" under Pay and Accumulated on Home and Account, while keeping confirmed wallet totals unmodified until the bonus is credited.
+**How to apply:** Do not show a standalone bonus card. Display UGX 5,000 as the pending amount in Pay and Accumulated on Home and Account, clearly labeled "Pending bonus · not credited"; do not imply it is spendable cash.
