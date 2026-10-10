@@ -55,11 +55,11 @@ Every account receives a persistent referral code automatically. Signup links pr
 
 **How to apply:** Generate each code once, keep it stable across sign-ins, prefill it from shared signup links, and reject invalid provided codes rather than silently discarding them. Direct inviter attribution may be stored, but do not imply commissions or payouts are active.
 
-The user chose a separate UGX wallet with customer top-ups and withdrawals, named PesaJet as the desired gateway, set the minimum withdrawal to UGX 10,000, and confirmed a 20% withdrawal fee. They earlier chose MTN/Airtel for payouts but later supplied withdrawal screenshots with bank-account/card pages. Follow the latest screenshot for the member-page layout; confirm the destination before enabling real payouts. Deposits should be credited to the wallet only after an administrator confirms receipt. Task Center milestones use total deposits from all referral levels: UGX 100,000 → 2,000; 500,000 → 20,000; 700,000 → 10,000; 1,000,000 → 10,000; 2,000,000 → 50,000; and 4,000,000 → 100,000. Each threshold reward is additional, credited once, and reflected in Pay/wallet balance and cumulative/total accumulated amounts.
+The user chose a separate UGX wallet with customer top-ups and withdrawals, named PesaJet as the desired gateway, set the minimum withdrawal to UGX 10,000, and confirmed a 20% withdrawal fee. They earlier chose MTN/Airtel for payouts but later supplied withdrawal screenshots with bank-account/card pages. Follow the latest screenshot for the member-page layout; confirm the destination before enabling real payouts. Deposits should be credited to the wallet only after an administrator confirms receipt. Task Center milestones use total deposits from referral Levels 1–3: UGX 100,000 → 2,000; 500,000 → 20,000; 700,000 → 10,000; 1,000,000 → 10,000; 2,000,000 → 50,000; and 4,000,000 → 100,000. Each threshold reward is additional, credited once, and reflected in Pay/wallet balance and cumulative/total accumulated amounts.
 
-**Why:** The user explicitly specified the six total-team-deposit thresholds and additive rewards, then clarified that all referral levels count.
+**Why:** The user explicitly specified the six total-team-deposit thresholds and additive rewards, then clarified that Levels 1, 2, and 3 count.
 
-**How to apply:** Count administrator-confirmed deposits across all referral levels; keep the same milestone list for Task Center display and reward crediting. PesaJet payout submission and actual withdrawals remain unconnected.
+**How to apply:** Count administrator-confirmed deposits from referral Levels 1–3; keep the same milestone list for Task Center display and reward crediting. PesaJet payout submission and actual withdrawals remain unconnected.
 
 All displayed currency is UGX. Remove non-Uganda recharge country choices; do not add country-specific payment channels or other payment claims unless the user confirms them.
 

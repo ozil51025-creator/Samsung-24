@@ -18,7 +18,7 @@ if (Number.isNaN(port) || port <= 0) {
 
 async function startServer() {
   const reconciliation = await reconcileExistingTeamDepositMilestones();
-  logger.info(reconciliation, "Reconciled existing all-level team deposit milestones");
+  logger.info(reconciliation, "Reconciled existing level 1–3 team deposit milestones");
 
   app.listen(port, (err) => {
     if (err) {

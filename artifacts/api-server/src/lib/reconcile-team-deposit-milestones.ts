@@ -5,7 +5,7 @@ import {
   teamDepositMilestoneClaimsTable,
 } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
-import { calculateAllLevelTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "./team-deposit-milestones";
+import { calculateLevelOneToThreeTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "./team-deposit-milestones";
 
 export async function reconcileExistingTeamDepositMilestones() {
   return db.transaction(async (tx) => {
@@ -17,7 +17,7 @@ export async function reconcileExistingTeamDepositMilestones() {
       accountId: phoneReferralCodesTable.accountId,
       referredByAccountId: phoneReferralCodesTable.referredByAccountId,
     }).from(phoneReferralCodesTable);
-    const totalsByAccount = calculateAllLevelTeamDeposits(accounts, referralLinks);
+    const totalsByAccount = calculateLevelOneToThreeTeamDeposits(accounts, referralLinks);
     let claimsCreated = 0;
     let totalRewardUgx = 0;
 

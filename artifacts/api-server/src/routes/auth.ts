@@ -19,7 +19,7 @@ import {
   RegisterPhoneAccountBody,
   RegisterPhoneAccountResponse,
 } from "@workspace/api-zod";
-import { calculateAllLevelTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
+import { calculateLevelOneToThreeTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -511,7 +511,7 @@ router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
       accountId: phoneReferralCodesTable.accountId,
       referredByAccountId: phoneReferralCodesTable.referredByAccountId,
     }).from(phoneReferralCodesTable);
-    const teamDepositsUgx = calculateAllLevelTeamDeposits(accounts, referralLinks).get(accountId) ?? 0;
+    const teamDepositsUgx = calculateLevelOneToThreeTeamDeposits(accounts, referralLinks).get(accountId) ?? 0;
     const claims = await db.select({
       milestoneId: teamDepositMilestoneClaimsTable.milestoneId,
       rewardUgx: teamDepositMilestoneClaimsTable.rewardUgx,

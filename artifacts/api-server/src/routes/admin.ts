@@ -19,8 +19,8 @@ import {
   UpdateAdminTaskCenterSettingsResponse,
 } from "@workspace/api-zod";
 import {
-  calculateAllLevelTeamDeposits,
-  getReferralAncestors,
+  calculateLevelOneToThreeTeamDeposits,
+  getReferralAncestorsThroughLevelThree,
   TEAM_DEPOSIT_MILESTONES,
 } from "../lib/team-deposit-milestones";
 
@@ -257,8 +257,8 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
         accountId: phoneReferralCodesTable.accountId,
         referredByAccountId: phoneReferralCodesTable.referredByAccountId,
       }).from(phoneReferralCodesTable);
-      const teamDepositsByAccount = calculateAllLevelTeamDeposits(depositAccounts, referralLinks);
-      const ancestorIds = getReferralAncestors(verified.accountId, referralLinks).sort();
+      const teamDepositsByAccount = calculateLevelOneToThreeTeamDeposits(depositAccounts, referralLinks);
+      const ancestorIds = getReferralAncestorsThroughLevelThree(verified.accountId, referralLinks).sort();
       for (const referrerId of ancestorIds) {
         await tx.select({ id: phoneAccountsTable.id })
           .from(phoneAccountsTable)

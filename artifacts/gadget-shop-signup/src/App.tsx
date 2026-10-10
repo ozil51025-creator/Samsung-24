@@ -546,7 +546,7 @@ function TaskCenterPage() {
       {depositMilestones?.milestones.map((milestone) => {
         const progress = Math.min(100, Math.floor(depositMilestones.teamDepositsUgx / milestone.thresholdUgx * 100));
         return <article className="task-center-item" key={milestone.id}>
-          <h2>Total team deposits: UGX {money.format(milestone.thresholdUgx)} · Reward UGX {money.format(milestone.rewardUgx)}</h2>
+          <h2>Total team deposits (Levels 1–3): UGX {money.format(milestone.thresholdUgx)} · Reward UGX {money.format(milestone.rewardUgx)}</h2>
           <div className="task-center-progress">
             <div><strong>UGX {money.format(depositMilestones.teamDepositsUgx)}</strong><span>Current</span></div>
             <div><strong>UGX {money.format(milestone.thresholdUgx)}</strong><span>Objective</span></div>
