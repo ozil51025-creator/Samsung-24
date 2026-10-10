@@ -457,7 +457,7 @@ function WithdrawalPage() {
       <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft /></Link><h1>Withdrawal</h1><Link href="/withdrawal-history" aria-label="Withdrawal history"><History /></Link></header>
       <section className="withdraw-hero">
         <p>UGX —</p><span>My balance</span>
-        <img src={`${basePath}/withdrawal-earbuds.jpg`} alt="" aria-hidden="true" />
+        <img src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" />
         <label htmlFor="withdraw-amount"><strong>UGX</strong><input id="withdraw-amount" type="number" min="10000" inputMode="numeric" placeholder="Enter the withdrawal amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
       </section>
       <section className="withdraw-details">
@@ -543,7 +543,7 @@ function RechargePage() {
         <span>Top-up amount</span>
         <label htmlFor="recharge-amount">UGX</label>
         <input id="recharge-amount" type="number" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} />
-        <img src={`${basePath}/recharge-earbuds.jpg`} alt="" aria-hidden="true" />
+        <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="" aria-hidden="true" />
       </section>
       <section className="recharge-presets">
         <h2>Quickly select the amount</h2>

@@ -11,6 +11,12 @@ The user requested Samsung blue, dark neutrals, white, and translucent surfaces 
 
 **How to apply:** Use Samsung blue (#1428A0) with navy and white, and translucent glass-like surfaces consistently across public, auth, and member pages.
 
+Every picture displayed in the site must depict Samsung products or Samsung-related imagery.
+
+**Why:** The user explicitly said every picture inside the site must be for Samsung.
+
+**How to apply:** Use provided or verified Samsung imagery for displayed photos. Do not use unrelated cars, athletes, or other non-Samsung product images.
+
 For screenshot-led page work, the user wants the reference followed closely and does not want agent-invented options, copy, amounts, or terms. If screenshot content conflicts with an earlier confirmed project rule, ask before choosing which data to display.
 
 **Why:** The user explicitly corrected the assistant for adding unprovided choices and asked for pages to match their screenshots exactly.
