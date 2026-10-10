@@ -832,10 +832,9 @@ function AccountPage() {
           const isExpanded = expandedAction === id;
           return (
             <div className="account-shortcut" key={id}>
-              <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}>
-                <Icon aria-hidden="true" />
-                <span>{label}</span>
-              </button>
+              {id === 'link-card'
+                ? <Link href="/bank-accounts" className="account-shortcut-link" data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></Link>
+                : <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></button>}
               {isExpanded && <p role="status" data-testid={`status-account-${id}`}>{detail}</p>}
             </div>
           );
