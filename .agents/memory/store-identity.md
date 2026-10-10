@@ -37,8 +37,8 @@ Every account receives a persistent referral code automatically. Signup links pr
 
 **How to apply:** Generate each code once, keep it stable across sign-ins, prefill it from shared signup links, and reject invalid provided codes rather than silently discarding them. Direct inviter attribution may be stored, but do not imply commissions or payouts are active.
 
-The user also chose a separate UGX wallet with customer top-ups and withdrawals, and named PesaJet as the desired gateway. They specified a UGX 10,000 minimum withdrawal and a 20% withdrawal percentage, but the meaning of the percentage is not yet clear. PesaJet was not available in the current Replit integration search, so the Home wallet page keeps actions disabled and totals/history unavailable rather than inventing transactions.
+The user also chose a separate UGX wallet with customer top-ups and withdrawals, and named PesaJet as the desired gateway. They specified a UGX 10,000 minimum withdrawal and confirmed a 20% fee deducted from each withdrawal, leaving 80% of the requested amount to be paid out. PesaJet was not available in the current Replit integration search, so the Home wallet page keeps actions disabled and totals/history unavailable rather than inventing transactions.
 
-**Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers. The 20% figure could be a fee or a withdrawal limit.
+**Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers.
 
-**How to apply:** Keep wallet actions disabled until a provider that supports UGX collections and Uganda payouts is available and the app can show verified, server-backed wallet data. Do not present 20% as a fee or limit until its meaning is confirmed.
+**How to apply:** Display the UGX 10,000 minimum and the 20% fee with its net 80% payout effect, but keep wallet actions disabled until a provider that supports UGX collections and Uganda payouts is available and the app can show verified, server-backed wallet data.

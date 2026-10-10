@@ -68,6 +68,29 @@ export function OverviewWalletPanel() {
         </button>
       </div>
 
+      <section
+        className="mt-4 rounded-[16px] border border-white/10 bg-white/[.035] p-3.5"
+        aria-labelledby="withdrawal-terms-title"
+        data-testid="wallet-withdrawal-terms"
+      >
+        <h3 id="withdrawal-terms-title" className="text-[11px] font-bold text-white/85">
+          Withdrawal terms
+        </h3>
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[.07em] text-white/45">Minimum withdrawal</p>
+            <p className="mt-1 text-[12px] font-bold text-white">UGX 10,000</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-[.07em] text-white/45">Withdrawal fee</p>
+            <p className="mt-1 text-[12px] font-bold text-white">20%</p>
+          </div>
+        </div>
+        <p className="mt-2 text-[10px] leading-5 text-white/50">
+          The fee is deducted from each withdrawal; the remaining 80% is paid out. Withdrawals are not available until a payment provider is connected.
+        </p>
+      </section>
+
       <section id="wallet-history" className="mt-5 border-t border-white/10 pt-4" aria-labelledby="wallet-history-title">
         <h3 id="wallet-history-title" className="flex items-center gap-2 text-[12px] font-semibold text-white/80">
           <Clock3 className="h-4 w-4 text-[#edbd76]" aria-hidden="true" />
