@@ -43,13 +43,13 @@ Every account receives a persistent referral code automatically. Signup links pr
 
 **How to apply:** Generate each code once, keep it stable across sign-ins, prefill it from shared signup links, and reject invalid provided codes rather than silently discarding them. Direct inviter attribution may be stored, but do not imply commissions or payouts are active.
 
-The user also chose a separate UGX wallet with customer top-ups and withdrawals, and named PesaJet as the desired gateway. They specified a UGX 10,000 minimum withdrawal and confirmed a 20% fee deducted from each withdrawal, leaving 80% of the requested amount to be paid out. For withdrawals, they chose Uganda mobile money (MTN or Airtel). PesaJet was not available in the current Replit integration search, so payout submission and wallet totals/history remain unavailable rather than inventing transactions.
+The user chose a separate UGX wallet with customer top-ups and withdrawals, named PesaJet as the desired gateway, set the minimum withdrawal to UGX 10,000, and confirmed a 20% withdrawal fee. They earlier chose MTN/Airtel for payouts but later supplied withdrawal screenshots with bank-account/card pages. Follow the latest screenshot for the member-page layout; confirm the destination before enabling real payouts. PesaJet payout submission and verified wallet totals/history are not connected.
 
 Recharge amounts use UGX. Do not add deposit presets, minimums, or payment-channel claims unless the user provides them.
 
 **Why:** The user wants actual money movement, but there is no connected wallet provider or transaction ledger; mock balances would mislead customers.
 
-**How to apply:** Display the UGX 10,000 minimum and 20% fee with its net 80% payout effect. Let the withdrawal screen preview MTN/Airtel details, but do not submit or persist payout details until a provider that supports Uganda payouts is verified; keep deposits, payouts, balances, and history inactive until server-backed transaction data exists.
+**How to apply:** Display the confirmed UGX 10,000 minimum and 20% fee. Do not add payout destination choices beyond the latest supplied screenshot, and do not submit or persist payout details until the user confirms the destination and a provider that supports it is verified. Keep balances and transaction history inactive until server-backed data exists.
 
 Task Center task text, goals, and UGX reward terms should be editable in the admin panel. Editing those terms does not itself create eligibility tracking, earnings, or payouts; keep tasks inactive by default and do not show rewards as earned until qualifying events and a verified ledger exist.
 

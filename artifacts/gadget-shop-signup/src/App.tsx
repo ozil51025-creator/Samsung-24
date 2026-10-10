@@ -306,7 +306,7 @@ function HomePage() {
     { href: '/account', label: 'My account', note: 'Account settings', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
   ];
   const homeActions = [
-    { label: 'Deposit', icon: Download, href: '/recharge' },
+    { label: 'Recharge', icon: Download, href: '/recharge' },
     { label: 'Withdraw', icon: CreditCard, href: '/withdrawal' },
     { label: 'Customer service', icon: Headphones, title: 'Customer support details have not been configured.' },
     { label: 'Check-in', icon: CalendarDays, title: 'Daily check-in rewards are not active.' },
@@ -563,9 +563,6 @@ function RechargePage() {
           <li>Once the transfer is initiated, please allow 10 to 60 minutes for processing. If the funds have not arrived after this time, please enter your payment details on the top-up page or contact the official customer service for assistance.</li>
         </ol>
       </section>
-      <section className="recharge-channel">
-        <button className="recharge-confirm" type="button" disabled>Confirm</button>
-      </section>
     </main>;
 }
 
@@ -813,7 +810,7 @@ function AccountPage() {
 
       <section className="account-wallet-actions" aria-label="Wallet actions">
         <Link href="/recharge" data-testid="button-account-deposit" aria-label="Deposit">
-          <Download aria-hidden="true" /><span>Deposit</span>
+          <Download aria-hidden="true" /><span>Recharge</span>
         </Link>
         <Link href="/withdrawal" data-testid="button-account-withdraw" aria-label="Withdraw">
           <CreditCard aria-hidden="true" /><span>Withdraw</span>
@@ -1041,6 +1038,8 @@ function AppRoutes() {
         <Route path="/admin" component={AdminTaskCenterPage} />
         <Route path="/withdrawal" component={WithdrawalPage} />
         <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />
+        <Route path="/bank-accounts" component={BankAccountsPage} />
+        <Route path="/link-bank-card" component={LinkBankCardPage} />
         <Route path="/bank-accounts" component={BankAccountsPage} />
         <Route path="/link-bank-card" component={LinkBankCardPage} />
         <Route path="/recharge" component={RechargePage} />
