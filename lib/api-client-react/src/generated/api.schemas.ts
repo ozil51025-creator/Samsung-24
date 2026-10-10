@@ -5,6 +5,57 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ProductCatalogItemIllustration = typeof ProductCatalogItemIllustration[keyof typeof ProductCatalogItemIllustration];
+
+
+export const ProductCatalogItemIllustration = {
+  cable: 'cable',
+  charger: 'charger',
+  earphones: 'earphones',
+  tag: 'tag',
+  buds: 'buds',
+  band: 'band',
+  phone: 'phone',
+  phone5g: 'phone5g',
+  tablet: 'tablet',
+  sfe: 'sfe',
+  ultra: 'ultra',
+  fold: 'fold',
+} as const;
+
+export interface ProductCatalogItem {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     * @pattern ^[a-z0-9-]+$
+     */
+  id: string;
+  /**
+     * @minLength 2
+     * @maxLength 100
+     */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 1000000000
+     */
+  priceUgx: number;
+  illustration: ProductCatalogItemIllustration;
+  isActive: boolean;
+}
+
+export interface ProductCatalogResponse {
+  products: ProductCatalogItem[];
+}
+
+export interface ProductCatalogInput {
+  /**
+     * @minItems 1
+     * @maxItems 50
+     */
+  products: ProductCatalogItem[];
+}
+
 export interface HealthStatus {
   status: string;
 }

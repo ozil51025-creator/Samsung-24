@@ -439,3 +439,101 @@ export const UpdateAdminTaskCenterSettingsResponse = zod.object({
 })
 
 
+/**
+ * @summary Get active Samsung catalog items and listed prices
+ */
+export const getProductCatalogResponseProductsItemIdMax = 60;
+
+
+export const getProductCatalogResponseProductsItemIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const getProductCatalogResponseProductsItemNameMin = 2;
+export const getProductCatalogResponseProductsItemNameMax = 100;
+
+export const getProductCatalogResponseProductsItemPriceUgxMax = 1000000000;
+
+
+
+export const GetProductCatalogResponse = zod.object({
+  "products": zod.array(zod.object({
+  "id": zod.string().min(1).max(getProductCatalogResponseProductsItemIdMax).regex(getProductCatalogResponseProductsItemIdRegExp),
+  "name": zod.string().min(getProductCatalogResponseProductsItemNameMin).max(getProductCatalogResponseProductsItemNameMax),
+  "priceUgx": zod.number().int().min(1).max(getProductCatalogResponseProductsItemPriceUgxMax),
+  "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
+  "isActive": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Get all editable catalog products
+ */
+export const getAdminProductsResponseProductsItemIdMax = 60;
+
+
+export const getAdminProductsResponseProductsItemIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const getAdminProductsResponseProductsItemNameMin = 2;
+export const getAdminProductsResponseProductsItemNameMax = 100;
+
+export const getAdminProductsResponseProductsItemPriceUgxMax = 1000000000;
+
+
+
+export const GetAdminProductsResponse = zod.object({
+  "products": zod.array(zod.object({
+  "id": zod.string().min(1).max(getAdminProductsResponseProductsItemIdMax).regex(getAdminProductsResponseProductsItemIdRegExp),
+  "name": zod.string().min(getAdminProductsResponseProductsItemNameMin).max(getAdminProductsResponseProductsItemNameMax),
+  "priceUgx": zod.number().int().min(1).max(getAdminProductsResponseProductsItemPriceUgxMax),
+  "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
+  "isActive": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Update catalog names, listed prices, and visibility
+ */
+export const updateAdminProductsBodyProductsItemIdMax = 60;
+
+
+export const updateAdminProductsBodyProductsItemIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const updateAdminProductsBodyProductsItemNameMin = 2;
+export const updateAdminProductsBodyProductsItemNameMax = 100;
+
+export const updateAdminProductsBodyProductsItemPriceUgxMax = 1000000000;
+
+export const updateAdminProductsBodyProductsMax = 50;
+
+
+
+export const UpdateAdminProductsBody = zod.object({
+  "products": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateAdminProductsBodyProductsItemIdMax).regex(updateAdminProductsBodyProductsItemIdRegExp),
+  "name": zod.string().min(updateAdminProductsBodyProductsItemNameMin).max(updateAdminProductsBodyProductsItemNameMax),
+  "priceUgx": zod.number().int().min(1).max(updateAdminProductsBodyProductsItemPriceUgxMax),
+  "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
+  "isActive": zod.boolean()
+})).min(1).max(updateAdminProductsBodyProductsMax)
+})
+
+export const updateAdminProductsResponseProductsItemIdMax = 60;
+
+
+export const updateAdminProductsResponseProductsItemIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const updateAdminProductsResponseProductsItemNameMin = 2;
+export const updateAdminProductsResponseProductsItemNameMax = 100;
+
+export const updateAdminProductsResponseProductsItemPriceUgxMax = 1000000000;
+
+
+
+export const UpdateAdminProductsResponse = zod.object({
+  "products": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateAdminProductsResponseProductsItemIdMax).regex(updateAdminProductsResponseProductsItemIdRegExp),
+  "name": zod.string().min(updateAdminProductsResponseProductsItemNameMin).max(updateAdminProductsResponseProductsItemNameMax),
+  "priceUgx": zod.number().int().min(1).max(updateAdminProductsResponseProductsItemPriceUgxMax),
+  "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
+  "isActive": zod.boolean()
+}))
+})
+
+

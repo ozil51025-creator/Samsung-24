@@ -35,6 +35,8 @@ import type {
   HealthStatus,
   PhoneAccountResponse,
   PhonePasswordInput,
+  ProductCatalogInput,
+  ProductCatalogResponse,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
   TaskCenterSettingsInput,
@@ -1438,5 +1440,247 @@ export const useUpdateAdminTaskCenterSettings = <TError = ErrorType<ErrorRespons
         TContext
       > => {
       return useMutation(getUpdateAdminTaskCenterSettingsMutationOptions(options));
+    }
+
+export const getGetProductCatalogUrl = () => {
+
+
+
+
+  return `/api/products/catalog`
+}
+
+/**
+ * @summary Get active Samsung catalog items and listed prices
+ */
+export const getProductCatalog = async ( options?: Parameters<typeof customFetch>[1]): Promise<ProductCatalogResponse> => {
+
+  return customFetch<ProductCatalogResponse>(getGetProductCatalogUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProductCatalogQueryKey = () => {
+    return [
+    `/api/products/catalog`
+    ] as const;
+    }
+
+
+export const getGetProductCatalogQueryOptions = <TData = Awaited<ReturnType<typeof getProductCatalog>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCatalog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductCatalogQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductCatalog>>> = ({ signal }) => getProductCatalog({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductCatalog>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProductCatalogQueryResult = NonNullable<Awaited<ReturnType<typeof getProductCatalog>>>
+export type GetProductCatalogQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get active Samsung catalog items and listed prices
+ */
+
+export function useGetProductCatalog<TData = Awaited<ReturnType<typeof getProductCatalog>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCatalog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProductCatalogQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminProductsUrl = () => {
+
+
+
+
+  return `/api/admin/products`
+}
+
+/**
+ * @summary Get all editable catalog products
+ */
+export const getAdminProducts = async ( options?: Parameters<typeof customFetch>[1]): Promise<ProductCatalogResponse> => {
+
+  return customFetch<ProductCatalogResponse>(getGetAdminProductsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminProductsQueryKey = () => {
+    return [
+    `/api/admin/products`
+    ] as const;
+    }
+
+
+export const getGetAdminProductsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminProducts>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminProductsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminProducts>>> = ({ signal }) => getAdminProducts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminProducts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminProducts>>>
+export type GetAdminProductsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get all editable catalog products
+ */
+
+export function useGetAdminProducts<TData = Awaited<ReturnType<typeof getAdminProducts>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminProductsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminProductsUrl = () => {
+
+
+
+
+  return `/api/admin/products`
+}
+
+/**
+ * @summary Update catalog names, listed prices, and visibility
+ */
+export const updateAdminProducts = async (productCatalogInput: ProductCatalogInput, options?: Parameters<typeof customFetch>[1]): Promise<ProductCatalogResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ProductCatalogResponse>(getUpdateAdminProductsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(productCatalogInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminProductsMutationKey = () => ['updateAdminProducts'] as const;
+
+export const getUpdateAdminProductsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminProducts>>, TError,UpdateAdminProductsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminProducts>>, TError,UpdateAdminProductsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminProductsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminProducts>>, UpdateAdminProductsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminProducts(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminProductsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminProducts>>>
+    export type UpdateAdminProductsMutationBody = BodyType<ProductCatalogInput>
+    export type UpdateAdminProductsMutationError = ErrorType<ErrorResponse>
+    export type UpdateAdminProductsMutationVariables = {data: BodyType<ProductCatalogInput>}
+
+    /**
+ * @summary Update catalog names, listed prices, and visibility
+ */
+export const useUpdateAdminProducts = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminProducts>>, TError,UpdateAdminProductsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminProducts>>,
+        TError,
+        UpdateAdminProductsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminProductsMutationOptions(options));
     }
 

@@ -480,8 +480,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /products/catalog:
+    get:
+      operationId: getProductCatalog
+      tags: [products]
+      summary: Get active Samsung catalog items and listed prices
+      responses:
+        "200":
+          description: Active product catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+  /admin/products:
+    get:
+      operationId: getAdminProducts
+      tags: [admin]
+      summary: Get all editable catalog products
+      responses:
+        "200":
+          description: Products including inactive items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+        "401":
+          description: No valid administrator session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAdminProducts
+      tags: [admin]
+      summary: Update catalog names, listed prices, and visibility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCatalogInput"
+      responses:
+        "200":
+          description: Updated product catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+        "400":
+          description: Invalid product values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid administrator session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    ProductCatalogItem:
+      type: object
+      additionalProperties: false
+      required: [id, name, priceUgx, illustration, isActive]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 60, pattern: "^[a-z0-9-]+$" }
+        name: { type: string, minLength: 2, maxLength: 100 }
+        priceUgx: { type: integer, minimum: 1, maximum: 1000000000 }
+        illustration:
+          type: string
+          enum: [cable, charger, earphones, tag, buds, band, phone, phone5g, tablet, sfe, ultra, fold]
+        isActive: { type: boolean }
+    ProductCatalogResponse:
+      type: object
+      additionalProperties: false
+      required: [products]
+      properties:
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/ProductCatalogItem" }
+    ProductCatalogInput:
+      type: object
+      additionalProperties: false
+      required: [products]
+      properties:
+        products:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ProductCatalogItem" }
     HealthStatus:
       type: object
       properties:
