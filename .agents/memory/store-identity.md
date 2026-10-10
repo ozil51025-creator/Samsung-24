@@ -17,13 +17,13 @@ Registration and sign-in use a Ugandan mobile number plus password only: no emai
 
 **Why:** The user explicitly approved replacing Clerk with phone/password accounts, accepting unverified numbers and admin-assisted resets.
 
-**How to apply:** Keep the no-email/no-SMS and unverified-number disclosures visible. Do not imply ownership verification or promise self-service recovery; tell returning Clerk users they must register again.
+**How to apply:** Keep login/signup screens limited to the mode switch, required form fields, validation/status messages, and submit action. Put account-access disclosures on another page, and do not imply ownership verification or promise self-service recovery.
 
-For the public login and registration screens, follow the user's supplied visual reference: dark plum/black backdrop, metallic silver feature artwork, elegant serif headings, and muted gold actions, using Samsung Gadgets branding. Do not copy the Silver Miners name or identity.
+For the public login and registration screens, the user wants only the login/registration controls and their required fields. The latest direction is to show the Samsung Gadgets brand mark and name on registration, while keeping login unbranded.
 
-**Why:** The user supplied a login/registration reference and asked for that visual direction on their own branded site.
+**Why:** The user asked to remove extra content from both auth pages, then specifically requested branding on the registration page.
 
-**How to apply:** Keep this direction on `/sign-in` and `/sign-up`; preserve the +256 phone flow, password visibility controls, signup confirmation, invite-code prefill, 12-character minimum, and accurate no-email/no-SMS disclosure.
+**How to apply:** Keep `/sign-in` minimal. On `/sign-up`, show only the brand mark/name above the login/register switch and required form; do not restore the hero, marketing copy, or footer. Preserve the +256 phone flow, password visibility controls, signup confirmation, invite-code prefill, and 12-character minimum.
 
 Every account receives a persistent referral code automatically. Signup links prefill the code, and successful registrations store the direct inviter. Referral commissions and payouts remain inactive until their rules are defined.
 

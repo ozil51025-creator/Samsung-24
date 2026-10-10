@@ -455,39 +455,8 @@ function AccountPage() {
 
 function AuthFrame({ children }: { children: ReactNode }) {
   return (
-    <main className="auth-shell shop-grain min-h-[100dvh] px-4 pb-7 pt-5 sm:px-7 sm:py-7" data-testid="page-phone-auth">
-      <div className="auth-layout relative z-10 mx-auto flex min-h-[calc(100dvh-3rem)] max-w-[1120px] flex-col">
-        <header className="auth-topbar flex items-center justify-between">
-          <Link href="/" aria-label="Samsung Gadgets home" className="auth-brand-link rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b579]" data-testid="link-auth-home">
-            <Brand inverse />
-          </Link>
-          <span className="auth-country">UGANDA <span aria-hidden="true">/</span> MEMBER ACCESS</span>
-        </header>
-        <div className="auth-content grid flex-1 items-center gap-8 py-7 sm:py-10 lg:grid-cols-[1fr_.94fr] lg:gap-16 lg:py-12">
-          <aside className="auth-story">
-            <div className="auth-metal-art" aria-hidden="true">
-              <div className="auth-metal-orbit auth-metal-orbit-one" />
-              <div className="auth-metal-orbit auth-metal-orbit-two" />
-              <div className="auth-metal-disc">
-                <span className="auth-metal-monogram">S</span>
-                <span className="auth-metal-caption">SAMSUNG<br />GADGETS</span>
-              </div>
-              <span className="auth-metal-index">EST. UGANDA</span>
-            </div>
-            <div className="auth-story-copy">
-              <p className="auth-eyebrow">Samsung Gadgets · Uganda</p>
-              <h1>Good to have<br />you <em>with us.</em></h1>
-              <p>One secure place for your member account. Sign in or register with a Ugandan phone number and password.</p>
-              <div className="auth-story-note"><ShieldCheck aria-hidden="true" /><span>Your number is not verified. There is no email or SMS password reset.</span></div>
-            </div>
-          </aside>
-          <div className="auth-form-column">{children}</div>
-        </div>
-        <footer className="auth-footer">
-          <span>Samsung Gadgets · Independent retailer · Not affiliated with Samsung</span>
-          <span>Phone/password access · No email or SMS code</span>
-        </footer>
-      </div>
+    <main className="auth-shell grid min-h-[100dvh] place-items-center p-4 sm:p-6" data-testid="page-phone-auth">
+      <div className="w-full max-w-[460px]">{children}</div>
     </main>
   );
 }
@@ -540,12 +509,12 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   };
 
   return <AuthFrame>
-    <section className="auth-card" aria-labelledby="auth-title" data-testid={`panel-${mode}`}>
-      <div className="auth-card-heading">
-        <p className="auth-eyebrow">{isSignUp ? 'A place in the program' : 'Member access'}</p>
-        <h2 id="auth-title">{isSignUp ? 'Create account' : 'Welcome back'}</h2>
-        <p>Use your Ugandan mobile number and password to continue.</p>
+    {isSignUp && (
+      <div className="auth-register-brand">
+        <Brand inverse />
       </div>
+    )}
+    <section className="auth-card" aria-label={isSignUp ? 'Register' : 'Login'} data-testid={`panel-${mode}`}>
       <nav className="auth-mode-switch" aria-label="Choose account action">
         <Link href="/sign-in" aria-current={!isSignUp ? 'page' : undefined} className={`auth-mode-link ${!isSignUp ? 'is-active' : ''}`} data-testid="link-auth-login">Login</Link>
         <Link href="/sign-up" aria-current={isSignUp ? 'page' : undefined} className={`auth-mode-link ${isSignUp ? 'is-active' : ''}`} data-testid="link-auth-register">Register</Link>
@@ -567,7 +536,6 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
               maxLength={9}
               pattern="7[0-9]{8}"
               placeholder="7XXXXXXXX"
-              aria-describedby="phone-help"
               value={localNumber}
               onChange={(event) => {
                 let value = event.target.value.replace(/\D/g, '');
@@ -579,7 +547,6 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
               data-testid="input-phone-number"
             />
           </div>
-          <p className="auth-field-hint" id="phone-help">Enter the 9 digits after +256, starting with 7.</p>
         </div>
 
         <div>
@@ -656,15 +623,6 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         </button>
       </form>
 
-      <p className="auth-privacy-note" data-testid="text-auth-disclaimer">
-        Your number is not verified. Use only a number you control. There is no email or SMS password reset; contact an administrator if you forget your password.
-      </p>
-      <p className="auth-switch-copy">
-        {isSignUp ? 'Already registered?' : 'New to the program?'}{' '}
-        <Link href={isSignUp ? '/sign-in' : '/sign-up'} className="auth-inline-link" data-testid="link-auth-alternate">
-          {isSignUp ? 'Sign in' : 'Create an account'}
-        </Link>
-      </p>
     </section>
   </AuthFrame>;
 }

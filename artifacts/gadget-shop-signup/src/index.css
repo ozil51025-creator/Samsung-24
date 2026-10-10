@@ -498,6 +498,12 @@
   justify-self: end;
 }
 
+.auth-register-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
 .auth-card {
   padding: clamp(21px, 4vw, 38px);
   border: 1px solid rgba(226, 209, 184, .15);
