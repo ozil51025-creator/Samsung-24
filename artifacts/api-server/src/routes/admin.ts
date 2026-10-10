@@ -206,6 +206,15 @@ router.patch("/admin/members/:memberId/status", async (req, res): Promise<void> 
     res.status(400).json({ error: "Choose an account status and enter a reason." });
     return;
   }
+  if (!parsed.data.isActive) {
+    const primaryPhone = typeof process.env.ADMIN_PHONE === "string" ? normalizePhone(process.env.ADMIN_PHONE) : null;
+    const [target] = await db.select({ phoneNumber: phoneAccountsTable.phoneNumber })
+      .from(phoneAccountsTable).where(eq(phoneAccountsTable.id, memberId)).limit(1);
+    if (target?.phoneNumber === primaryPhone) {
+      res.status(409).json({ error: "The primary administrator account cannot be deactivated." });
+      return;
+    }
+  }
   try {
     const result = await db.transaction(async (tx) => {
       const [member] = await tx.update(phoneAccountsTable)
