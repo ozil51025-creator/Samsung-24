@@ -1754,21 +1754,6 @@ button.account-menu-row {
 .investment-table tr:last-child th, .investment-table tr:last-child td { border-bottom: 0; }
 .investment-table th:last-child, .investment-table td:last-child { border-right: 0; }
 .product-summary-range { text-align: right; }
-.investment-chart { display: grid; gap: 0; margin-top: 18px; overflow: hidden; border: 1px solid #3d83c0; border-radius: 14px; background: #fff; box-shadow: 0 8px 22px rgba(17,58,115,.09); }
-.investment-chart-banner { position: relative; height: 126px; overflow: hidden; background: #102c78; }
-.investment-chart-banner::after { position: absolute; inset: 0; background: linear-gradient(90deg,rgba(7,24,66,.72),rgba(9,40,115,.22)); content: ""; }
-.investment-chart-banner img { width: 100%; height: 100%; object-fit: cover; }
-.investment-chart-banner h2 { position: absolute; z-index: 1; left: 16px; bottom: 15px; margin: 0; color: #fff; font-size: 20px; font-weight: 700; }
-.investment-chart-table-wrap { overflow-x: auto; }
-.investment-chart-table { width: 100%; min-width: 300px; border-collapse: collapse; color: #143d70; font-size: 12px; }
-.investment-chart-table thead { background: #1264ad; color: #fff; }
-.investment-chart-table th, .investment-chart-table td { padding: 11px 12px; border-right: 1px solid #b6d1e6; border-bottom: 1px solid #c8dcec; }
-.investment-chart-table thead th { text-align: left; font-weight: 700; }
-.investment-chart-table tbody th { width: 65%; text-align: left; font-weight: 600; }
-.investment-chart-table tbody tr:nth-child(even) { background: #edf6fc; }
-.investment-chart-table td { text-align: right; white-space: nowrap; font-weight: 700; }
-.investment-chart-table th:last-child, .investment-chart-table td:last-child { border-right: 0; }
-.investment-chart-table tbody tr:last-child th, .investment-chart-table tbody tr:last-child td { border-bottom: 0; }
 .product-summary-eyebrow { color: rgba(255,255,255,.75); font-size: 9px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
 .product-summary-value { margin-top: 5px; color: #fff; font-family: Syne,sans-serif; font-size: clamp(18px,4.2vw,24px); font-weight: 700; letter-spacing: -.045em; }
 .product-summary-label { margin-top: 2px; color: rgba(255,255,255,.9); font-size: 11px; }
