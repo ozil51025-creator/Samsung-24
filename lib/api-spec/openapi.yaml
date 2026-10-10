@@ -188,6 +188,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /task-center:
+    get:
+      operationId: getTaskCenterSettings
+      tags: [task-center]
+      summary: Get public task definitions
+      responses:
+        "200":
+          description: Current task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+  /admin/task-center:
+    get:
+      operationId: getAdminTaskCenterSettings
+      tags: [admin]
+      summary: Get task definitions for administrators
+      responses:
+        "200":
+          description: Current task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAdminTaskCenterSettings
+      tags: [admin]
+      summary: Save editable task definitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCenterSettingsInput"
+      responses:
+        "200":
+          description: Saved task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+        "400":
+          description: Invalid task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -301,6 +384,38 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminMember"
+    TaskCenterTask:
+      type: object
+      additionalProperties: false
+      required: [id, title, objective, objectiveUnit, rewardUgx, rewardFrequency, enabled]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        objective: { type: integer, minimum: 1, maximum: 1000000000 }
+        objectiveUnit: { type: string, minLength: 1, maxLength: 40 }
+        rewardUgx: { type: ["integer", "null"], minimum: 0, maximum: 1000000000 }
+        rewardFrequency: { type: string, enum: [once, daily] }
+        enabled: { type: boolean }
+    TaskCenterSettings:
+      type: object
+      additionalProperties: false
+      required: [tasks]
+      properties:
+        tasks:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/TaskCenterTask"
+    TaskCenterSettingsInput:
+      type: object
+      additionalProperties: false
+      required: [tasks]
+      properties:
+        tasks:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/TaskCenterTask"
     ErrorResponse:
       type: object
       additionalProperties: false
