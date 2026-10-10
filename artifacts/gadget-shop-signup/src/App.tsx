@@ -518,8 +518,8 @@ function WithdrawalHistoryPage() {
 
 function RechargePage() {
   const { user, status } = useAuth();
-  const [amount, setAmount] = useState('7000');
-  const amounts = [2000, 7000, 15000, 30000, 65000, 150000, 350000, 750000];
+  const amounts = [...new Set(productCatalog.map((product) => product.price))];
+  const [amount, setAmount] = useState(String(amounts[0]));
   useEffect(() => {
     const previousTitle = document.title;
     document.title = 'Recharge — samsung';
