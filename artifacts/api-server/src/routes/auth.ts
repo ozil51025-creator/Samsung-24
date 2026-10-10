@@ -659,24 +659,46 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
       memberCounts.push(next.size);
       frontier = next;
     }
-    const [siteSettings, rewardRows] = await Promise.all([
+    const [siteSettings, rewardRows, firstPurchaseOrders] = await Promise.all([
       readSiteSettings(),
-      db.select({ level: referralCommissionsTable.level, rewardsUgx: sum(referralCommissionsTable.amountUgx) })
+      db.select({
+        level: referralCommissionsTable.level,
+        orderId: referralCommissionsTable.orderId,
+        amountUgx: referralCommissionsTable.amountUgx,
+      })
         .from(referralCommissionsTable)
         .where(eq(referralCommissionsTable.recipientAccountId, accountId))
-        .groupBy(referralCommissionsTable.level),
+      ,
+      db.select({
+        orderId: productOrdersTable.id,
+        buyerAccountId: productOrdersTable.buyerAccountId,
+        priceUgx: productOrdersTable.priceUgx,
+      }).from(productOrdersTable).where(eq(productOrdersTable.isFirstPurchase, true)),
     ]);
-    const rewardByLevel = new Map(rewardRows.map((row) => [row.level, Number(row.rewardsUgx ?? 0)]));
     const rates = [
       siteSettings.referralCommissionLevel1Percent,
       siteSettings.referralCommissionLevel2Percent,
       siteSettings.referralCommissionLevel3Percent,
     ];
+    const commissionsByOrderLevel = new Map(rewardRows.map((row) => [`${row.orderId}:${row.level}`, row.amountUgx]));
+    const rewardByLevel = [0, 0, 0];
+    const estimatedByLevel = [0, 0, 0];
+    for (const order of firstPurchaseOrders) {
+      const ancestors = getReferralAncestorsThroughLevelThree(order.buyerAccountId, links);
+      for (const [index, ancestorId] of ancestors.entries()) {
+        if (ancestorId !== accountId) continue;
+        const level = index + 1;
+        const recorded = commissionsByOrderLevel.get(`${order.orderId}:${level}`);
+        if (recorded !== undefined) rewardByLevel[index] += recorded;
+        else estimatedByLevel[index] += Math.floor(order.priceUgx * (rates[index] ?? 0) / 100);
+      }
+    }
     const levels = [1, 2, 3].map((level) => ({
       level,
       commissionPercent: rates[level - 1] ?? 0,
       memberCount: memberCounts[level - 1] ?? 0,
-      rewardsUgx: rewardByLevel.get(level) ?? 0,
+      rewardsUgx: rewardByLevel[level - 1] + estimatedByLevel[level - 1],
+      estimatedRewardsUgx: estimatedByLevel[level - 1],
     }));
     res.json(GetReferralSummaryResponse.parse({
       totalMembers: memberCounts.reduce((total, count) => total + count, 0),
