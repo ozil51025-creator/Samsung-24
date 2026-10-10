@@ -98,7 +98,7 @@ router.post("/admin/gift-codes", async (req, res): Promise<void> => {
       adminAccountId: admin.id,
       action: "gift_code.created",
       amountUgx: created.amountUgx,
-      details: `Issued single-use wallet credit code ${created.code}`,
+      details: "Issued a single-use wallet credit code.",
     });
     res.status(201).json(CreateAdminGiftCodeResponse.parse({
       id: created.id,
@@ -753,7 +753,7 @@ router.get("/admin/transactions", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
   try {
-    const [orders, deposits, checkins, withdrawals, milestones, adjustments] = await Promise.all([
+    const [orders, deposits, checkins, withdrawals, milestones, giftRedemptions, adjustments] = await Promise.all([
       db.select({ id: productOrdersTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: productOrdersTable.priceUgx, status: productOrdersTable.status, createdAt: productOrdersTable.createdAt })
         .from(productOrdersTable).innerJoin(phoneAccountsTable, eq(productOrdersTable.buyerAccountId, phoneAccountsTable.id)).limit(500),
       db.select({ id: rechargeRequestsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: rechargeRequestsTable.amountUgx, status: rechargeRequestsTable.status, createdAt: rechargeRequestsTable.createdAt })
@@ -764,6 +764,8 @@ router.get("/admin/transactions", async (req, res): Promise<void> => {
         .from(withdrawalRequestsTable).innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id)).limit(500),
       db.select({ id: teamDepositMilestoneClaimsTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: teamDepositMilestoneClaimsTable.rewardUgx, createdAt: teamDepositMilestoneClaimsTable.createdAt })
         .from(teamDepositMilestoneClaimsTable).innerJoin(phoneAccountsTable, eq(teamDepositMilestoneClaimsTable.accountId, phoneAccountsTable.id)).limit(500),
+      db.select({ id: giftCodesTable.id, member: phoneAccountsTable.phoneNumber, amountUgx: giftCodesTable.amountUgx, createdAt: giftCodesTable.redeemedAt })
+        .from(giftCodesTable).innerJoin(phoneAccountsTable, eq(giftCodesTable.redeemedByAccountId, phoneAccountsTable.id)).where(isNotNull(giftCodesTable.redeemedAt)).limit(500),
       db.select({ id: adminAuditLogsTable.id, member: adminAuditLogsTable.targetAccountId, amountUgx: adminAuditLogsTable.amountUgx, action: adminAuditLogsTable.action, createdAt: adminAuditLogsTable.createdAt })
         .from(adminAuditLogsTable).where(and(inArray(adminAuditLogsTable.action, ["wallet.credit", "wallet.debit"]), isNotNull(adminAuditLogsTable.targetAccountId))).limit(500),
     ]);
@@ -773,6 +775,7 @@ router.get("/admin/transactions", async (req, res): Promise<void> => {
       ...checkins.map((item) => ({ ...item, type: "Check-in", status: "credited" })),
       ...withdrawals.map((item) => ({ ...item, type: item.status === "failed" ? "Withdrawal Refund" : "Withdrawal", amountUgx: item.status === "failed" ? item.amountUgx : -item.amountUgx })),
       ...milestones.map((item) => ({ ...item, type: "Team Deposit Milestone", status: "credited" })),
+      ...giftRedemptions.map((item) => ({ ...item, type: "Gift Code Credit", status: "credited", createdAt: item.createdAt ?? new Date(0) })),
       ...adjustments.map((item) => ({ id: String(item.id), member: item.member ?? "Unknown member", amountUgx: item.action === "wallet.debit" ? -(item.amountUgx ?? 0) : (item.amountUgx ?? 0), type: item.action === "wallet.debit" ? "Admin Debit" : "Admin Credit", status: "completed", createdAt: item.createdAt })),
     ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 500);
     res.json({ transactions });
