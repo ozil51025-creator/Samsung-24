@@ -730,7 +730,7 @@ function LinkBankCardPage() {
         <input id="bank-holder" required minLength={2} maxLength={100} value={holderName} onChange={(event) => setHolderName(event.target.value)} placeholder="Please enter the name of the account holder" />
         <label htmlFor="bank-account">* Bank account</label>
         <input id="bank-account" required type="tel" inputMode="tel" autoComplete="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="e.g. 07XX XXX XXX" />
-        <button type="submit" disabled={saving || holderName.trim().length < 2 || phoneNumber.trim().length < 9}>{saving ? 'Saving…' : 'Confirm'}</button>
+         <button type="submit" disabled={saving} aria-busy={saving}>{saving ? 'Saving…' : 'Confirm'}</button>
         {error && <p role="alert">{error}</p>}
       </form>
     </main>;
