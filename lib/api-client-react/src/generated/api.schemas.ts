@@ -64,6 +64,30 @@ export interface PhoneAccountResponse {
   user: PhoneAccount;
 }
 
+export interface AdminOverview {
+  /** @minimum 0 */
+  totalUsers: number;
+  /** @minimum 0 */
+  referredUsers: number;
+  /** False until a verified payment provider and ledger exist */
+  financialRecordsAvailable: boolean;
+}
+
+export interface AdminMember {
+  id: string;
+  /** @pattern ^\+2567[0-9]{8}$ */
+  phoneNumber: string;
+  createdAt: string;
+  /** @nullable */
+  referralCode: string | null;
+  /** @nullable */
+  referredByAccountId: string | null;
+}
+
+export interface AdminMembers {
+  members: AdminMember[];
+}
+
 export interface ErrorResponse {
   error: string;
 }

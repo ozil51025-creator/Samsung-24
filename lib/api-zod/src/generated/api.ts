@@ -118,3 +118,36 @@ export const GetCurrentPhoneAccountResponse = zod.object({
 })
 
 
+/**
+ * @summary Get live administrative totals
+ */
+export const getAdminOverviewResponseTotalUsersMin = 0;
+
+export const getAdminOverviewResponseReferredUsersMin = 0;
+
+
+
+export const GetAdminOverviewResponse = zod.object({
+  "totalUsers": zod.number().int().min(getAdminOverviewResponseTotalUsersMin),
+  "referredUsers": zod.number().int().min(getAdminOverviewResponseReferredUsersMin),
+  "financialRecordsAvailable": zod.boolean().describe('False until a verified payment provider and ledger exist')
+})
+
+
+/**
+ * @summary List member accounts for administrators
+ */
+export const getAdminMembersResponseMembersItemPhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
+
+
+export const GetAdminMembersResponse = zod.object({
+  "members": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "phoneNumber": zod.string().regex(getAdminMembersResponseMembersItemPhoneNumberRegExp),
+  "createdAt": zod.coerce.date(),
+  "referralCode": zod.string().nullable(),
+  "referredByAccountId": zod.string().nullable()
+}))
+})
+
+

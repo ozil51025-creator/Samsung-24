@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: auth
     description: Phone number and password account operations
+  - name: admin
+    description: Server-authorized administration operations
 paths:
   /healthz:
     get:
@@ -126,6 +128,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get live administrative totals
+      responses:
+        "200":
+          description: Counts derived from existing account and referral records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members:
+    get:
+      operationId: getAdminMembers
+      tags: [admin]
+      summary: List member accounts for administrators
+      responses:
+        "200":
+          description: Most recent member accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMembers"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -198,6 +260,47 @@ components:
       properties:
         user:
           $ref: "#/components/schemas/PhoneAccount"
+    AdminOverview:
+      type: object
+      additionalProperties: false
+      required: [totalUsers, referredUsers, financialRecordsAvailable]
+      properties:
+        totalUsers:
+          type: integer
+          minimum: 0
+        referredUsers:
+          type: integer
+          minimum: 0
+        financialRecordsAvailable:
+          type: boolean
+          description: False until a verified payment provider and ledger exist
+    AdminMember:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt, referralCode, referredByAccountId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          pattern: "^\\+2567[0-9]{8}$"
+        createdAt:
+          type: string
+          format: date-time
+        referralCode:
+          type: ["string", "null"]
+        referredByAccountId:
+          type: ["string", "null"]
+    AdminMembers:
+      type: object
+      additionalProperties: false
+      required: [members]
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMember"
     ErrorResponse:
       type: object
       additionalProperties: false

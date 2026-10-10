@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './adminMember';
+export * from './adminMembers';
+export * from './adminOverview';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './phoneAccount';
