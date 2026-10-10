@@ -1136,8 +1136,15 @@
 [class*="text-[#405e6c]"],
 [class*="text-[#456474]"],
 [class*="text-[#31586b]"],
-[class*="text-[#173448]"] {
+[class*="text-[#173448]"],
+[class*="text-[#477553]"],
+[class*="text-[#253b30]"] {
   color: #1428a0 !important;
+}
+
+[class*="text-[#b9cdb4]"],
+[class*="text-[#d6dfd0]"] {
+  color: #dbe7ff !important;
 }
 
 [class*="text-[#536e59]"],
@@ -1180,6 +1187,16 @@
 [class*="bg-[#e9b975]"] {
   background-color: #3158d4 !important;
   color: white !important;
+}
+
+[class*="bg-[#d27e52]"],
+[class*="bg-[#e4a16f]"] {
+  background-color: #4774e8 !important;
+}
+
+[class*="bg-[#e6eadc]"],
+[class*="bg-[#e7f2e8]"] {
+  background-color: rgba(94, 135, 238, .16) !important;
 }
 
 .shop-shell [class*="bg-[#fffdf7]"],
