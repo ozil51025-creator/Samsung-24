@@ -49,20 +49,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
 
-    getCurrentPhoneAccount({ credentials: "include" })
-      .then((response) => {
-        if (!active) return;
-        setUser(response.user);
-        setStatus("ready");
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        setUser(null);
-        setStatus(readStatus(error) === 401 ? "ready" : "error");
-      });
+    const refreshAccount = () => {
+      getCurrentPhoneAccount({ credentials: "include" })
+        .then((response) => {
+          if (!active) return;
+          setUser(response.user);
+          setStatus("ready");
+        })
+        .catch((error: unknown) => {
+          if (!active) return;
+          if (readStatus(error) === 401) {
+            setUser(null);
+            setStatus("ready");
+          } else {
+            setStatus((current) => current === "loading" ? "error" : current);
+          }
+        });
+    };
+    refreshAccount();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refreshAccount();
+    };
+    const interval = window.setInterval(refreshWhenVisible, 30_000);
+    window.addEventListener("focus", refreshAccount);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
 
     return () => {
       active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshAccount);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
     };
   }, []);
 

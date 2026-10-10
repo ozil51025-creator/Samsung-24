@@ -200,6 +200,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskCenterSettings"
+  /team-deposit-milestones:
+    get:
+      operationId: getTeamDepositMilestones
+      tags: [task-center]
+      summary: Get direct-referral deposit milestone progress
+      responses:
+        "200":
+          description: Direct team deposit totals and rewards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDepositMilestones"
   /admin/task-center:
     get:
       operationId: getAdminTaskCenterSettings
@@ -414,6 +426,26 @@ components:
           maxItems: 30
           items:
             $ref: "#/components/schemas/TaskCenterTask"
+    TeamDepositMilestone:
+      type: object
+      additionalProperties: false
+      required: [id, thresholdUgx, rewardUgx, received]
+      properties:
+        id: { type: string }
+        thresholdUgx: { type: integer, minimum: 1 }
+        rewardUgx: { type: integer, minimum: 0 }
+        received: { type: boolean }
+    TeamDepositMilestones:
+      type: object
+      additionalProperties: false
+      required: [teamDepositsUgx, totalRewardsUgx, milestones]
+      properties:
+        teamDepositsUgx: { type: integer, minimum: 0 }
+        totalRewardsUgx: { type: integer, minimum: 0 }
+        milestones:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamDepositMilestone"
     TaskCenterSettingsInput:
       type: object
       additionalProperties: false

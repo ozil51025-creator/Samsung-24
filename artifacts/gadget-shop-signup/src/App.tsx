@@ -248,7 +248,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
                  {memberNav.map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] sm:px-3.5 ${isOverview ? (active === href ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#142438] text-white' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#315f49] text-[#fffdf7]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
+                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] sm:px-3.5 ${isOverview ? (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
@@ -266,10 +266,10 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               Independent retailer · Not affiliated with Samsung · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
-          <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : isHome ? 'home-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
+          <nav className={`member-bottom-nav liquid-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : isHome ? 'home-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
             {mobileMemberNav.map(({ href, shortLabel, icon: Icon }) => (
-              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#74d6a4] ${isProducts ? (active === href ? 'text-[#142438]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (active === href ? 'text-[#1529a6]' : 'text-[#566174] hover:bg-white') : (active === href ? 'text-white' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-white text-[#10151a]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
+              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] ${isProducts ? (active === href ? 'text-[#075985]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (active === href ? 'text-[#075985]' : 'text-[#566174] hover:bg-white') : (active === href ? 'text-[#7dd3fc]' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
+                <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
                 <span className="max-w-full truncate text-[9px] font-semibold leading-none">{shortLabel}</span>
               </Link>
             ))}
@@ -456,6 +456,12 @@ function TaskCenterPage() {
   const { user, status } = useAuth();
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [tasksStatus, setTasksStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [depositMilestones, setDepositMilestones] = useState<{
+    teamDepositsUgx: number;
+    totalRewardsUgx: number;
+    milestones: { id: string; thresholdUgx: number; rewardUgx: number; received: boolean }[];
+  } | null>(null);
+  const [depositMilestonesStatus, setDepositMilestonesStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -472,6 +478,13 @@ function TaskCenterPage() {
         setTasksStatus('ready');
       })
       .catch(() => setTasksStatus('error'));
+    fetch('/api/team-deposit-milestones', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load deposit milestones.');
+        setDepositMilestones(await response.json());
+        setDepositMilestonesStatus('ready');
+      })
+      .catch(() => setDepositMilestonesStatus('error'));
   }, [user]);
 
   if (status === 'loading') {
@@ -490,7 +503,7 @@ function TaskCenterPage() {
     <section className="task-center-hero">
       <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="Samsung Galaxy device" fetchPriority="high" />
       <div className="task-center-hero-copy">
-        <strong>UGX 0</strong>
+        <strong>UGX {money.format(depositMilestones?.totalRewardsUgx ?? 0)}</strong>
         <span>Task Center rewards accumulated</span>
       </div>
     </section>
@@ -512,6 +525,20 @@ function TaskCenterPage() {
           <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
         </article>
       ))}
+      {depositMilestonesStatus === 'loading' && <p className="task-center-message">Loading deposit milestones…</p>}
+      {depositMilestonesStatus === 'error' && <p className="task-center-message" role="alert">Deposit milestones could not be loaded.</p>}
+      {depositMilestones?.milestones.map((milestone) => {
+        const progress = Math.min(100, Math.floor(depositMilestones.teamDepositsUgx / milestone.thresholdUgx * 100));
+        return <article className="task-center-item" key={milestone.id}>
+          <h2>Direct team deposits reach UGX {money.format(milestone.thresholdUgx)} · Reward UGX {money.format(milestone.rewardUgx)}</h2>
+          <div className="task-center-progress">
+            <div><strong>UGX {money.format(depositMilestones.teamDepositsUgx)}</strong><span>Current</span></div>
+            <div><strong>UGX {money.format(milestone.thresholdUgx)}</strong><span>Objective</span></div>
+            <div><strong>{progress}%</strong><span>Progress</span></div>
+          </div>
+          <button type="button" disabled>{milestone.received ? 'Received' : 'In progress'}</button>
+        </article>;
+      })}
     </section>
   </main>;
 }
@@ -818,7 +845,7 @@ function AdminTaskCenterPage() {
       </form>}
       <section className="admin-recharge-review">
         <h2>Manual recharge requests</h2>
-        <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification does not add funds to the wallet.</p>
+        <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification credits the member’s deposited wallet balance.</p>
         {rechargeStatus === 'loading' && <p>Loading requests…</p>}
         {rechargeStatus === 'error' && <button type="button" onClick={loadRechargeRequests}>Retry loading requests</button>}
         {rechargeStatus === 'ready' && rechargeRequests.length === 0 && <p>No recharge requests.</p>}

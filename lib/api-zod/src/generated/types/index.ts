@@ -19,3 +19,5 @@ export * from './taskCenterSettings';
 export * from './taskCenterSettingsInput';
 export * from './taskCenterTask';
 export * from './taskCenterTaskRewardFrequency';
+export * from './teamDepositMilestone';
+export * from './teamDepositMilestones';

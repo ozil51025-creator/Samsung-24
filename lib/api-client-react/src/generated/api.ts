@@ -28,7 +28,8 @@ import type {
   PhonePasswordInput,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
-  TaskCenterSettingsInput
+  TaskCenterSettingsInput,
+  TeamDepositMilestones
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -682,6 +683,83 @@ export function useGetTaskCenterSettings<TData = Awaited<ReturnType<typeof getTa
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetTaskCenterSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetTeamDepositMilestonesUrl = () => {
+
+
+
+
+  return `/api/team-deposit-milestones`
+}
+
+/**
+ * @summary Get direct-referral deposit milestone progress
+ */
+export const getTeamDepositMilestones = async ( options?: Parameters<typeof customFetch>[1]): Promise<TeamDepositMilestones> => {
+
+  return customFetch<TeamDepositMilestones>(getGetTeamDepositMilestonesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTeamDepositMilestonesQueryKey = () => {
+    return [
+    `/api/team-deposit-milestones`
+    ] as const;
+    }
+
+
+export const getGetTeamDepositMilestonesQueryOptions = <TData = Awaited<ReturnType<typeof getTeamDepositMilestones>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTeamDepositMilestones>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTeamDepositMilestonesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeamDepositMilestones>>> = ({ signal }) => getTeamDepositMilestones({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTeamDepositMilestones>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTeamDepositMilestonesQueryResult = NonNullable<Awaited<ReturnType<typeof getTeamDepositMilestones>>>
+export type GetTeamDepositMilestonesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get direct-referral deposit milestone progress
+ */
+
+export function useGetTeamDepositMilestones<TData = Awaited<ReturnType<typeof getTeamDepositMilestones>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTeamDepositMilestones>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTeamDepositMilestonesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

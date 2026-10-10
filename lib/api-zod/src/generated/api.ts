@@ -201,6 +201,30 @@ export const GetTaskCenterSettingsResponse = zod.object({
 
 
 /**
+ * @summary Get direct-referral deposit milestone progress
+ */
+export const getTeamDepositMilestonesResponseTeamDepositsUgxMin = 0;
+
+export const getTeamDepositMilestonesResponseTotalRewardsUgxMin = 0;
+
+
+export const getTeamDepositMilestonesResponseMilestonesItemRewardUgxMin = 0;
+
+
+
+export const GetTeamDepositMilestonesResponse = zod.object({
+  "teamDepositsUgx": zod.number().int().min(getTeamDepositMilestonesResponseTeamDepositsUgxMin),
+  "totalRewardsUgx": zod.number().int().min(getTeamDepositMilestonesResponseTotalRewardsUgxMin),
+  "milestones": zod.array(zod.object({
+  "id": zod.string(),
+  "thresholdUgx": zod.number().int().min(1),
+  "rewardUgx": zod.number().int().min(getTeamDepositMilestonesResponseMilestonesItemRewardUgxMin),
+  "received": zod.boolean()
+}))
+})
+
+
+/**
  * @summary Get task definitions for administrators
  */
 export const getAdminTaskCenterSettingsResponseTasksItemIdMax = 64;

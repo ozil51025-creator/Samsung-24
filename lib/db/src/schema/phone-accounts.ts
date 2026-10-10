@@ -9,6 +9,8 @@ export const phoneAccountsTable = pgTable(
     phoneNumber: text("phone_number").notNull(),
     passwordHash: text("password_hash").notNull(),
     walletBalanceUgx: integer("wallet_balance_ugx").notNull().default(0),
+    depositBalanceUgx: integer("deposit_balance_ugx").notNull().default(0),
+    totalDepositedUgx: integer("total_deposited_ugx").notNull().default(0),
     totalAccumulatedUgx: integer("total_accumulated_ugx").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

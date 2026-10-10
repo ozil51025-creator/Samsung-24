@@ -142,6 +142,23 @@ export interface TaskCenterSettings {
   tasks: TaskCenterTask[];
 }
 
+export interface TeamDepositMilestone {
+  id: string;
+  /** @minimum 1 */
+  thresholdUgx: number;
+  /** @minimum 0 */
+  rewardUgx: number;
+  received: boolean;
+}
+
+export interface TeamDepositMilestones {
+  /** @minimum 0 */
+  teamDepositsUgx: number;
+  /** @minimum 0 */
+  totalRewardsUgx: number;
+  milestones: TeamDepositMilestone[];
+}
+
 export interface TaskCenterSettingsInput {
   /** @maxItems 30 */
   tasks: TaskCenterTask[];

@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
@@ -9,9 +9,11 @@ import {
   presenceClaimsTable,
   rechargeRequestsTable,
   taskCenterSettingsTable,
+  teamDepositMilestoneClaimsTable,
 } from "@workspace/db";
 import {
   GetCurrentPhoneAccountResponse,
+  GetTeamDepositMilestonesResponse,
   LoginPhoneAccountBody,
   LoginPhoneAccountResponse,
   RegisterPhoneAccountBody,
@@ -493,6 +495,36 @@ router.get("/auth/me", async (req, res) => {
     const details = databaseErrorDetails(error);
     req.log.error({ errorCode: details.code, route: "auth.me" }, "Phone account session lookup failed");
     res.status(500).json({ error: "Could not check your account session." });
+  }
+});
+
+router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
+  try {
+    const accountId = await currentAccountId(req, res);
+    if (!accountId) return;
+    const [team] = await db.select({ total: sum(phoneAccountsTable.totalDepositedUgx) })
+      .from(phoneReferralCodesTable)
+      .innerJoin(phoneAccountsTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+      .where(eq(phoneReferralCodesTable.referredByAccountId, accountId));
+    const claims = await db.select({
+      milestoneId: teamDepositMilestoneClaimsTable.milestoneId,
+      rewardUgx: teamDepositMilestoneClaimsTable.rewardUgx,
+    }).from(teamDepositMilestoneClaimsTable)
+      .where(eq(teamDepositMilestoneClaimsTable.accountId, accountId));
+    res.json(GetTeamDepositMilestonesResponse.parse({
+      teamDepositsUgx: Number(team?.total ?? 0),
+      totalRewardsUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
+      milestones: [
+        { id: "direct-deposits-100000", thresholdUgx: 100_000, rewardUgx: 2_000 },
+        { id: "direct-deposits-500000", thresholdUgx: 500_000, rewardUgx: 20_000 },
+      ].map((milestone) => ({
+        ...milestone,
+        received: claims.some((claim) => claim.milestoneId === milestone.id),
+      })),
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "team-deposit-milestones.get" }, "Could not load deposit milestones");
+    res.status(500).json({ error: "Could not load deposit milestones." });
   }
 });
 

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, count, desc, eq, gt, isNotNull } from "drizzle-orm";
+import { and, count, desc, eq, gt, isNotNull, sql, sum } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
@@ -7,6 +7,7 @@ import {
   phoneReferralCodesTable,
   phoneSessionsTable,
   rechargeRequestsTable,
+  teamDepositMilestoneClaimsTable,
   taskCenterSettingsTable,
 } from "@workspace/db";
 import {
@@ -222,15 +223,67 @@ router.post("/admin/recharge-requests/:id/verify", async (req, res): Promise<voi
     return;
   }
   try {
-    const [request] = await db.update(rechargeRequestsTable)
-      .set({ status: "verified" })
-      .where(and(eq(rechargeRequestsTable.id, id), eq(rechargeRequestsTable.status, "pending")))
-      .returning({ id: rechargeRequestsTable.id });
+    const request = await db.transaction(async (tx) => {
+      const [verified] = await tx.update(rechargeRequestsTable)
+        .set({ status: "verified" })
+        .where(and(eq(rechargeRequestsTable.id, id), eq(rechargeRequestsTable.status, "pending")))
+        .returning({
+          id: rechargeRequestsTable.id,
+          accountId: rechargeRequestsTable.accountId,
+          amountUgx: rechargeRequestsTable.amountUgx,
+        });
+      if (!verified) return null;
+
+      const [account] = await tx.update(phoneAccountsTable)
+        .set({
+          walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${verified.amountUgx}`,
+          depositBalanceUgx: sql`${phoneAccountsTable.depositBalanceUgx} + ${verified.amountUgx}`,
+          totalDepositedUgx: sql`${phoneAccountsTable.totalDepositedUgx} + ${verified.amountUgx}`,
+        })
+        .where(eq(phoneAccountsTable.id, verified.accountId))
+        .returning({ id: phoneAccountsTable.id });
+      if (!account) throw new Error("Recharge account no longer exists.");
+
+      const [referral] = await tx.select({ referrerId: phoneReferralCodesTable.referredByAccountId })
+        .from(phoneReferralCodesTable)
+        .where(eq(phoneReferralCodesTable.accountId, verified.accountId))
+        .limit(1);
+      const referrerId = referral?.referrerId;
+      if (referrerId) {
+        await tx.select({ id: phoneAccountsTable.id })
+          .from(phoneAccountsTable)
+          .where(eq(phoneAccountsTable.id, referrerId))
+          .for("update");
+        const [team] = await tx.select({ total: sum(phoneAccountsTable.totalDepositedUgx) })
+          .from(phoneReferralCodesTable)
+          .innerJoin(phoneAccountsTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+          .where(eq(phoneReferralCodesTable.referredByAccountId, referrerId));
+        const teamDeposits = Number(team?.total ?? 0);
+        for (const milestone of [
+          { id: "direct-deposits-100000", threshold: 100_000, reward: 2_000 },
+          { id: "direct-deposits-500000", threshold: 500_000, reward: 20_000 },
+        ]) {
+          if (teamDeposits < milestone.threshold) continue;
+          const [claim] = await tx.insert(teamDepositMilestoneClaimsTable)
+            .values({ accountId: referrerId, milestoneId: milestone.id, rewardUgx: milestone.reward })
+            .onConflictDoNothing()
+            .returning({ id: teamDepositMilestoneClaimsTable.id });
+          if (!claim) continue;
+          await tx.update(phoneAccountsTable)
+            .set({
+              walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${milestone.reward}`,
+              totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${milestone.reward}`,
+            })
+            .where(eq(phoneAccountsTable.id, referrerId));
+        }
+      }
+      return verified;
+    });
     if (!request) {
       res.status(404).json({ error: "Pending recharge request was not found." });
       return;
     }
-    res.json({ requestId: request.id, status: "verified", walletCredited: false });
+    res.json({ requestId: request.id, status: "verified", walletCredited: true });
   } catch (error) {
     req.log.error({ error, route: "admin.recharge-requests.verify" }, "Could not verify recharge request");
     res.status(500).json({ error: "Could not verify recharge request." });
