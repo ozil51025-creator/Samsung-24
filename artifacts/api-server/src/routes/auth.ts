@@ -642,6 +642,7 @@ router.get("/presence", async (req, res) => {
 router.get("/referral/summary", async (req, res): Promise<void> => {
   const accountId = await currentAccountId(req, res);
   if (!accountId) return;
+  res.setHeader("Cache-Control", "no-store");
   try {
     const links = await db.select({
       accountId: phoneReferralCodesTable.accountId,

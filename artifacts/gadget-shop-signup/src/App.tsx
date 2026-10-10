@@ -1758,16 +1758,34 @@ function ReferralPage() {
   const [summaryError, setSummaryError] = useState('');
   useEffect(() => {
     let active = true;
-    fetch('/api/referral/summary', { credentials: 'include' })
-      .then(async (response) => {
+    let pending = false;
+    const loadSummary = async () => {
+      if (pending || document.visibilityState === 'hidden') return;
+      pending = true;
+      try {
+        const response = await fetch('/api/referral/summary', { credentials: 'include', cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error ?? 'Could not load your team statistics.');
-        if (active) setSummary(data);
-      })
-      .catch((error: unknown) => {
+        if (active) {
+          setSummary(data);
+          setSummaryError('');
+        }
+      } catch (error) {
         if (active) setSummaryError(error instanceof Error ? error.message : 'Could not load your team statistics.');
-      });
-    return () => { active = false; };
+      } finally {
+        pending = false;
+      }
+    };
+    void loadSummary();
+    const interval = window.setInterval(() => { void loadSummary(); }, 5000);
+    window.addEventListener('focus', loadSummary);
+    document.addEventListener('visibilitychange', loadSummary);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', loadSummary);
+      document.removeEventListener('visibilitychange', loadSummary);
+    };
   }, []);
   const referralLevels = [
     { level: 1, tone: 'referral-level-one' },
