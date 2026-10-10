@@ -4,6 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
+import { InvestmentChart } from '@/components/investment-chart';
 import { productCatalog } from '@/data/product-catalog';
 import samsungPresenceImage from '../../../attached_assets/main_895c72cd-d6f4-4c0e-be9b-6fca99eae985_1791616689408.jpg';
 import NotFound from '@/pages/not-found';
@@ -357,6 +358,12 @@ function HomePage() {
           <Link href="/tasks" className="home-task-cta">Go</Link>
         </div>
       </article>
+
+      <InvestmentChart
+        products={productCatalog}
+        formatPrice={(price) => money.format(price)}
+        imageUrl={`${basePath}/samsung-s26-ultra-banner.jpeg`}
+      />
 
       <div className="home-activity-strip" role="status">
         <History aria-hidden="true" />

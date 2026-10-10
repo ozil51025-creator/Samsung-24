@@ -23,6 +23,12 @@ For screenshot-led page work, the user wants the reference followed closely and 
 
 **How to apply:** Reproduce only the provided reference content and visual elements. Do not fill gaps with guesses; clarify direct conflicts such as currency or payment channels before changing them.
 
+The investment chart is a separate Home section; it must not replace the Samsung Products catalog. Show only Samsung product names and confirmed UGX prices in the chart.
+
+**Why:** The user corrected a prior change that put the chart on the Products page instead of adding it separately.
+
+**How to apply:** Keep the product catalog on Products and place a distinct investment chart on Home. Do not show unconfirmed returns, duration, or payout claims.
+
 **Why:** The user first chose the sales-rewards option and sale prices only, then corrected the catalog display after noticing their supplied daily/hourly figures were missing. Their requested values have not been supported by verified payout terms. They also requested member pages, a cash welcome bonus, real checkout, and multi-level referral bonuses. They corrected a preview that showed only three unlabeled icons instead of the five pages.
 
 **How to apply:** Use "samsung" as the site name and keep the independent-retailer disclaimer visible; do not imply Samsung affiliation. Keep persistent mobile and desktop navigation labeled Overview, Home, Products, Purchased, Referral, and Account; do not reduce it to icon-only shortcuts. Keep wallet activity and history on Home, separate from the Overview dashboard. Show supplied daily/hourly amounts as unverified estimates, never as guaranteed payouts. Keep payouts inactive until their basis, eligibility, and terms are clear and verified; do not credit cash bonuses before rules are configured.
