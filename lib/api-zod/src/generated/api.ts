@@ -164,7 +164,99 @@ export const GetAdminMembersResponse = zod.object({
   "phoneNumber": zod.string().regex(getAdminMembersResponseMembersItemPhoneNumberRegExp),
   "createdAt": zod.coerce.date(),
   "referralCode": zod.string().nullable(),
-  "referredByAccountId": zod.string().nullable()
+  "referredByAccountId": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Set a one-time temporary password for a member
+ */
+export const ResetAdminMemberPasswordParams = zod.object({
+  "memberId": zod.coerce.string().uuid()
+})
+
+export const resetAdminMemberPasswordResponseTemporaryPasswordMin = 20;
+export const resetAdminMemberPasswordResponseTemporaryPasswordMax = 40;
+
+
+
+export const ResetAdminMemberPasswordResponse = zod.object({
+  "memberId": zod.string().uuid(),
+  "temporaryPassword": zod.string().min(resetAdminMemberPasswordResponseTemporaryPasswordMin).max(resetAdminMemberPasswordResponseTemporaryPasswordMax)
+})
+
+
+/**
+ * @summary Activate or deactivate a member account
+ */
+export const UpdateAdminMemberStatusParams = zod.object({
+  "memberId": zod.coerce.string().uuid()
+})
+
+export const updateAdminMemberStatusBodyReasonMin = 3;
+export const updateAdminMemberStatusBodyReasonMax = 500;
+
+
+
+export const UpdateAdminMemberStatusBody = zod.object({
+  "isActive": zod.boolean(),
+  "reason": zod.string().min(updateAdminMemberStatusBodyReasonMin).max(updateAdminMemberStatusBodyReasonMax)
+})
+
+export const UpdateAdminMemberStatusResponse = zod.object({
+  "memberId": zod.string().uuid(),
+  "isActive": zod.boolean()
+})
+
+
+/**
+ * @summary Make a reasoned credit or debit to a member wallet
+ */
+export const CreateAdminWalletAdjustmentParams = zod.object({
+  "memberId": zod.coerce.string().uuid()
+})
+
+export const createAdminWalletAdjustmentBodyAmountUgxMax = 100000000;
+
+export const createAdminWalletAdjustmentBodyReasonMin = 3;
+export const createAdminWalletAdjustmentBodyReasonMax = 500;
+
+
+
+export const CreateAdminWalletAdjustmentBody = zod.object({
+  "direction": zod.enum(['credit', 'debit']),
+  "amountUgx": zod.number().int().min(1).max(createAdminWalletAdjustmentBodyAmountUgxMax),
+  "reason": zod.string().min(createAdminWalletAdjustmentBodyReasonMin).max(createAdminWalletAdjustmentBodyReasonMax)
+})
+
+export const createAdminWalletAdjustmentResponseWalletBalanceUgxMin = 0;
+
+
+
+export const CreateAdminWalletAdjustmentResponse = zod.object({
+  "memberId": zod.string().uuid(),
+  "walletBalanceUgx": zod.number().int().min(createAdminWalletAdjustmentResponseWalletBalanceUgxMin)
+})
+
+
+/**
+ * @summary Review recent administrator actions
+ */
+export const getAdminAuditLogsResponseLogsItemPerformedByPhoneRegExp = new RegExp('^\\+2567[0-9]{8}$');
+
+
+export const GetAdminAuditLogsResponse = zod.object({
+  "logs": zod.array(zod.object({
+  "id": zod.number().int(),
+  "action": zod.string(),
+  "performedByPhone": zod.string().regex(getAdminAuditLogsResponseLogsItemPerformedByPhoneRegExp),
+  "targetPhone": zod.string().nullable(),
+  "amountUgx": zod.number().int().nullable(),
+  "reason": zod.string().nullable(),
+  "details": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
 }))
 })
 

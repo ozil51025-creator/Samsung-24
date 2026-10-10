@@ -15,4 +15,5 @@ export interface AdminMember {
   referralCode: string | null;
   /** @nullable */
   referredByAccountId: string | null;
+  isActive: boolean;
 }

@@ -92,6 +92,7 @@ export interface AdminMember {
   referralCode: string | null;
   /** @nullable */
   referredByAccountId: string | null;
+  isActive: boolean;
 }
 
 export interface AdminMembers {
@@ -115,6 +116,77 @@ export interface AdminAccountInput {
      * @maxLength 16
      */
   phoneNumber: string;
+}
+
+export interface AdminPasswordReset {
+  memberId: string;
+  /**
+     * @minLength 20
+     * @maxLength 40
+     */
+  temporaryPassword: string;
+}
+
+export interface AdminMemberStatusInput {
+  isActive: boolean;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface AdminMemberStatus {
+  memberId: string;
+  isActive: boolean;
+}
+
+export type AdminWalletAdjustmentInputDirection = typeof AdminWalletAdjustmentInputDirection[keyof typeof AdminWalletAdjustmentInputDirection];
+
+
+export const AdminWalletAdjustmentInputDirection = {
+  credit: 'credit',
+  debit: 'debit',
+} as const;
+
+export interface AdminWalletAdjustmentInput {
+  direction: AdminWalletAdjustmentInputDirection;
+  /**
+     * @minimum 1
+     * @maximum 100000000
+     */
+  amountUgx: number;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface AdminWalletAdjustment {
+  memberId: string;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+}
+
+export interface AdminAuditLog {
+  id: number;
+  action: string;
+  /** @pattern ^\+2567[0-9]{8}$ */
+  performedByPhone: string;
+  /** @nullable */
+  targetPhone: string | null;
+  /** @nullable */
+  amountUgx: number | null;
+  /** @nullable */
+  reason: string | null;
+  /** @nullable */
+  details: string | null;
+  createdAt: string;
+}
+
+export interface AdminAuditLogs {
+  logs: AdminAuditLog[];
 }
 
 export type TaskCenterTaskRewardFrequency = typeof TaskCenterTaskRewardFrequency[keyof typeof TaskCenterTaskRewardFrequency];
