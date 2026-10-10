@@ -14,6 +14,7 @@ import {
   rechargeRequestsTable,
   taskCenterSettingsTable,
   teamDepositMilestoneClaimsTable,
+  referralCommissionsTable,
   withdrawalRequestsTable,
 } from "@workspace/db";
 import {
@@ -32,6 +33,7 @@ import {
   RegisterPhoneAccountResponse,
   PurchaseProductResponse,
   GetAdminSiteSettingsResponse,
+  GetReferralSummaryResponse,
   RedeemGiftCodeBody,
   RedeemGiftCodeResponse,
 } from "@workspace/api-zod";
@@ -637,6 +639,55 @@ router.get("/presence", async (req, res) => {
   }
 });
 
+router.get("/referral/summary", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const links = await db.select({
+      accountId: phoneReferralCodesTable.accountId,
+      referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+    }).from(phoneReferralCodesTable);
+    const seen = new Set<string>([accountId]);
+    let frontier = new Set<string>([accountId]);
+    const memberCounts: number[] = [];
+    for (let depth = 0; depth < 3; depth += 1) {
+      const next = new Set(links
+        .filter((link) => link.referredByAccountId && frontier.has(link.referredByAccountId) && !seen.has(link.accountId))
+        .map((link) => link.accountId));
+      next.forEach((id) => seen.add(id));
+      memberCounts.push(next.size);
+      frontier = next;
+    }
+    const [siteSettings, rewardRows] = await Promise.all([
+      readSiteSettings(),
+      db.select({ level: referralCommissionsTable.level, rewardsUgx: sum(referralCommissionsTable.amountUgx) })
+        .from(referralCommissionsTable)
+        .where(eq(referralCommissionsTable.recipientAccountId, accountId))
+        .groupBy(referralCommissionsTable.level),
+    ]);
+    const rewardByLevel = new Map(rewardRows.map((row) => [row.level, Number(row.rewardsUgx ?? 0)]));
+    const rates = [
+      siteSettings.referralCommissionLevel1Percent,
+      siteSettings.referralCommissionLevel2Percent,
+      siteSettings.referralCommissionLevel3Percent,
+    ];
+    const levels = [1, 2, 3].map((level) => ({
+      level,
+      commissionPercent: rates[level - 1] ?? 0,
+      memberCount: memberCounts[level - 1] ?? 0,
+      rewardsUgx: rewardByLevel.get(level) ?? 0,
+    }));
+    res.json(GetReferralSummaryResponse.parse({
+      totalMembers: memberCounts.reduce((total, count) => total + count, 0),
+      totalRewardsUgx: levels.reduce((total, item) => total + item.rewardsUgx, 0),
+      levels,
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "referral.summary" }, "Could not load referral summary");
+    res.status(500).json({ error: "Could not load referral statistics." });
+  }
+});
+
 router.post("/presence/claim", requireSameOrigin, async (req, res) => {
   try {
     const accountId = await currentAccountId(req, res);
@@ -753,6 +804,13 @@ router.post("/products/:productId/purchase", requireSameOrigin, async (req, res)
             walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${amountUgx}`,
             totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${amountUgx}`,
           }).where(eq(phoneAccountsTable.id, ancestorId));
+          await tx.insert(referralCommissionsTable).values({
+            recipientAccountId: ancestorId,
+            purchaserAccountId: accountId,
+            orderId: order.id,
+            level: index + 1,
+            amountUgx,
+          });
           commissions.push({ level: index + 1, amountUgx });
         }
       }

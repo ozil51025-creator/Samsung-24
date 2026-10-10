@@ -1754,10 +1754,25 @@ function PurchasedProductsPage() {
 function ReferralPage() {
   const { user } = useAuth();
   const [referralNotice, setReferralNotice] = useState('');
+  const [summary, setSummary] = useState<{ totalMembers: number; totalRewardsUgx: number; levels: Array<{ level: number; commissionPercent: number; memberCount: number; rewardsUgx: number }> } | null>(null);
+  const [summaryError, setSummaryError] = useState('');
+  useEffect(() => {
+    let active = true;
+    fetch('/api/referral/summary', { credentials: 'include' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load your team statistics.');
+        if (active) setSummary(data);
+      })
+      .catch((error: unknown) => {
+        if (active) setSummaryError(error instanceof Error ? error.message : 'Could not load your team statistics.');
+      });
+    return () => { active = false; };
+  }, []);
   const referralLevels = [
-    { level: 1, rate: '35%', tone: 'referral-level-one' },
-    { level: 2, rate: '2%', tone: 'referral-level-two' },
-    { level: 3, rate: '1%', tone: 'referral-level-three' },
+    { level: 1, tone: 'referral-level-one' },
+    { level: 2, tone: 'referral-level-two' },
+    { level: 3, tone: 'referral-level-three' },
   ];
 
   const referralLink = user?.referralCode
@@ -1790,8 +1805,8 @@ function ReferralPage() {
 
       <section className="referral-invite-card" aria-label="Referral invitation">
         <div className="referral-team-summary">
-          <div><span>Total rewards</span><strong aria-label="Unavailable">UGX —</strong></div>
-          <div><span>Total members</span><strong aria-label="Unavailable">—</strong></div>
+          <div><span>Recorded rewards</span><strong>{summary ? `UGX ${money.format(summary.totalRewardsUgx)}` : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
+          <div><span>Total members</span><strong>{summary ? money.format(summary.totalMembers) : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
         </div>
         <div className="referral-hero-art">
           <img src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy smartphones including foldable devices" />
@@ -1816,19 +1831,22 @@ function ReferralPage() {
       </section>
 
       <section className="referral-levels" aria-label="Referral commission levels">
-        {referralLevels.map(({ level, rate, tone }) => (
+        {referralLevels.map(({ level, tone }) => {
+          const stats = summary?.levels.find((item) => item.level === level);
+          return (
           <article key={level} className={`referral-tier-card ${tone}`}>
             <span className="referral-level-badge">Lv{level}</span>
-            <div><strong>{rate}</strong><span>Commission</span></div>
-            <div><strong>—</strong><span>Members</span></div>
-            <div><strong>—</strong><span>Rewards</span></div>
+            <div><strong>{stats ? `${stats.commissionPercent}%` : summaryError ? '—' : '…'}</strong><span>Commission</span></div>
+            <div><strong>{stats ? money.format(stats.memberCount) : summaryError ? '—' : '…'}</strong><span>Members</span></div>
+            <div><strong>{stats ? money.format(stats.rewardsUgx) : summaryError ? '—' : '…'}</strong><span>Rewards</span></div>
           </article>
-        ))}
+        );})}
       </section>
 
       <p className="referral-terms-note">
-        Eligible commissions are calculated from confirmed product purchases using the current site settings; deposits alone do not trigger referral commissions.
+        Eligible commissions are credited after a referred member’s first product purchase using deposited funds; deposits and signups alone do not trigger rewards. This page records new commissions going forward; earlier wallet credits were not stored as separate records.
       </p>
+      {summaryError && <p role="alert" className="referral-terms-note">{summaryError}</p>}
     </section>
   </MemberFrame>;
 }
