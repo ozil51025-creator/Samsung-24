@@ -195,6 +195,8 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
   const isReferral = active === '/referral';
   const isProducts = active === '/products';
   const isAccount = active === '/account';
+  const isWithdrawalHistory = active === '/withdrawal-history';
+  const activeNavPath = isWithdrawalHistory ? '/account' : active;
   const handleSignOut = async () => {
     setSigningOut(true);
     setSignOutError('');
@@ -248,7 +250,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
               </div>
               <nav className={`member-nav order-3 hidden w-full gap-1 overflow-x-auto border-t pt-3 md:order-none md:flex md:w-auto md:border-0 md:pt-0 ${isOverview ? 'border-white/10' : 'border-[#e4e0d4]'}`} aria-label="Member navigation">
                  {memberNav.map(({ href, label, icon: Icon }) => (
-                  <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] sm:px-3.5 ${isOverview ? (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
+                  <Link key={href} href={href} aria-current={activeNavPath === href ? 'page' : undefined} className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] sm:px-3.5 ${isOverview ? (activeNavPath === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-white/60 hover:bg-white/10 hover:text-white') : isProducts ? (activeNavPath === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#476675] hover:bg-white/50 hover:text-[#173448]') : (activeNavPath === href ? 'bg-[#38bdf8] text-[#082f49]' : 'text-[#617166] hover:bg-[#e9eadf] hover:text-[#294637]')}`}>
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
@@ -256,7 +258,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
              {signOutError && <p className="w-full text-right text-[11px] text-red-500" role="alert">{signOutError}</p>}
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
-              {!isOverview && !isReferral && <div className="mb-7">
+              {!isOverview && !isReferral && !isWithdrawalHistory && <div className="mb-7">
                 <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">samsung</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
@@ -268,8 +270,8 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
           </div>
           <nav className={`member-bottom-nav liquid-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-4 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : isHome ? 'home-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),620px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
             {mobileMemberNav.map(({ href, shortLabel, icon: Icon }) => (
-              <Link key={href} href={href} aria-current={active === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] ${isProducts ? (active === href ? 'text-[#075985]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (active === href ? 'text-[#075985]' : 'text-[#566174] hover:bg-white') : (active === href ? 'text-[#7dd3fc]' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${active === href ? 'bg-[#38bdf8] text-[#082f49]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
+              <Link key={href} href={href} aria-current={activeNavPath === href ? 'page' : undefined} data-testid={`link-mobile-nav-${shortLabel.toLowerCase()}`} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[15px] px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38bdf8] ${isProducts ? (activeNavPath === href ? 'text-[#075985]' : 'text-[#304d5c]/70 hover:bg-white/30 hover:text-[#142438]') : isHome ? (activeNavPath === href ? 'text-[#075985]' : 'text-[#566174] hover:bg-white') : (activeNavPath === href ? 'text-[#7dd3fc]' : 'text-white/55 hover:bg-white/[.06] hover:text-white')}`}>
+                <span className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${activeNavPath === href ? 'bg-[#38bdf8] text-[#082f49]' : 'bg-transparent'}`}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /></span>
                 <span className="max-w-full truncate text-[9px] font-semibold leading-none">{shortLabel}</span>
               </Link>
             ))}
@@ -312,11 +314,6 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
 function HomePage() {
   const { user } = useAuth();
-  const homeSummaryCards = [
-    { label: 'Pay', image: `${basePath}/samsung-s26-ultra.jpg`, position: 'home-feature-tall' },
-    { label: 'Cumulative', image: `${basePath}/samsung-fold8-banner.jpg`, position: '' },
-    { label: 'Withdrawal', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
-  ];
   const homeActions = [
     { label: 'Recharge', icon: Download, href: '/recharge' },
     { label: 'Withdrawal', icon: CreditCard, href: '/withdrawal' },
@@ -325,16 +322,14 @@ function HomePage() {
   ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
-      <section className="home-top-hero" aria-label="Featured Samsung device">
-        <img src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip foldable smartphone" fetchPriority="high" />
-        <div className="home-top-hero-copy">
-          <p>Samsung Galaxy</p>
-          <h1>Explore Galaxy devices</h1>
-          <span>Samsung products · prices in UGX</span>
-        </div>
-        <Link href="/products" className="home-top-hero-button">Buy</Link>
+      <header className="home-account-heading">
+        <div><span>Account overview</span><strong>{user?.phoneNumber ?? 'Member account'}</strong></div>
+        <Link href="/account" aria-label="Account settings"><UserRound aria-hidden="true" /></Link>
+      </header>
+      <section className="home-balance-panel" aria-label="Account balances">
+        <div><span>Wallet balance</span><strong>UGX {user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}</strong></div>
+        <div><span>Total accumulated</span><strong>UGX {user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}</strong></div>
       </section>
-
       <div className="home-money-actions" aria-label="Account shortcuts">
         {homeActions.map(({ label, icon: Icon, href }) => (
           href
@@ -355,32 +350,17 @@ function HomePage() {
         <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" loading="lazy" />
         <div className="home-task-copy">
           <h2>Task Center</h2>
+          <p>View the current task information.</p>
           <Link href="/tasks" className="home-task-cta">Go</Link>
         </div>
       </article>
 
-      <div className="home-activity-strip" role="status">
-        <History aria-hidden="true" />
-        <span>No wallet transactions are recorded yet.</span>
-      </div>
-
-      <section className="home-photo-grid home-summary-grid" aria-label="Account summary">
-        {homeSummaryCards.map(({ label, image, position }) => (
-          <article key={label} className={`home-photo-card ${position}`}>
-            <img src={image} alt="" aria-hidden="true" loading="lazy" />
-            <span className="home-photo-card-copy">
-              <strong>
-                {label === 'Pay'
-                  ? `UGX ${user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}`
-                  : label === 'Cumulative'
-                    ? `UGX ${user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}`
-                    : '— UGX'}
-              </strong>
-              <small>{label}</small>
-            </span>
-          </article>
-        ))}
+      <section className="home-history-panel" aria-label="Account activity">
+        <div className="home-section-heading"><h2>Account activity</h2><History aria-hidden="true" /></div>
+        <p>No wallet transactions are recorded yet.</p>
+        <Link href="/withdrawal-history" className="home-history-link">View withdrawal history <ArrowRight aria-hidden="true" /></Link>
       </section>
+      <p className="home-retailer-note">Independent gadget retailer · Not Samsung’s official store</p>
     </section>
   </MemberFrame>;
 }
@@ -612,14 +592,16 @@ function LinkBankCardPage() {
 }
 
 function WithdrawalHistoryPage() {
-  const { user, status } = useAuth();
-  if (status === 'loading') return <main className="withdraw-shell" role="status">Checking your account…</main>;
-  if (status === 'error') return <main className="withdraw-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
-  if (!user) return <Redirect to="/sign-in" />;
-  return <main className="withdraw-content withdrawal-history-page" data-testid="page-withdrawal-history">
-      <header className="withdraw-heading"><Link href="/withdrawal" aria-label="Back to withdrawal"><ArrowLeft /></Link><h1>Withdrawal history</h1></header>
-      <section className="recharge-history-empty">More data</section>
-    </main>;
+  return <MemberFrame active="/withdrawal-history">
+    <main className="withdraw-content withdrawal-history-page" data-testid="page-withdrawal-history">
+      <header className="withdraw-heading"><Link href="/account" aria-label="Back to account"><ArrowLeft aria-hidden="true" /></Link><h1>Withdrawal history</h1></header>
+      <section className="withdraw-history-empty" role="status">
+        <span className="withdraw-history-icon"><History aria-hidden="true" /></span>
+        <h2>No withdrawal history</h2>
+        <p>There are no recorded withdrawals for this account yet.</p>
+      </section>
+    </main>
+  </MemberFrame>;
 }
 
 function RechargePage() {

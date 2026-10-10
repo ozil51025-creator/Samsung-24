@@ -2141,3 +2141,217 @@ button.account-menu-row {
     0 5px 14px rgba(14, 165, 233, .3),
     inset 0 1px 0 rgba(255,255,255,.74);
 }
+
+/* Member routes: reference-led, practical white app surfaces and persistent tabs. */
+.home-shell,
+.products-shell,
+.account-shell {
+  color: #24272c;
+  background: #fff;
+}
+.home-shell .member-frame > .flex-1,
+.products-shell .member-frame > .flex-1,
+.account-shell .member-frame > .flex-1 {
+  padding-top: 12px !important;
+}
+.home-shell .member-frame > .flex-1 > .mb-7,
+.products-shell .member-frame > .flex-1 > .mb-7 {
+  display: none;
+}
+.home-shell .member-frame > footer,
+.products-shell .member-frame > footer,
+.account-shell .member-frame > footer {
+  border-color: #eceef0 !important;
+  color: #85898e !important;
+  font-size: 10px;
+}
+.home-shell .home-dashboard { gap: 15px; }
+.home-account-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 16px 1px;
+}
+.home-account-heading > div { display: grid; gap: 5px; min-width: 0; }
+.home-account-heading > div span { color: #85898d; font-size: 11px; }
+.home-account-heading > div strong { overflow: hidden; color: #272a2e; font-size: 17px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.home-account-heading > a {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #eceef0;
+  border-radius: 50%;
+  background: #fafafa;
+  color: #32363a;
+}
+.home-account-heading > a svg { width: 19px; height: 19px; }
+.home-balance-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 16px;
+  padding: 22px 2px 16px;
+}
+.home-balance-panel > div { display: grid; align-content: center; gap: 9px; min-width: 0; }
+.home-balance-panel > div + div { padding-left: 16px; border-left: 1px solid #e8e9eb; }
+.home-balance-panel span { color: #70747a; font-size: 12px; }
+.home-balance-panel strong { overflow-wrap: anywhere; color: #25282c; font-size: clamp(18px,5vw,24px); font-weight: 500; letter-spacing: -.035em; }
+.home-shell .home-money-actions {
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  margin: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #f6f6f7;
+}
+.home-shell .home-money-actions a,
+.home-shell .home-money-actions button {
+  min-height: 88px;
+  gap: 8px;
+  color: #62666c;
+  font-size: 10px;
+  font-weight: 500;
+}
+.home-shell .home-money-actions svg { width: 23px; height: 23px; color: #52565b; }
+.home-shell .home-task-banner {
+  min-height: 150px;
+  margin: 0 16px;
+  border-radius: 12px;
+  box-shadow: none;
+}
+.home-shell .home-task-copy h2 { font-size: 20px; }
+.home-shell .home-task-copy > p:not(.home-task-eyebrow) { font-size: 11px; }
+.home-history-panel {
+  margin: 0 16px;
+  padding: 17px;
+  border: 1px solid #eceef0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: none;
+}
+.home-history-panel .home-section-heading h2 { margin: 0; color: #303338; font-family: var(--app-font-sans); font-size: 15px; font-weight: 600; letter-spacing: 0; }
+.home-history-panel .home-section-heading svg { width: 18px; height: 18px; color: #777c83; }
+.home-history-panel > p { margin: 13px 0 10px; padding: 0; background: transparent; color: #7b8086; font-size: 12px; }
+.home-history-link { display: inline-flex; min-height: 34px; align-items: center; gap: 7px; color: #4b5056; font-size: 11px; font-weight: 600; text-decoration: none; }
+.home-history-link svg { width: 14px; height: 14px; }
+.home-retailer-note { margin: 0 18px 12px; color: #969a9f; font-size: 10px; line-height: 1.5; }
+
+.products-shell { background: #f6f6f7; }
+.products-shell .member-frame { max-width: 680px; }
+.products-shell .product-page-heading { padding: 4px 4px 12px; }
+.products-shell .product-page-heading h1 { color: #25282c; font-family: var(--app-font-sans); font-size: 22px; font-weight: 500; }
+.products-shell .product-page-mark { width: 38px; height: 38px; background: #fff; color: #282b30; font-size: 17px; box-shadow: none; }
+.products-shell .product-summary-banner {
+  min-height: 100px;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: none;
+}
+.products-shell .product-summary-banner::before { background: linear-gradient(90deg,rgba(13,28,44,.7),rgba(13,28,44,.12)); }
+.products-shell .product-summary-value { font-family: var(--app-font-sans); font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+.products-shell .product-summary-label { font-size: 10px; }
+.products-shell .product-catalog-list { gap: 12px; margin-top: 13px; }
+.products-shell .product-card { padding: 13px 14px 10px; border: 0; border-radius: 11px; background: #fff; box-shadow: 0 1px 4px rgba(31,35,40,.05); }
+.products-shell .product-card-title { color: #404348; font-size: 13px; font-weight: 500; }
+.products-shell .product-card-art { min-height: 144px; }
+.products-shell .product-card-art img { height: 135px; }
+.products-shell .product-card-art svg { width: 120px; height: 120px; }
+.products-shell .product-card-price-row { padding: 8px 1px 11px; }
+.products-shell .product-card-price { color: #3d6689; font-size: 17px; font-weight: 500; }
+.products-shell .product-buy-button { min-width: 88px; min-height: 33px; background: #27292d; font-size: 10px; }
+.products-shell .product-card-details > div { min-height: 31px; color: #85898f; font-size: 10px; }
+.products-shell .product-card-details strong { color: #555960; font-size: 10px; }
+.products-shell .product-checkout-note { margin: 13px 0 0; border: 1px solid #e7e8ea; border-radius: 10px; background: #fff; color: #73777d; font-size: 10px; }
+
+.account-shell .member-frame > header { background: #fff; }
+.account-content { max-width: 680px; }
+.account-overview-heading { padding: 2px 2px 16px; }
+.account-overview-heading p { color: #898d92; }
+.account-overview-heading h1 { color: #282c31; font-family: var(--app-font-sans); font-size: 23px; font-weight: 600; letter-spacing: -.03em; }
+.account-overview-avatar { background: #f4f5f6; color: #454a50; }
+.account-balance-row { padding: 18px 2px 20px; }
+.account-balance-row strong { color: #282b30; font-size: clamp(19px,5vw,24px); }
+.account-wallet-actions { margin: 0 0 18px; background: #f6f6f7; }
+.account-wallet-actions a { color: #62666c; text-decoration: none; }
+.account-wallet-actions svg { color: #555a60; }
+.account-feature-card { box-shadow: none; }
+.account-shortcut-grid { gap: 8px 7px; }
+.account-shortcut > button,.account-shortcut-link { color: #464a50; }
+.account-shortcut > button svg,.account-shortcut-link svg { color: #32363b; }
+.account-logout { color: #35393e; }
+
+.withdrawal-history-page { min-height: calc(100dvh - 168px); background: #fff; }
+.withdrawal-history-page .withdraw-heading {
+  min-height: 52px;
+  margin: -5px 0 0;
+  padding: 0 4px;
+  border: 0;
+  background: #fff;
+}
+.withdrawal-history-page .withdraw-heading h1 { color: #2d3034; font-size: 18px; font-weight: 500; }
+.withdraw-history-empty {
+  display: grid;
+  min-height: min(56dvh,440px);
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+.withdraw-history-icon { display: grid; width: 58px; height: 58px; place-items: center; margin-bottom: 3px; border-radius: 50%; background: #f4f5f6; color: #858a91; }
+.withdraw-history-icon svg { width: 24px; height: 24px; }
+.withdraw-history-empty h2 { color: #373b40; font-size: 15px; font-weight: 600; }
+.withdraw-history-empty p { max-width: 300px; color: #85898f; font-size: 12px; line-height: 1.6; }
+
+.member-bottom-nav.liquid-bottom-nav,
+.home-shell .home-bottom-nav,
+.products-bottom-nav,
+.account-shell .member-bottom-nav:not(.products-bottom-nav) {
+  bottom: 0;
+  width: min(100%, 680px);
+  max-width: 680px;
+  gap: 0;
+  padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid #e7e8ea;
+  border-radius: 0;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 -4px 14px rgba(32,36,42,.045);
+  backdrop-filter: blur(12px);
+}
+.member-bottom-nav.liquid-bottom-nav::before { display: none; }
+.member-bottom-nav.liquid-bottom-nav > a,
+.member-bottom-nav.liquid-bottom-nav > a[aria-current="page"] { gap: 3px; color: #898d92; }
+.member-bottom-nav.liquid-bottom-nav > a:hover { border-color: transparent; background: #f7f7f8; }
+.member-bottom-nav.liquid-bottom-nav > a[aria-current="page"] { color: #272b30; }
+.member-bottom-nav.liquid-bottom-nav > a > span:first-child,
+.member-bottom-nav.liquid-bottom-nav > a[aria-current="page"] span:first-child {
+  width: 31px;
+  height: 28px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+.member-bottom-nav.liquid-bottom-nav > a > span:last-child { font-size: 9px; font-weight: 500; }
+.home-shell .home-bottom-nav a[aria-current="page"] span:first-child { background: transparent; color: #272b30; }
+
+@media (min-width: 768px) {
+  .home-shell .home-account-heading { padding-right: 0; padding-left: 0; }
+  .home-shell .home-balance-panel { margin-right: 0; margin-left: 0; }
+  .home-shell .home-money-actions,.home-shell .home-task-banner,.home-shell .home-history-panel { margin-right: 0; margin-left: 0; }
+  .home-shell .member-frame > footer { display: block; }
+}
+@media (max-width: 767px) {
+  .home-shell .member-frame > footer { display: none; }
+  .home-shell .member-frame > .flex-1,
+  .products-shell .member-frame > .flex-1 { padding-bottom: 12px !important; }
+  .products-shell .product-summary-banner { min-height: 88px; }
+  .products-shell .product-catalog-list { gap: 9px; }
+  .account-content { padding-top: 0; }
+  .withdrawal-history-page { min-height: calc(100dvh - 125px); }
+}

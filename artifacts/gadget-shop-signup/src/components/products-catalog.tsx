@@ -10,22 +10,21 @@ type ProductsCatalogProps = {
 };
 
 export function ProductsCatalog({ products, formatPrice, imageUrl, productImages }: ProductsCatalogProps) {
-  const estimatedDurationDays = 150;
   return (
     <>
       <header className="product-page-heading">
         <h1>Product</h1>
         <span className="product-page-mark" aria-label="Samsung">S</span>
       </header>
-      <section className="product-summary-banner" aria-label="Product account summary">
+      <section className="product-summary-banner" aria-label="Catalog information">
         <img className="product-summary-photo" src={imageUrl} alt="Samsung Galaxy devices" fetchPriority="high" />
         <div>
-          <p className="product-summary-value">—</p>
-          <p className="product-summary-label">My products</p>
+          <p className="product-summary-value">Catalog</p>
+          <p className="product-summary-label">Purchases are not recorded</p>
         </div>
         <div className="product-summary-range">
-          <p className="product-summary-value">UGX —</p>
-          <p className="product-summary-label">Total earnings</p>
+          <p className="product-summary-value">UGX</p>
+          <p className="product-summary-label">Prices shown in UGX</p>
         </div>
       </section>
       <section className="product-catalog-list" aria-label="Samsung products">
@@ -44,15 +43,15 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
               </button>
             </div>
             <div className="product-card-details">
-              <div><span>Duration:</span><strong>{estimatedDurationDays} days</strong></div>
-              <div><span>Daily earnings estimate:</span><strong>UGX {formatPrice(product.daily)}</strong></div>
-              <div><span>Total earnings estimate:</span><strong>UGX {formatPrice(product.daily * estimatedDurationDays)}</strong></div>
+              <div><span>Availability:</span><strong>Not confirmed</strong></div>
+              <div><span>Unverified daily estimate:</span><strong>UGX {formatPrice(product.daily)}</strong></div>
+              <div><span>Payout terms:</span><strong>Not active</strong></div>
             </div>
           </article>
         ))}
       </section>
       <p className="product-checkout-note">
-        Earnings shown are estimates only. Reward terms and payouts are not active until confirmed.
+        Daily and total figures are unverified estimates, not promised returns. Reward terms and payouts are not active. Exact product models and stock are still being confirmed.
       </p>
     </>
   );
