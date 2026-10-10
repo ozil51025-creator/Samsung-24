@@ -7,6 +7,8 @@ import {
   phoneReferralCodesTable,
   phoneSessionsTable,
   presenceClaimsTable,
+  productCatalogTable,
+  productOrdersTable,
   rechargeRequestsTable,
   taskCenterSettingsTable,
   teamDepositMilestoneClaimsTable,
@@ -18,8 +20,9 @@ import {
   LoginPhoneAccountResponse,
   RegisterPhoneAccountBody,
   RegisterPhoneAccountResponse,
+  PurchaseProductResponse,
 } from "@workspace/api-zod";
-import { calculateLevelOneToThreeTeamDeposits, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
+import { calculateLevelOneToThreeTeamDeposits, getReferralAncestorsThroughLevelThree, TEAM_DEPOSIT_MILESTONES } from "../lib/team-deposit-milestones";
 
 const router: IRouter = Router();
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -599,6 +602,96 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
   } catch (error) {
     req.log.error({ error, route: "presence.claim" }, "Could not record presence");
     res.status(500).json({ error: "Could not record presence." });
+  }
+});
+
+router.post("/products/:productId/purchase", requireSameOrigin, async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  const productId = req.params.productId;
+  if (!/^[a-z0-9-]{1,60}$/.test(productId)) {
+    res.status(400).json({ error: "Invalid product." });
+    return;
+  }
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [product] = await tx.select({
+        id: productCatalogTable.id,
+        name: productCatalogTable.name,
+        priceUgx: productCatalogTable.priceUgx,
+      }).from(productCatalogTable)
+        .where(and(eq(productCatalogTable.id, productId), eq(productCatalogTable.isActive, true)))
+        .for("update").limit(1);
+      if (!product) return { kind: "unavailable" as const };
+
+      const [buyer] = await tx.select({
+        walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+      }).from(phoneAccountsTable)
+        .where(eq(phoneAccountsTable.id, accountId))
+        .for("update").limit(1);
+      if (!buyer || buyer.walletBalanceUgx < product.priceUgx) return { kind: "insufficient" as const };
+
+      const [priorOrder] = await tx.select({ id: productOrdersTable.id })
+        .from(productOrdersTable)
+        .where(eq(productOrdersTable.buyerAccountId, accountId))
+        .limit(1);
+      const isFirstPurchase = !priorOrder;
+      const [order] = await tx.insert(productOrdersTable).values({
+        buyerAccountId: accountId,
+        productId: product.id,
+        productName: product.name,
+        priceUgx: product.priceUgx,
+        isFirstPurchase,
+        status: "pending_fulfillment",
+      }).returning({ id: productOrdersTable.id });
+
+      const [updatedBuyer] = await tx.update(phoneAccountsTable)
+        .set({ walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} - ${product.priceUgx}` })
+        .where(eq(phoneAccountsTable.id, accountId))
+        .returning({ walletBalanceUgx: phoneAccountsTable.walletBalanceUgx });
+
+      const commissions: Array<{ level: number; amountUgx: number }> = [];
+      if (isFirstPurchase) {
+        const referrals = await tx.select({
+          accountId: phoneReferralCodesTable.accountId,
+          referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+        }).from(phoneReferralCodesTable);
+        const ancestors = getReferralAncestorsThroughLevelThree(accountId, referrals);
+        const rates = [35, 2, 1];
+        for (const [index, ancestorId] of ancestors.entries()) {
+          const amountUgx = Math.floor(product.priceUgx * (rates[index] ?? 0) / 100);
+          if (amountUgx <= 0) continue;
+          await tx.update(phoneAccountsTable).set({
+            walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${amountUgx}`,
+            totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${amountUgx}`,
+          }).where(eq(phoneAccountsTable.id, ancestorId));
+          commissions.push({ level: index + 1, amountUgx });
+        }
+      }
+      return {
+        kind: "purchased" as const,
+        result: {
+          orderId: order.id,
+          productName: product.name,
+          priceUgx: product.priceUgx,
+          walletBalanceUgx: updatedBuyer.walletBalanceUgx,
+          isFirstPurchase,
+          commissions,
+        },
+      };
+    });
+    if (result.kind === "unavailable") {
+      res.status(409).json({ error: "This product is no longer available." });
+      return;
+    }
+    if (result.kind === "insufficient") {
+      res.status(409).json({ error: "Your wallet balance is not enough to buy this product." });
+      return;
+    }
+    res.json(PurchaseProductResponse.parse(result.result));
+  } catch (error) {
+    req.log.error({ error, route: "products.purchase" }, "Could not complete product purchase");
+    res.status(500).json({ error: "The purchase could not be completed. No wallet funds were taken." });
   }
 });
 
