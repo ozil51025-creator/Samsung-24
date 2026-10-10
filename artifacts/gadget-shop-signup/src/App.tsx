@@ -914,6 +914,8 @@ function AdminTaskCenterPage() {
   const [adminMessage, setAdminMessage] = useState('');
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [directoryStatus, setDirectoryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [directoryMessage, setDirectoryMessage] = useState('');
+  const [directoryRequiresSignIn, setDirectoryRequiresSignIn] = useState(false);
   const [rechargeStatus, setRechargeStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [message, setMessage] = useState('');
@@ -936,6 +938,8 @@ function AdminTaskCenterPage() {
   useEffect(() => { loadTasks(); }, []);
   const loadAdminDirectory = () => {
     setDirectoryStatus('loading');
+    setDirectoryMessage('');
+    setDirectoryRequiresSignIn(false);
     Promise.all([
       fetch('/api/admin/overview', { credentials: 'include' }),
       fetch('/api/admin/members', { credentials: 'include' }),
@@ -949,8 +953,19 @@ function AdminTaskCenterPage() {
           adminsResponse.json(),
           auditResponse.json(),
         ]);
-        if (!overviewResponse.ok || !membersResponse.ok || !adminsResponse.ok || !auditResponse.ok) {
-          throw new Error('Could not load the admin dashboard. Check your admin access and try again.');
+        const failedResponse = [overviewResponse, membersResponse, adminsResponse, auditResponse].find((response) => !response.ok);
+        if (failedResponse) {
+          if (failedResponse.status === 401) {
+            setDirectoryRequiresSignIn(true);
+            throw new Error('Sign in with the configured admin account to access this panel.');
+          }
+          if (failedResponse.status === 403) {
+            throw new Error('This signed-in account is not an administrator. Sign out and use the root admin account.');
+          }
+          const failedData = [overviewData, membersData, adminsData, auditData][
+            [overviewResponse, membersResponse, adminsResponse, auditResponse].indexOf(failedResponse)
+          ] as { error?: string };
+          throw new Error(failedData.error ?? 'Could not load the admin dashboard. Try again.');
         }
         setOverview(overviewData);
         setMembers(membersData.members);
@@ -958,7 +973,10 @@ function AdminTaskCenterPage() {
         setAuditLogs(auditData.logs);
         setDirectoryStatus('ready');
       })
-      .catch(() => setDirectoryStatus('error'));
+      .catch((error: unknown) => {
+        setDirectoryMessage(error instanceof Error ? error.message : 'Could not load the admin dashboard. Try again.');
+        setDirectoryStatus('error');
+      });
   };
   useEffect(() => { loadAdminDirectory(); }, []);
   const loadAdminProducts = () => {
@@ -999,7 +1017,9 @@ function AdminTaskCenterPage() {
   }, []);
   const processWithdrawal = async (request: (typeof withdrawalRequests)[number], nextStatus: 'paid' | 'failed') => {
     if (nextStatus === 'paid' && !window.confirm(`Confirm that UGX ${money.format(request.receivedUgx)} was sent manually to ${request.payoutProvider.toUpperCase()} ${request.payoutPhone}?`)) return;
-    const resolutionNote = window.prompt(nextStatus === 'paid' ? 'Enter the manual transfer reference or payment note:' : 'Why could this withdrawal not be paid?');
+    const resolutionNote = nextStatus === 'paid'
+      ? 'Manual payment confirmed by admin.'
+      : window.prompt('Why could this withdrawal not be paid?');
     if (!resolutionNote?.trim()) return;
     try {
       const response = await fetch(`/api/admin/withdrawals/${encodeURIComponent(request.id)}`, {
@@ -1141,7 +1161,7 @@ function AdminTaskCenterPage() {
         <h2>Overview</h2>
         <p className="admin-section-subtitle">A current view of the Samsung rewards portal.</p>
         {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
-        {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load admin data.</p><button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
+        {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>{directoryMessage || 'Could not load admin data.'}</p>{directoryRequiresSignIn && <Link href="/sign-in">Sign in</Link>}<button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
         {overview && <div className="admin-overview-grid">
           <article><span>Total members</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
           <article><span>Active members</span><strong>{members.filter((member) => member.isActive).length.toLocaleString()}</strong></article>
@@ -1771,6 +1791,7 @@ function AppRoutes() {
         <Route path="/presence" component={PresencePage} />
         <Route path="/tasks" component={TaskCenterPage} />
         <Route path="/admin" component={AdminTaskCenterPage} />
+        <Route path="/gadget-shop-signup/admin"><Redirect to="/admin" /></Route>
         <Route path="/withdrawal" component={WithdrawalPage} />
         <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />
         <Route path="/bank-accounts" component={BankAccountsPage} />
