@@ -1687,8 +1687,7 @@ button.account-menu-row {
 .referral-team-summary span { color: rgba(255,255,255,.88); font-size: 10px; font-weight: 600; }
 .referral-team-summary strong { color: white; font-size: 18px; font-weight: 700; }
 .referral-hero-art { display: flex; flex: 1 1 auto; min-height: 190px; flex-direction: column; align-items: center; justify-content: center; gap: 0; overflow: hidden; }
-.referral-hero-art svg { width: 202px; height: 202px; filter: drop-shadow(0 14px 22px rgba(0,0,0,.3)); }
-.referral-hero-art > span { margin-top: -10px; color: rgba(255,255,255,.54); font-size: 8px; }
+.referral-hero-art img { width: 100%; height: 210px; border-radius: 13px; object-fit: cover; object-position: center; filter: brightness(.72); box-shadow: 0 12px 26px rgba(0,0,0,.2); }
 .referral-invite-copy { position: relative; z-index: 1; }
 .referral-invite-copy h2 { margin-top: 1px; font-size: 20px; }
 .referral-invite-copy > p:last-child { margin-top: 3px; font-size: 10px; }
@@ -1702,7 +1701,7 @@ button.account-menu-row {
 @media (min-width: 640px) {
   .referral-invite-card { min-height: 510px; padding: 21px 23px 14px; }
   .referral-hero-art { min-height: 215px; }
-  .referral-hero-art svg { width: 222px; height: 222px; }
+  .referral-hero-art img { height: 240px; }
 }
 
 @media (prefers-reduced-transparency: reduce) {

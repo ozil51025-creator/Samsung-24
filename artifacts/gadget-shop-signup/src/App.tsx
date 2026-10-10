@@ -4,7 +4,6 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
-import { ProductIllustration } from '@/components/product-illustration';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
 import { ArrowDownRight, ArrowRight, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
@@ -439,8 +438,7 @@ function ReferralPage() {
           <div><span>Total members</span><strong aria-label="Unavailable">—</strong></div>
         </div>
         <div className="referral-hero-art">
-          <ProductIllustration kind={productCatalog[10].illustration} name={productCatalog[10].name} />
-          <span>Samsung Galaxy · illustrative image</span>
+          <img src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy smartphones including foldable devices" />
         </div>
         <div className="referral-invite-copy">
           <h2 id="referral-invite-title">Invite friends</h2>
