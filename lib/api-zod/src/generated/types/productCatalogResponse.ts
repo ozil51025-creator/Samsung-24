@@ -9,4 +9,8 @@ import type { ProductCatalogItem } from './productCatalogItem';
 
 export interface ProductCatalogResponse {
   products: ProductCatalogItem[];
+  /** @minimum 0 */
+  purchasedCount?: number;
+  /** @minimum 0 */
+  totalCollectedUgx?: number;
 }

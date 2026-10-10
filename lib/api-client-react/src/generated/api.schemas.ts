@@ -46,6 +46,10 @@ export interface ProductCatalogItem {
 
 export interface ProductCatalogResponse {
   products: ProductCatalogItem[];
+  /** @minimum 0 */
+  purchasedCount?: number;
+  /** @minimum 0 */
+  totalCollectedUgx?: number;
 }
 
 export interface ProductCatalogInput {
@@ -72,6 +76,25 @@ export interface ProductPurchaseResponse {
   walletBalanceUgx: number;
   isFirstPurchase: boolean;
   commissions: ProductPurchaseResponseCommissionsItem[];
+}
+
+export type ProductOrderStatus = typeof ProductOrderStatus[keyof typeof ProductOrderStatus];
+
+
+export const ProductOrderStatus = {
+  pending_fulfillment: 'pending_fulfillment',
+} as const;
+
+export interface ProductOrder {
+  id: string;
+  productName: string;
+  priceUgx: number;
+  status: ProductOrderStatus;
+  createdAt: string;
+}
+
+export interface ProductOrdersResponse {
+  orders: ProductOrder[];
 }
 
 export interface HealthStatus {

@@ -451,6 +451,10 @@ export const getProductCatalogResponseProductsItemNameMax = 100;
 
 export const getProductCatalogResponseProductsItemPriceUgxMax = 1000000000;
 
+export const getProductCatalogResponsePurchasedCountMin = 0;
+
+export const getProductCatalogResponseTotalCollectedUgxMin = 0;
+
 
 
 export const GetProductCatalogResponse = zod.object({
@@ -460,7 +464,9 @@ export const GetProductCatalogResponse = zod.object({
   "priceUgx": zod.number().int().min(1).max(getProductCatalogResponseProductsItemPriceUgxMax),
   "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
   "isActive": zod.boolean()
-}))
+})),
+  "purchasedCount": zod.number().int().min(getProductCatalogResponsePurchasedCountMin).optional(),
+  "totalCollectedUgx": zod.number().int().min(getProductCatalogResponseTotalCollectedUgxMin).optional()
 })
 
 
@@ -495,6 +501,20 @@ export const PurchaseProductResponse = zod.object({
 
 
 /**
+ * @summary Get the signed-in member's product orders
+ */
+export const GetMyProductOrdersResponse = zod.object({
+  "orders": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "productName": zod.string(),
+  "priceUgx": zod.number().int(),
+  "status": zod.enum(['pending_fulfillment']),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
  * @summary Get all editable catalog products
  */
 export const getAdminProductsResponseProductsItemIdMax = 60;
@@ -506,6 +526,10 @@ export const getAdminProductsResponseProductsItemNameMax = 100;
 
 export const getAdminProductsResponseProductsItemPriceUgxMax = 1000000000;
 
+export const getAdminProductsResponsePurchasedCountMin = 0;
+
+export const getAdminProductsResponseTotalCollectedUgxMin = 0;
+
 
 
 export const GetAdminProductsResponse = zod.object({
@@ -515,7 +539,9 @@ export const GetAdminProductsResponse = zod.object({
   "priceUgx": zod.number().int().min(1).max(getAdminProductsResponseProductsItemPriceUgxMax),
   "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
   "isActive": zod.boolean()
-}))
+})),
+  "purchasedCount": zod.number().int().min(getAdminProductsResponsePurchasedCountMin).optional(),
+  "totalCollectedUgx": zod.number().int().min(getAdminProductsResponseTotalCollectedUgxMin).optional()
 })
 
 
@@ -554,6 +580,10 @@ export const updateAdminProductsResponseProductsItemNameMax = 100;
 
 export const updateAdminProductsResponseProductsItemPriceUgxMax = 1000000000;
 
+export const updateAdminProductsResponsePurchasedCountMin = 0;
+
+export const updateAdminProductsResponseTotalCollectedUgxMin = 0;
+
 
 
 export const UpdateAdminProductsResponse = zod.object({
@@ -563,7 +593,9 @@ export const UpdateAdminProductsResponse = zod.object({
   "priceUgx": zod.number().int().min(1).max(updateAdminProductsResponseProductsItemPriceUgxMax),
   "illustration": zod.enum(['cable', 'charger', 'earphones', 'tag', 'buds', 'band', 'phone', 'phone5g', 'tablet', 'sfe', 'ultra', 'fold']),
   "isActive": zod.boolean()
-}))
+})),
+  "purchasedCount": zod.number().int().min(updateAdminProductsResponsePurchasedCountMin).optional(),
+  "totalCollectedUgx": zod.number().int().min(updateAdminProductsResponseTotalCollectedUgxMin).optional()
 })
 
 
