@@ -5,6 +5,12 @@ description: The user's business model direction and branding for this website.
 
 For this project, the user wants the public-facing store name "Samsung Gadgets" for a Samsung gadget catalog in Uganda, with Ugandan-phone registration. Present it as an independent retailer, not as Samsung's official store. They initially selected real-sales rewards over daily investment returns, then most recently asked for the supplied daily (25%) and hourly (1.0417%) figures to appear alongside the UGX prices. The payout basis and terms, exact product models/stock, and cash-bonus terms remain unverified or unspecified. They requested Overview, Products, Purchased, Referral, and Account pages, plus a UGX 5,000 welcome bonus as withdrawable cash. They specified referral bonus rates of 26%, 2%, and 1% for levels 1–3; the calculation base and qualifying event remain undefined.
 
+The user requested Samsung blue, dark neutrals, white, and translucent surfaces across every page.
+
+**Why:** The user asked for Samsung colors and a transparent design throughout the platform.
+
+**How to apply:** Use Samsung blue (#1428A0) with navy and white, and translucent glass-like surfaces consistently across public, auth, and member pages.
+
 **Why:** The user first chose the sales-rewards option and sale prices only, then corrected the catalog display after noticing their supplied daily/hourly figures were missing. Their requested values have not been supported by verified payout terms. They also requested member pages, a cash welcome bonus, real checkout, and multi-level referral bonuses. They corrected a preview that showed only three unlabeled icons instead of the five pages.
 
 **How to apply:** Use "Samsung Gadgets" as the store name and keep the independent-retailer disclaimer visible; do not imply Samsung affiliation. Keep persistent mobile and desktop navigation labeled Overview, Products, Purchased, Referral, and Account; do not reduce it to icon-only shortcuts. Show supplied daily/hourly amounts as unverified estimates, never as guaranteed payouts. Keep payouts inactive until their basis, eligibility, and terms are clear and verified; do not credit cash bonuses before rules are configured.
