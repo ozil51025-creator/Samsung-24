@@ -1833,6 +1833,9 @@ button.account-menu-row {
 .member-notice-intro { margin-top: 8px; color: #515966; font-size: 12px; line-height: 1.55; }
 .member-notice-content ul { display: grid; gap: 8px; margin: 12px 0 17px; padding-left: 18px; color: #424a56; font-size: 11px; line-height: 1.5; }
 .member-notice-content li::marker { color: #2946a0; }
+.member-notice-telegram { display: flex; width: min(100%,320px); min-height: 42px; align-items: center; justify-content: center; gap: 8px; margin: 0 auto 10px; border-radius: 999px; background: #168de2; color: #fff; font-size: 11px; font-weight: 700; text-decoration: none; }
+.member-notice-telegram svg { width: 15px; height: 15px; }
+.member-notice-telegram:focus-visible { outline: 2px solid #1428a0; outline-offset: 3px; }
 .member-notice-dismiss { display: block; width: min(100%,190px); min-height: 42px; margin: 0 auto; border-radius: 999px; background: #1428a0; color: #fff; font-size: 12px; font-weight: 700; }
 
 @media (prefers-reduced-transparency: reduce) {

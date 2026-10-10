@@ -290,6 +290,15 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
                   <li>No daily earnings or welcome cash bonus are active. This site does not offer guaranteed investment returns.</li>
                   <li>Referral rates are displayed as 35% / 2% / 1%; referral rewards are not active until their terms are confirmed.</li>
                 </ul>
+                <a
+                  href="https://t.me/+pvicn7-rhzg2NGNh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="member-notice-telegram"
+                  data-testid="link-telegram-group"
+                >
+                  Join Telegram group <ArrowRight aria-hidden="true" />
+                </a>
                 <button type="button" onClick={() => setShowMemberNotice(false)} className="member-notice-dismiss">OK</button>
               </div>
             </section>
