@@ -19,6 +19,12 @@ Registration and sign-in use a Ugandan mobile number plus password only: no emai
 
 **How to apply:** Keep the no-email/no-SMS and unverified-number disclosures visible. Do not imply ownership verification or promise self-service recovery; tell returning Clerk users they must register again.
 
+For the public login and registration screens, follow the user's supplied visual reference: dark plum/black backdrop, metallic silver feature artwork, elegant serif headings, and muted gold actions, while retaining Rewards Program branding. Do not copy the Silver Miners name or identity.
+
+**Why:** The user supplied a login/registration reference and asked for that visual direction on their own branded site.
+
+**How to apply:** Keep this direction on `/sign-in` and `/sign-up`; preserve the +256 phone flow, password visibility controls, signup confirmation, invite-code prefill, 12-character minimum, and accurate no-email/no-SMS disclosure.
+
 Every account receives a persistent referral code automatically. Signup links prefill the code, and successful registrations store the direct inviter. Referral commissions and payouts remain inactive until their rules are defined.
 
 **Why:** The user asked for automatic code generation for each new user, then clarified that an inviter's code should appear automatically when a new user opens their registration link.

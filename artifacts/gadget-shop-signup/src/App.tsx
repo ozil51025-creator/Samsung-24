@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { AuthProvider, getAuthErrorMessage, useAuth } from '@/auth/auth-context';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -7,7 +7,7 @@ import { OverviewWalletPanel } from '@/components/overview-wallet-panel';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, BadgeCheck, Bell, Copy, CreditCard, Eye, EyeOff, Gift, LayoutDashboard, LockKeyhole, PackageOpen, Share2, ShieldCheck, ShoppingBag, UserRound, UsersRound } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -455,19 +455,38 @@ function AccountPage() {
 
 function AuthFrame({ children }: { children: ReactNode }) {
   return (
-    <main className="shop-shell shop-grain min-h-[100dvh] px-4 py-7 sm:px-6">
-      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-5xl flex-col">
-        <header className="flex justify-center sm:justify-start"><Link href="/" aria-label="Rewards Program home" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]"><Brand /></Link></header>
-        <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[.8fr_1fr] lg:gap-14">
-          <aside className="hidden max-w-sm lg:block">
-            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
-            <h1 className="mt-4 font-[Syne] text-[42px] font-bold leading-[1.03] tracking-[-.07em] text-[#243b31]">A clear place to start.</h1>
-            <p className="mt-4 text-[14px] leading-7 text-[#657168]">Create or access your account with a Ugandan phone number and password. The number is not verified, and password resets require administrator help.</p>
-            <Link href="/" className="mt-7 inline-flex items-center gap-2 text-[13px] font-semibold text-[#315f49] hover:text-[#244b38]">View product price tiers <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+    <main className="auth-shell shop-grain min-h-[100dvh] px-4 pb-7 pt-5 sm:px-7 sm:py-7" data-testid="page-phone-auth">
+      <div className="auth-layout relative z-10 mx-auto flex min-h-[calc(100dvh-3rem)] max-w-[1120px] flex-col">
+        <header className="auth-topbar flex items-center justify-between">
+          <Link href="/" aria-label="Rewards Program home" className="auth-brand-link rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b579]" data-testid="link-auth-home">
+            <Brand inverse />
+          </Link>
+          <span className="auth-country">UGANDA <span aria-hidden="true">/</span> MEMBER ACCESS</span>
+        </header>
+        <div className="auth-content grid flex-1 items-center gap-8 py-7 sm:py-10 lg:grid-cols-[1fr_.94fr] lg:gap-16 lg:py-12">
+          <aside className="auth-story">
+            <div className="auth-metal-art" aria-hidden="true">
+              <div className="auth-metal-orbit auth-metal-orbit-one" />
+              <div className="auth-metal-orbit auth-metal-orbit-two" />
+              <div className="auth-metal-disc">
+                <span className="auth-metal-monogram">R</span>
+                <span className="auth-metal-caption">REWARDS<br />PROGRAM</span>
+              </div>
+              <span className="auth-metal-index">EST. UGANDA</span>
+            </div>
+            <div className="auth-story-copy">
+              <p className="auth-eyebrow">Rewards Program · Uganda</p>
+              <h1>Good to have<br />you <em>with us.</em></h1>
+              <p>One secure place for your member account. Sign in or register with a Ugandan phone number and password.</p>
+              <div className="auth-story-note"><ShieldCheck aria-hidden="true" /><span>Your number is not verified. There is no email or SMS password reset.</span></div>
+            </div>
           </aside>
-          <div className="w-full">{children}</div>
+          <div className="auth-form-column">{children}</div>
         </div>
-        <footer className="border-t border-[#d8d4c7] pt-4 text-center text-[11px] text-[#758078] sm:text-left">Phone and password account access. No email or SMS is collected; password resets require an administrator.</footer>
+        <footer className="auth-footer">
+          <span>Rewards Program · Uganda</span>
+          <span>Phone and password access · No email or SMS code</span>
+        </footer>
       </div>
     </main>
   );
@@ -475,8 +494,11 @@ function AuthFrame({ children }: { children: ReactNode }) {
 
 function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const { user, status, signIn, register } = useAuth();
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [localNumber, setLocalNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [referralCode, setReferralCode] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return (params.get('ref') ?? params.get('referralCode') ?? '').trim().toUpperCase().slice(0, 10);
@@ -487,11 +509,16 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
   if (user) return <Redirect to="/overview" />;
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
+    if (isSignUp && password !== confirmPassword) {
+      setError('Your passwords do not match. Please check both fields.');
+      return;
+    }
     setSubmitting(true);
     try {
+      const phoneNumber = `+256${localNumber}`;
       if (isSignUp) {
         const code = referralCode.trim().toUpperCase();
         await register({
@@ -513,75 +540,128 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   };
 
   return <AuthFrame>
-    <section className="mx-auto w-full max-w-[480px] rounded-[24px] border border-[#dedbce] bg-[#fffdf7] p-5 shadow-[0_22px_60px_rgba(36,59,49,.1)] sm:p-8">
-      <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
-      <h2 className="mt-2 font-[Syne] text-[28px] font-bold tracking-[-.05em] text-[#243b31]">{isSignUp ? 'Create your account' : 'Welcome back'}</h2>
-      <p className="mt-2 text-[13px] leading-6 text-[#657168]">Use a Ugandan mobile number and password. No email or SMS code is used.</p>
+    <section className="auth-card" aria-labelledby="auth-title" data-testid={`panel-${mode}`}>
+      <div className="auth-card-heading">
+        <p className="auth-eyebrow">{isSignUp ? 'A place in the program' : 'Member access'}</p>
+        <h2 id="auth-title">{isSignUp ? 'Create account' : 'Welcome back'}</h2>
+        <p>Use your Ugandan mobile number and password to continue.</p>
+      </div>
+      <nav className="auth-mode-switch" aria-label="Choose account action">
+        <Link href="/sign-in" aria-current={!isSignUp ? 'page' : undefined} className={`auth-mode-link ${!isSignUp ? 'is-active' : ''}`} data-testid="link-auth-login">Login</Link>
+        <Link href="/sign-up" aria-current={isSignUp ? 'page' : undefined} className={`auth-mode-link ${isSignUp ? 'is-active' : ''}`} data-testid="link-auth-register">Register</Link>
+      </nav>
 
-      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit} data-testid={`form-${mode}`}>
         <div>
-          <label htmlFor="phone-number" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Ugandan mobile number</label>
-          <input
-            id="phone-number"
-            name="phoneNumber"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            required
-            maxLength={32}
-            placeholder="0700 123 456 or +256 700 123 456"
-            value={phoneNumber}
-            onChange={(event) => setPhoneNumber(event.target.value)}
-            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 text-[14px] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
-          />
-        </div>
-        {isSignUp && <div>
-          <label htmlFor="referral-code" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Referral code (optional)</label>
-          <input
-            id="referral-code"
-            name="referralCode"
-            type="text"
-            autoCapitalize="characters"
-            autoComplete="off"
-            maxLength={10}
-            placeholder="Filled automatically from an invite link"
-            value={referralCode}
-            onChange={(event) => setReferralCode(event.target.value.toUpperCase())}
-            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 font-mono text-[14px] tracking-[.08em] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
-          />
-          <p className="mt-1.5 text-[11px] text-[#75816f]">{referralCode ? 'Added automatically from your inviter’s link. It will be saved with your registration.' : 'If you have an invite link, its referral code will appear here.'}</p>
-        </div>}
-        <div>
-          <label htmlFor="password" className="mb-1.5 block text-[12px] font-semibold text-[#31483c]">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete={isSignUp ? 'new-password' : 'current-password'}
-            required
-            minLength={12}
-            maxLength={128}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="h-12 w-full rounded-xl border border-[#dedbce] bg-[#fbf8ef] px-4 text-[14px] text-[#243b31] outline-none transition focus:border-[#315f49] focus:ring-2 focus:ring-[#315f49]/15"
-          />
-          {isSignUp && <p className="mt-1.5 text-[11px] text-[#75816f]">Use at least 12 characters. Password resets require administrator help.</p>}
+          <label htmlFor="phone-number" className="auth-label">Ugandan mobile number</label>
+          <div className="auth-phone-control">
+            <span className="auth-phone-prefix" aria-label="Uganda country code">+256</span>
+            <input
+              id="phone-number"
+              name="phoneNumber"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              required
+              minLength={9}
+              maxLength={9}
+              pattern="7[0-9]{8}"
+              placeholder="7XXXXXXXX"
+              aria-describedby="phone-help"
+              value={localNumber}
+              onChange={(event) => {
+                let value = event.target.value.replace(/\D/g, '');
+                if (value.startsWith('256')) value = value.slice(3);
+                if (value.startsWith('0')) value = value.slice(1);
+                setLocalNumber(value.slice(0, 9));
+              }}
+              className="auth-input auth-phone-input"
+              data-testid="input-phone-number"
+            />
+          </div>
+          <p className="auth-field-hint" id="phone-help">Enter the 9 digits after +256, starting with 7.</p>
         </div>
 
-        {error && <p className="rounded-xl border border-[#f1d8d5] bg-[#fff8f7] px-3 py-2.5 text-[12px] leading-5 text-[#8b302c]" role="alert">{error}</p>}
-        {status === 'error' && <p className="text-[11px] leading-5 text-[#8b302c]" role="status">We couldn’t check an existing session. You can still try signing in or creating an account.</p>}
+        <div>
+          <label htmlFor="password" className="auth-label">Password</label>
+          <div className="auth-password-control">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete={isSignUp ? 'new-password' : 'current-password'}
+              required
+              minLength={isSignUp ? 12 : undefined}
+              maxLength={128}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="auth-input"
+              data-testid="input-password"
+            />
+            <button type="button" className="auth-password-toggle" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} data-testid="button-toggle-password">
+              {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+            </button>
+          </div>
+          {isSignUp && <p className="auth-field-hint">Use at least 12 characters.</p>}
+        </div>
 
-        <button type="submit" disabled={submitting || status === 'loading'} className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white transition hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60">
+        {isSignUp && <>
+          <div>
+            <label htmlFor="confirm-password" className="auth-label">Confirm password</label>
+            <div className="auth-password-control">
+              <input
+                id="confirm-password"
+                name="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                minLength={12}
+                maxLength={128}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="auth-input"
+                data-testid="input-confirm-password"
+              />
+              <button type="button" className="auth-password-toggle" onClick={() => setShowConfirmPassword((visible) => !visible)} aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'} aria-pressed={showConfirmPassword} data-testid="button-toggle-confirm-password">
+                {showConfirmPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="referral-code" className="auth-label">Referral code <span className="auth-optional">Optional</span></label>
+            <input
+              id="referral-code"
+              name="referralCode"
+              type="text"
+              autoCapitalize="characters"
+              autoComplete="off"
+              maxLength={10}
+              placeholder="Enter an invite code"
+              value={referralCode}
+              onChange={(event) => setReferralCode(event.target.value.toUpperCase())}
+              className="auth-input auth-referral-input"
+              data-testid="input-referral-code"
+            />
+            {referralCode && <p className="auth-field-hint">This code will be attached to your registration.</p>}
+          </div>
+        </>}
+
+        {error && <p className="auth-error" role="alert" data-testid="status-auth-error">{error}</p>}
+        {status === 'error' && <p className="auth-session-note" role="status" data-testid="status-session-check">We couldn’t check an existing session. You can still try signing in or creating an account.</p>}
+
+        <button type="submit" disabled={submitting || status === 'loading'} className="auth-submit" data-testid="button-submit-auth">
           {submitting ? 'Please wait…' : status === 'loading' ? 'Checking account…' : isSignUp ? 'Create account' : 'Sign in'}
+          {!submitting && status !== 'loading' && <ArrowRight aria-hidden="true" />}
         </button>
       </form>
 
-      <p className="mt-5 rounded-xl bg-[#f5f1e7] px-3.5 py-3 text-[11px] leading-5 text-[#6f695a]">
+      <p className="auth-privacy-note" data-testid="text-auth-disclaimer">
         Your number is not verified. Use only a number you control. There is no email or SMS password reset; contact an administrator if you forget your password.
       </p>
-      <p className="mt-5 text-center text-[12px] text-[#657168]">
-        {isSignUp ? 'Already have an account?' : 'New to the program?'}{' '}
-        <Link href={isSignUp ? '/sign-in' : '/sign-up'} className="font-bold text-[#315f49] hover:text-[#244b38]">
+      <p className="auth-switch-copy">
+        {isSignUp ? 'Already registered?' : 'New to the program?'}{' '}
+        <Link href={isSignUp ? '/sign-in' : '/sign-up'} className="auth-inline-link" data-testid="link-auth-alternate">
           {isSignUp ? 'Sign in' : 'Create an account'}
         </Link>
       </p>
