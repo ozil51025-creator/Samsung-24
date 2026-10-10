@@ -17,9 +17,9 @@ function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: 
   return (
     <span className="inline-flex items-center gap-3">
       <span aria-hidden="true" className={`brand-mark flex items-center justify-center rounded-[12px] text-[#f7f1dc] ${small ? 'h-9 w-9' : 'h-10 w-10'}`}>
-        <span className="font-[Syne] text-[18px] font-bold leading-none">R</span>
+        <span className="font-[Syne] text-[18px] font-bold leading-none">S</span>
       </span>
-      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>Rewards Program</span>
+      <span className={`font-[Syne] text-[15px] font-bold tracking-[-0.045em] ${inverse ? 'text-white' : 'text-[#243b31]'}`}>Samsung Gadgets</span>
     </span>
   );
 }
@@ -27,7 +27,7 @@ function Brand({ small = false, inverse = false }: { small?: boolean; inverse?: 
 function Header() {
   return (
     <header className="flex items-center justify-between gap-4">
-      <Link href="/" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" aria-label="Rewards Program home">
+      <Link href="/" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" aria-label="Samsung Gadgets home">
         <Brand />
       </Link>
       <nav className="flex items-center gap-3 sm:gap-5" aria-label="Account navigation">
@@ -126,8 +126,8 @@ function Home() {
           <Link href="/sign-up" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" data-testid="link-footer-signup">Create account <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </section>
         <footer className="mt-8 flex flex-col gap-3 border-t border-[#d8d4c7] pt-5 text-[11px] leading-5 text-[#758078] sm:flex-row sm:items-center sm:justify-between">
-          <span>Rewards Program · Product sales rewards · Uganda</span>
-          <span>Reward amounts and payout rules are not active or configured yet.</span>
+          <span>Samsung Gadgets · Independent retailer · Uganda</span>
+          <span>Not affiliated with Samsung. Reward amounts and payout rules are not active or configured yet.</span>
         </footer>
       </div>
     </main>
@@ -177,9 +177,9 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     const previousDescription = descriptionTag?.content;
     const previousOgTitle = ogTitleTag?.content;
     const previousOgDescription = ogDescriptionTag?.content;
-    const pageTitle = `${activePage?.label ?? 'Member portal'} — Rewards Program`;
+    const pageTitle = `${activePage?.label ?? 'Member portal'} — Samsung Gadgets`;
     document.title = pageTitle;
-    const description = 'Member account portal for Rewards Program in Uganda. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
+    const description = 'Member account portal for Samsung Gadgets, an independent retailer in Uganda. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
     if (descriptionTag) descriptionTag.content = description;
     if (ogTitleTag) ogTitleTag.content = pageTitle;
     if (ogDescriptionTag) ogDescriptionTag.content = description;
@@ -203,7 +203,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
         <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isOverview ? 'overview-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
             <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isOverview ? 'border-white/10' : isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
-              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Rewards Program overview"><Brand small inverse={isOverview} /></Link>
+              <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview} /></Link>
               <div className="flex items-center gap-3">
                  <span className={`hidden max-w-[180px] truncate text-[12px] sm:inline ${isOverview ? 'text-white/60' : 'text-[#68756a]'}`}>{user.phoneNumber}</span>
                  <button type="button" onClick={handleSignOut} disabled={signingOut} className={`rounded-full border px-4 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-wait disabled:opacity-60 ${isOverview ? 'border-white/15 bg-white/[.06] text-white/80 hover:border-white/35 hover:bg-white/10 focus-visible:ring-[#6dd0a0]' : isProducts ? 'border-[#9fb9c5] bg-white/60 text-[#405c6a] hover:border-[#547f92] hover:text-[#183b50] focus-visible:ring-[#547f92]' : 'border-[#c9cbbb] bg-[#fffdf7]/80 text-[#34513f] hover:border-[#315f49] hover:text-[#315f49] focus-visible:ring-[#315f49]'}`} data-testid="button-sign-out">{signingOut ? 'Signing out…' : 'Sign out'}</button>
@@ -219,13 +219,13 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
               {!isOverview && !isReferral && <div className="mb-7">
-                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Rewards Program · Uganda</p>
+                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Samsung Gadgets · Uganda</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
               {children}
             </div>
             {!isOverview && <footer className={`border-t py-4 text-[11px] leading-5 ${isReferral ? 'border-[#e1e4e6] text-[#788087]' : isProducts ? 'border-[#9bbfce] text-[#547181]' : 'border-[#d8d4c7] text-[#758078]'}`}>
-              Rewards Program · Uganda · Rewards, referral tracking, and checkout are not active.
+              Independent retailer · Not affiliated with Samsung · Rewards, referral tracking, and checkout are not active.
             </footer>}
           </div>
           <nav className={`member-bottom-nav fixed left-1/2 z-50 grid -translate-x-1/2 grid-cols-5 gap-1 p-2 backdrop-blur-xl md:hidden ${isProducts ? 'products-bottom-nav' : 'bottom-3 w-[min(calc(100%-1.5rem),520px)] rounded-[22px] border border-white/10 bg-[#12171d]/95 shadow-[0_14px_44px_rgba(0,0,0,.45)]'}`} aria-label="Member navigation">
@@ -251,7 +251,7 @@ function OverviewPage() {
         <div className="relative">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-[#b3c7bd]">
             <span className="overview-crown flex h-5 w-5 items-center justify-center rounded-md text-[11px]" aria-hidden="true">✦</span>
-            Rewards Program · Uganda
+            Samsung Gadgets · Uganda
           </div>
           <h1 id="overview-title" data-testid="text-overview-welcome" className="mt-4 max-w-[670px] font-[Syne] text-[clamp(1.9rem,6vw,3.15rem)] font-semibold leading-[1.12] tracking-[-.055em] text-white">
             Welcome — explore your gadget rewards.
@@ -350,7 +350,7 @@ function ReferralPage() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Join the Rewards Program',
+          title: 'Join Samsung Gadgets',
           text: `Register using my referral code ${user.referralCode}.`,
           url: referralLink,
         });
@@ -458,7 +458,7 @@ function AuthFrame({ children }: { children: ReactNode }) {
     <main className="auth-shell shop-grain min-h-[100dvh] px-4 pb-7 pt-5 sm:px-7 sm:py-7" data-testid="page-phone-auth">
       <div className="auth-layout relative z-10 mx-auto flex min-h-[calc(100dvh-3rem)] max-w-[1120px] flex-col">
         <header className="auth-topbar flex items-center justify-between">
-          <Link href="/" aria-label="Rewards Program home" className="auth-brand-link rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b579]" data-testid="link-auth-home">
+          <Link href="/" aria-label="Samsung Gadgets home" className="auth-brand-link rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b579]" data-testid="link-auth-home">
             <Brand inverse />
           </Link>
           <span className="auth-country">UGANDA <span aria-hidden="true">/</span> MEMBER ACCESS</span>
@@ -469,13 +469,13 @@ function AuthFrame({ children }: { children: ReactNode }) {
               <div className="auth-metal-orbit auth-metal-orbit-one" />
               <div className="auth-metal-orbit auth-metal-orbit-two" />
               <div className="auth-metal-disc">
-                <span className="auth-metal-monogram">R</span>
-                <span className="auth-metal-caption">REWARDS<br />PROGRAM</span>
+                <span className="auth-metal-monogram">S</span>
+                <span className="auth-metal-caption">SAMSUNG<br />GADGETS</span>
               </div>
               <span className="auth-metal-index">EST. UGANDA</span>
             </div>
             <div className="auth-story-copy">
-              <p className="auth-eyebrow">Rewards Program · Uganda</p>
+              <p className="auth-eyebrow">Samsung Gadgets · Uganda</p>
               <h1>Good to have<br />you <em>with us.</em></h1>
               <p>One secure place for your member account. Sign in or register with a Ugandan phone number and password.</p>
               <div className="auth-story-note"><ShieldCheck aria-hidden="true" /><span>Your number is not verified. There is no email or SMS password reset.</span></div>
@@ -484,8 +484,8 @@ function AuthFrame({ children }: { children: ReactNode }) {
           <div className="auth-form-column">{children}</div>
         </div>
         <footer className="auth-footer">
-          <span>Rewards Program · Uganda</span>
-          <span>Phone and password access · No email or SMS code</span>
+          <span>Samsung Gadgets · Independent retailer · Not affiliated with Samsung</span>
+          <span>Phone/password access · No email or SMS code</span>
         </footer>
       </div>
     </main>
