@@ -8,5 +8,6 @@ export const productOrdersTable = pgTable("product_orders", {
   productName: text("product_name").notNull(),
   priceUgx: integer("price_ugx").notNull(),
   isFirstPurchase: boolean("is_first_purchase").notNull(),
+  status: text("status").notNull().default("pending_fulfillment"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
