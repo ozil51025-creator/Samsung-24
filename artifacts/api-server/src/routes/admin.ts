@@ -176,6 +176,7 @@ async function requireMemberAccountId(req: Request, res: Response): Promise<stri
 router.get("/products/catalog", async (req, res): Promise<void> => {
   const accountId = await requireMemberAccountId(req, res);
   if (!accountId) return;
+  res.set("Cache-Control", "no-store");
   try {
     await ensureProductCatalog();
     const products = await db.select().from(productCatalogTable);
