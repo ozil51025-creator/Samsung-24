@@ -10,24 +10,22 @@ type ProductsCatalogProps = {
 };
 
 export function ProductsCatalog({ products, formatPrice, imageUrl, productImages }: ProductsCatalogProps) {
-  const prices = products.map((product) => product.price);
+  const estimatedDurationDays = 150;
   return (
     <>
       <header className="product-page-heading">
         <h1>Product</h1>
         <span className="product-page-mark" aria-label="Samsung">S</span>
       </header>
-      <section className="product-summary-banner" aria-label="Samsung products and price range">
+      <section className="product-summary-banner" aria-label="Product account summary">
         <img className="product-summary-photo" src={imageUrl} alt="Samsung Galaxy devices" fetchPriority="high" />
         <div>
-          <p className="product-summary-eyebrow">Samsung</p>
-          <p className="product-summary-value">{products.length}</p>
-          <p className="product-summary-label">Products</p>
+          <p className="product-summary-value">—</p>
+          <p className="product-summary-label">My products</p>
         </div>
         <div className="product-summary-range">
-          <p className="product-summary-eyebrow">UGX</p>
-          <p className="product-summary-value">{formatPrice(Math.min(...prices))}–{formatPrice(Math.max(...prices))}</p>
-          <p className="product-summary-label">Price range</p>
+          <p className="product-summary-value">UGX —</p>
+          <p className="product-summary-label">Total earnings</p>
         </div>
       </section>
       <section className="product-catalog-list" aria-label="Samsung products">
@@ -45,9 +43,17 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
                 <ShoppingBag aria-hidden="true" /> Buy
               </button>
             </div>
+            <div className="product-card-details">
+              <div><span>Duration:</span><strong>{estimatedDurationDays} days</strong></div>
+              <div><span>Daily earnings estimate:</span><strong>UGX {formatPrice(product.daily)}</strong></div>
+              <div><span>Total earnings estimate:</span><strong>UGX {formatPrice(product.daily * estimatedDurationDays)}</strong></div>
+            </div>
           </article>
         ))}
       </section>
+      <p className="product-checkout-note">
+        Earnings shown are estimates only. Reward terms and payouts are not active until confirmed.
+      </p>
     </>
   );
 }
