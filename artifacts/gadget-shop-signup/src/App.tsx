@@ -490,7 +490,7 @@ function TaskCenterPage() {
     <section className="task-center-hero">
       <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="Samsung Galaxy device" fetchPriority="high" />
       <div className="task-center-hero-copy">
-          <strong>UGX {user.totalAccumulatedUgx.toLocaleString('en-UG')}</strong>
+        <strong>UGX {user.totalAccumulatedUgx.toLocaleString('en-UG')}</strong>
         <span>Total rewards accumulated</span>
       </div>
     </section>
