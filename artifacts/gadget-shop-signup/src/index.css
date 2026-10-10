@@ -1476,6 +1476,10 @@ button.account-menu-row {
 .home-member-tier { display: inline-flex; min-width: 76px; justify-content: center; margin-top: 7px; padding: 6px 16px; border-radius: 999px; background: #7132d8; color: #fff; font-size: 11px; font-weight: 700; }
 .home-brand-mini { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: 13px; background: #1428a0; color: #fff; font-family: Syne, sans-serif; font-size: 20px; font-weight: 800; box-shadow: 0 8px 18px rgba(20,40,160,.16); }
 .home-money-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); overflow: hidden; border: 1px solid #edf0f4; border-radius: 17px; background: #f5f6f8; }
+.home-welcome-bonus { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border: 1px solid rgba(20,40,160,.14); border-radius: 16px; background: linear-gradient(110deg,#1428a0,#4f78d8); color: #fff; box-shadow: 0 8px 22px rgba(20,40,160,.16); }
+.home-welcome-bonus h2 { color: rgba(255,255,255,.82); font-size: 12px; font-weight: 600; }
+.home-welcome-bonus strong { display: block; margin-top: 3px; font-size: 24px; font-weight: 700; letter-spacing: -.03em; }
+.home-welcome-bonus p { max-width: 152px; color: rgba(255,255,255,.86); font-size: 11px; line-height: 1.45; text-align: right; }
 .home-money-actions button,.home-money-actions a { display: flex; min-width: 0; min-height: 90px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 0; background: transparent; color: #677184; font-size: 11px; font-weight: 600; text-decoration: none; }
 .home-money-actions button:disabled { cursor: not-allowed; opacity: .62; }
 .home-money-actions button svg,.home-money-actions a svg { width: 25px; height: 25px; color: #5368b5; }

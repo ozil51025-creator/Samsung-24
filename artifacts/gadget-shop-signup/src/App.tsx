@@ -350,6 +350,14 @@ function HomePage() {
         ))}
       </div>
 
+      <section className="home-welcome-bonus" aria-labelledby="home-welcome-bonus-title" data-testid="card-welcome-bonus">
+        <div>
+          <h2 id="home-welcome-bonus-title">Welcome bonus</h2>
+          <strong>UGX 5,000</strong>
+        </div>
+        <p>Not active yet. It has not been credited to your wallet.</p>
+      </section>
+
       <article className="home-task-banner" data-testid="card-home-task-center">
         <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" loading="lazy" />
         <div className="home-task-copy">
