@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
-import { productCatalog } from '@/data/product-catalog';
+import type { ProductIllustrationKind } from '@/data/product-catalog';
 import samsungPresenceImage from '../../../attached_assets/main_895c72cd-d6f4-4c0e-be9b-6fca99eae985_1791616689408.jpg';
 import NotFound from '@/pages/not-found';
 import { Activity, ArrowDownRight, ArrowLeft, ArrowRight, BarChart3, Bell, CalendarDays, Check, ChevronDown, ChevronRight, CircleDollarSign, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, MapPin, MessageSquare, Package, PackageOpen, Settings2, ShieldCheck, ShoppingBag, Ticket, UserRound, UsersRound, Wallet, WalletCards } from 'lucide-react';
@@ -40,6 +40,8 @@ const adminSections = [
   { id: 'activity-log', label: 'Activity Log', Icon: Activity },
 ] as const;
 type AdminSectionId = typeof adminSections[number]['id'];
+type AdminCatalogItem = { id: string; name: string; priceUgx: number; illustration: ProductIllustrationKind; isActive: boolean };
+type CatalogProduct = Pick<AdminCatalogItem, 'id' | 'name' | 'illustration'> & { price: number };
 
 function queueMemberNotice() {
   try {
@@ -815,6 +817,10 @@ function AdminTaskCenterPage() {
   const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
   const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null; isActive: boolean }>>([]);
   const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
+  const [adminProducts, setAdminProducts] = useState<AdminCatalogItem[]>([]);
+  const [productStatus, setProductStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [savingProducts, setSavingProducts] = useState(false);
+  const [productMessage, setProductMessage] = useState('');
   const [admins, setAdmins] = useState<Array<{ id: string; phoneNumber: string; createdAt: string }>>([]);
   const [adminPhone, setAdminPhone] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
@@ -867,6 +873,16 @@ function AdminTaskCenterPage() {
       .catch(() => setDirectoryStatus('error'));
   };
   useEffect(() => { loadAdminDirectory(); }, []);
+  const loadAdminProducts = () => {
+    setProductStatus('loading');
+    fetch('/api/admin/products', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load products.');
+      setAdminProducts(data.products);
+      setProductStatus('ready');
+    }).catch(() => setProductStatus('error'));
+  };
+  useEffect(() => { loadAdminProducts(); }, []);
   const loadRechargeRequests = () => {
     setRechargeStatus('loading');
     fetch('/api/admin/recharge-requests', { credentials: 'include' })
@@ -946,6 +962,28 @@ function AdminTaskCenterPage() {
   };
   const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
     setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
+  const changeProduct = (id: string, changes: Partial<AdminCatalogItem>) =>
+    setAdminProducts((current) => current.map((product) => product.id === id ? { ...product, ...changes } : product));
+  const saveProducts = async (event: FormEvent) => {
+    event.preventDefault();
+    setSavingProducts(true);
+    setProductMessage('');
+    try {
+      const response = await fetch('/api/admin/products', {
+        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: adminProducts }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not save products.');
+      setAdminProducts(data.products);
+      setProductMessage('Product catalog saved.');
+      loadAdminDirectory();
+    } catch (error) {
+      setProductMessage(error instanceof Error ? error.message : 'Could not save products.');
+    } finally {
+      setSavingProducts(false);
+    }
+  };
   const saveTasks = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -1090,7 +1128,19 @@ function AdminTaskCenterPage() {
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'products'}>
         <h2>Products</h2>
-        <p className="admin-connection-state"><Package /> The member catalog shows listed Samsung prices. Purchase checkout and order records are not connected, so this panel cannot report sales or collected funds.</p>
+        <p className="admin-connection-state"><Package /> Edit the listed name, UGX price, and visibility. This does not activate checkout or sales tracking.</p>
+        {productStatus === 'loading' && <p role="status">Loading products…</p>}
+        {productStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load products. Check admin access.</p><button type="button" onClick={loadAdminProducts}>Try again</button></div>}
+        {productStatus === 'ready' && <form className="admin-product-editor" onSubmit={saveProducts}>
+          {adminProducts.map((product) => <fieldset key={product.id}>
+            <legend>{product.id}</legend>
+            <label>Product name<input required maxLength={100} value={product.name} onChange={(event) => changeProduct(product.id, { name: event.target.value })} /></label>
+            <label>Listed price (UGX)<input required type="number" min="1" max="1000000000" step="1" value={product.priceUgx} onChange={(event) => changeProduct(product.id, { priceUgx: Number(event.target.value) })} /></label>
+            <label className="admin-task-toggle"><input type="checkbox" checked={product.isActive} onChange={(event) => changeProduct(product.id, { isActive: event.target.checked })} /> Show in member catalog</label>
+          </fieldset>)}
+          <button type="submit" disabled={savingProducts}>{savingProducts ? 'Saving…' : 'Save product changes'}</button>
+          {productMessage && <p role="status">{productMessage}</p>}
+        </form>}
         <Link href="/products" className="admin-panel-link">View member catalog <ArrowRight /></Link>
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'gift-codes'}>
