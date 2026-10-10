@@ -350,17 +350,6 @@ function HomePage() {
         ))}
       </div>
 
-      <section className="home-welcome-bonus" aria-labelledby="home-welcome-bonus-title" data-testid="card-welcome-bonus">
-        <div>
-          <h2 id="home-welcome-bonus-title">Welcome bonus</h2>
-          <strong>UGX 5,000</strong>
-        </div>
-        <div className="home-welcome-bonus-status">
-          <span>Pending</span>
-          <small>Not credited until activation rules are confirmed.</small>
-        </div>
-      </section>
-
       <article className="home-task-banner" data-testid="card-home-task-center">
         <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" loading="lazy" />
         <div className="home-task-copy">
@@ -990,17 +979,6 @@ function AccountPage() {
           <strong>UGX —</strong>
           <span>Total accumulated</span>
         </article>
-      </section>
-
-      <section className="home-welcome-bonus account-welcome-bonus" aria-labelledby="account-welcome-bonus-title" data-testid="card-account-welcome-bonus">
-        <div>
-          <h2 id="account-welcome-bonus-title">Welcome bonus</h2>
-          <strong>UGX 5,000</strong>
-        </div>
-        <div className="home-welcome-bonus-status">
-          <span>Pending</span>
-          <small>Not credited until activation rules are confirmed.</small>
-        </div>
       </section>
 
       <section className="account-wallet-actions" aria-label="Wallet actions">
