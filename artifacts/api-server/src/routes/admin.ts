@@ -187,6 +187,13 @@ router.post("/admin/admins", async (req, res): Promise<void> => {
       res.status(404).json({ error: "That phone number does not belong to a registered member." });
       return;
     }
+    const configuredPhone = typeof process.env.ADMIN_PHONE === "string"
+      ? normalizePhone(process.env.ADMIN_PHONE)
+      : null;
+    if (phoneNumber === configuredPhone) {
+      res.status(409).json({ error: "That member is already the primary administrator." });
+      return;
+    }
     const [granted] = await db
       .insert(adminAccountsTable)
       .values({ accountId: target.id, grantedByAccountId: admin.id })
