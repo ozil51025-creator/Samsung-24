@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
+import samsungPresenceImage from '../../../attached_assets/main_895c72cd-d6f4-4c0e-be9b-6fca99eae985_1791616689408.jpg';
 import NotFound from '@/pages/not-found';
 import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, CalendarDays, Check, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
@@ -319,7 +320,7 @@ function HomePage() {
     { label: 'Recharge', icon: Download, href: '/recharge' },
     { label: 'Withdrawal', icon: CreditCard, href: '/withdrawal' },
     { label: 'Customer service', icon: Headphones, href: customerServiceUrl },
-    { label: 'Presence', icon: CalendarDays, href: '/tasks' },
+    { label: 'Presence', icon: CalendarDays, href: '/presence' },
   ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
@@ -372,6 +373,44 @@ function HomePage() {
       </section>
     </section>
   </MemberFrame>;
+}
+
+function PresencePage() {
+  const { user, status } = useAuth();
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Presence — samsung';
+    return () => { document.title = previousTitle; };
+  }, []);
+
+  if (status === 'loading') return <main className="presence-page" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="presence-page"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+
+  return <main className="presence-page" data-testid="page-presence">
+    <header className="presence-header">
+      <Link href="/home" aria-label="Back to Home"><ArrowLeft aria-hidden="true" /></Link>
+      <h1>Presence</h1>
+    </header>
+    <img className="presence-hero-image" src={samsungPresenceImage} alt="Samsung Galaxy phone, watch, and earbuds" />
+    <section className="presence-summary">
+      <div className="presence-reward">
+        <strong>UGX 500</strong>
+        <span>Daily Bonus</span>
+      </div>
+      <div className="presence-stats">
+        <div><strong>UGX —</strong><span>Cumulative bonus</span></div>
+        <div><strong>—</strong><span>Days of attendance</span></div>
+      </div>
+      <button type="button" disabled aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
+      <p id="presence-unavailable" className="presence-unavailable">Attendance tracking is not connected yet.</p>
+      <ol>
+        <li>Daily presence reward: 500 UGX.</li>
+        <li>Log in once a day.</li>
+        <li>Log in again after midnight (00:00) each day.</li>
+      </ol>
+    </section>
+  </main>;
 }
 
 function TaskCenterPage() {
@@ -1079,6 +1118,7 @@ function AppRoutes() {
         <Route path="/user-portal"><Redirect to="/home" /></Route>
         <Route path="/overview"><Redirect to="/home" /></Route>
         <Route path="/home" component={HomePage} />
+        <Route path="/presence" component={PresencePage} />
         <Route path="/tasks" component={TaskCenterPage} />
         <Route path="/admin" component={AdminTaskCenterPage} />
         <Route path="/withdrawal" component={WithdrawalPage} />

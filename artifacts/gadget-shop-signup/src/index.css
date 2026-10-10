@@ -1533,6 +1533,24 @@ button.account-menu-row {
 .home-task-copy .home-task-cta svg { width: 13px; height: 13px; }
 .home-task-copy .home-task-cta { text-decoration: none; }
 .task-center-shell { width: 100%; min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); background: #111015; color: #f7f6f8; }
+.presence-page { width: min(100%,680px); min-height: 100dvh; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); background: #000; color: #f7f6f8; }
+.presence-header { display: flex; height: 72px; align-items: center; gap: 22px; padding: 0 21px; background: #050505; }
+.presence-header a { display: grid; width: 30px; height: 40px; flex: 0 0 auto; place-items: center; color: #f7f6f8; }
+.presence-header a svg { width: 24px; height: 24px; stroke-width: 2; }
+.presence-header h1 { font-size: 18px; font-weight: 500; }
+.presence-hero-image { display: block; width: 100%; height: 265px; object-fit: cover; object-position: center; }
+.presence-summary { display: grid; gap: 20px; padding: 28px 28px 36px; text-align: center; }
+.presence-reward { display: grid; gap: 7px; }
+.presence-reward strong { font-size: 25px; }
+.presence-reward span,.presence-stats span { font-size: 13px; }
+.presence-stats { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+.presence-stats > div { display: grid; gap: 7px; }
+.presence-stats > div + div { border-left: 1px solid #fff; }
+.presence-stats strong { font-size: 23px; }
+.presence-summary > button { min-height: 48px; margin: 38px auto 0; width: 78%; border: 0; border-radius: 22px; background: #ffb44e; color: #17120a; font-size: 18px; font-weight: 700; }
+.presence-summary > button:disabled { opacity: 1; cursor: not-allowed; }
+.presence-unavailable { margin: -12px 0 0; color: #aaa; font-size: 11px; }
+.presence-summary ol { display: grid; gap: 4px; margin: 18px 0 0; padding-left: 20px; text-align: left; font-size: 13px; line-height: 1.5; }
 .task-center-header { display: flex; height: 72px; align-items: center; gap: 22px; padding: 0 21px; background: #111015; }
 .task-center-header a { display: grid; width: 30px; height: 40px; flex: 0 0 auto; place-items: center; color: #f7f6f8; }
 .task-center-header a svg { width: 24px; height: 24px; stroke-width: 2; }
