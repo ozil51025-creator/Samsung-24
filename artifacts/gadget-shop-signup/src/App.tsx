@@ -367,7 +367,11 @@ function HomePage() {
         {homeSummaryCards.map(({ label, image, position }) => (
           <article key={label} className={`home-photo-card ${position}`}>
             <img src={image} alt="" aria-hidden="true" loading="lazy" />
-            <span className="home-photo-card-copy"><strong>— UGX</strong><small>{label}</small></span>
+            <span className="home-photo-card-copy">
+              <strong>— UGX</strong>
+              <small>{label}</small>
+              {label !== 'Withdrawal' && <em className="home-summary-pending">UGX 5,000 pending</em>}
+            </span>
           </article>
         ))}
       </section>
@@ -974,10 +978,12 @@ function AccountPage() {
         <article>
           <strong>UGX —</strong>
           <span>Wallet balance</span>
+          <small className="account-balance-pending">UGX 5,000 pending</small>
         </article>
         <article>
           <strong>UGX —</strong>
           <span>Total accumulated</span>
+          <small className="account-balance-pending">UGX 5,000 pending</small>
         </article>
       </section>
 

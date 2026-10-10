@@ -1691,6 +1691,7 @@ button.account-menu-row {
 .home-feature-tall { grid-row: span 2; }
 .home-summary-grid .home-photo-card-copy strong { font-size: 20px; }
 .home-summary-grid .home-photo-card-copy small { font-size: 11px; }
+.home-summary-pending { color: #fff; font-size: 9px; font-style: normal; font-weight: 600; }
 
 @media (min-width: 768px) {
   .home-shell { padding: 1.75rem 1.75rem 7rem !important; }
@@ -1851,6 +1852,7 @@ button.account-menu-row {
 .account-balance-row article { display: flex; flex-direction: column; gap: 5px; }
 .account-balance-row strong { color: #222a34; font-size: clamp(19px,5vw,24px); font-weight: 500; letter-spacing: -.035em; }
 .account-balance-row span { color: #68717d; font-size: 12px; }
+.account-balance-pending { color: #5368b5; font-size: 10px; font-weight: 600; }
 .account-wallet-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; margin: 3px 0 17px; padding: 10px 6px; border-radius: 12px; background: #f4f5f7; }
 .account-wallet-actions button,.account-wallet-actions a { display: flex; min-height: 78px; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; color: #6b7280; font-size: 10px; }
 .account-wallet-actions button:disabled { cursor: not-allowed; opacity: .75; }
