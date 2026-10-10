@@ -370,7 +370,6 @@ function HomePage() {
             <span className="home-photo-card-copy">
               <strong>{label !== 'Withdrawal' ? 'UGX 5,000' : '— UGX'}</strong>
               <small>{label}</small>
-              {label !== 'Withdrawal' && <em className="home-summary-pending">Pending bonus · not credited</em>}
             </span>
           </article>
         ))}
@@ -978,12 +977,10 @@ function AccountPage() {
         <article>
           <strong>UGX 5,000</strong>
           <span>Wallet balance</span>
-          <small className="account-balance-pending">Pending bonus · not credited</small>
         </article>
         <article>
           <strong>UGX 5,000</strong>
           <span>Total accumulated</span>
-          <small className="account-balance-pending">Pending bonus · not credited</small>
         </article>
       </section>
 

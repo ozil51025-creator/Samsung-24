@@ -69,8 +69,8 @@ The daily 500 UGX Task Center reward is named "Presence," not "Daily Check-in." 
 
 **How to apply:** Keep task definitions persistent and admin-only editable, but do not imply configured rewards are guaranteed or already accruing without verified event tracking and ledger support.
 
-The UGX 5,000 welcome bonus is not credited until its activation rules are confirmed. Do not show the standalone welcome-bonus card on Home or Account.
+The user confirmed the UGX 5,000 welcome bonus has been credited and wants it reflected in both Pay and Accumulated. Do not show a standalone bonus card.
 
-**Why:** The user asked to remove the standalone welcome-bonus card after it appeared on Home and Account.
+**Why:** The user confirmed the bonus was credited and supplied a screenshot where the wallet balance and total accumulated show the same amount.
 
-**How to apply:** Do not show a standalone bonus card. Display UGX 5,000 as the pending amount in Pay and Accumulated on Home and Account, clearly labeled "Pending bonus · not credited"; do not imply it is spendable cash.
+**How to apply:** Display UGX 5,000 under Pay and Accumulated on Home and Account without a Pending label. Do not add a separate bonus card.
