@@ -475,6 +475,10 @@ function TaskCenterPage() {
     milestones: { id: string; thresholdUgx: number; rewardUgx: number; received: boolean }[];
   } | null>(null);
   const [depositMilestonesStatus, setDepositMilestonesStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const levelOneInviteTasks = tasks.filter((task) =>
+    task.id.toLowerCase().startsWith('invite-') || /invite.*(?:level\s*1|level\s*one|niveau\s*1)/i.test(task.title),
+  );
+  const otherTasks = tasks.filter((task) => !levelOneInviteTasks.includes(task));
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -521,24 +525,9 @@ function TaskCenterPage() {
       </div>
     </section>
     <section className="task-center-list" aria-label="Tasks">
-      {depositMilestonesStatus === 'loading' && <p className="task-center-message">Loading deposit milestones…</p>}
-      {depositMilestonesStatus === 'error' && <p className="task-center-message" role="alert">Deposit milestones could not be loaded.</p>}
-      {depositMilestones?.milestones.map((milestone) => {
-        const progress = Math.min(100, Math.floor(depositMilestones.teamDepositsUgx / milestone.thresholdUgx * 100));
-        return <article className="task-center-item" key={milestone.id}>
-          <h2>Total direct-team deposits: UGX {money.format(milestone.thresholdUgx)} · Reward UGX {money.format(milestone.rewardUgx)}</h2>
-          <div className="task-center-progress">
-            <div><strong>UGX {money.format(depositMilestones.teamDepositsUgx)}</strong><span>Current</span></div>
-            <div><strong>UGX {money.format(milestone.thresholdUgx)}</strong><span>Objective</span></div>
-            <div><strong>{progress}%</strong><span>Progress</span></div>
-          </div>
-          <button type="button" disabled>{milestone.received ? 'Received' : 'In progress'}</button>
-        </article>;
-      })}
       {tasksStatus === 'loading' && <p className="task-center-message">Loading tasks…</p>}
       {tasksStatus === 'error' && <p className="task-center-message" role="alert">Tasks could not be loaded. Please try again later.</p>}
-      {tasksStatus === 'ready' && tasks.length === 0 && <p className="task-center-message">No tasks have been added yet.</p>}
-      {tasks.map((task) => (
+      {levelOneInviteTasks.map((task) => (
         <article className="task-center-item" key={task.id}>
           <h2>
             {task.title}
@@ -552,6 +541,35 @@ function TaskCenterPage() {
           <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
         </article>
       ))}
+      {depositMilestonesStatus === 'loading' && <p className="task-center-message">Loading deposit milestones…</p>}
+      {depositMilestonesStatus === 'error' && <p className="task-center-message" role="alert">Deposit milestones could not be loaded.</p>}
+      {depositMilestones?.milestones.map((milestone) => {
+        const progress = Math.min(100, Math.floor(depositMilestones.teamDepositsUgx / milestone.thresholdUgx * 100));
+        return <article className="task-center-item" key={milestone.id}>
+          <h2>Total team deposits: UGX {money.format(milestone.thresholdUgx)} · Reward UGX {money.format(milestone.rewardUgx)}</h2>
+          <div className="task-center-progress">
+            <div><strong>UGX {money.format(depositMilestones.teamDepositsUgx)}</strong><span>Current</span></div>
+            <div><strong>UGX {money.format(milestone.thresholdUgx)}</strong><span>Objective</span></div>
+            <div><strong>{progress}%</strong><span>Progress</span></div>
+          </div>
+          <button type="button" disabled>{milestone.received ? 'Received' : 'In progress'}</button>
+        </article>;
+      })}
+      {otherTasks.map((task) => (
+        <article className="task-center-item" key={task.id}>
+          <h2>
+            {task.title}
+            {task.rewardUgx !== null && ` · UGX ${money.format(task.rewardUgx)}`}
+          </h2>
+          <div className="task-center-progress">
+            <div><strong>—</strong><span>Current</span></div>
+            <div><strong>{task.objective.toLocaleString()} {task.objectiveUnit}</strong><span>Objective</span></div>
+            <div><strong>—</strong><span>Progress</span></div>
+          </div>
+          <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
+        </article>
+      ))}
+      {tasksStatus === 'ready' && tasks.length === 0 && depositMilestonesStatus === 'ready' && depositMilestones?.milestones.length === 0 && <p className="task-center-message">No tasks have been added yet.</p>}
     </section>
   </main>;
 }
