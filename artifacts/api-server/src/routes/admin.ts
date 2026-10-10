@@ -3,6 +3,7 @@ import { and, count, desc, eq, gt, isNotNull, sql, sum } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
+  adminAccountsTable,
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
@@ -11,6 +12,9 @@ import {
   taskCenterSettingsTable,
 } from "@workspace/db";
 import {
+  AddAdminAccountBody,
+  AddAdminAccountResponse,
+  GetAdminAccountsResponse,
   GetAdminTaskCenterSettingsResponse,
   GetAdminMembersResponse,
   GetAdminOverviewResponse,
@@ -83,7 +87,14 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string }
     res.status(401).json({ error: "Sign in with the configured admin account." });
     return null;
   }
-  if (account.phoneNumber !== configuredPhone) {
+  const [membership] = account.phoneNumber === configuredPhone
+    ? [null]
+    : await db
+      .select({ accountId: adminAccountsTable.accountId })
+      .from(adminAccountsTable)
+      .where(eq(adminAccountsTable.accountId, account.id))
+      .limit(1);
+  if (account.phoneNumber !== configuredPhone && !membership) {
     res.status(403).json({ error: "This account is not authorized to use the admin panel." });
     return null;
   }
@@ -130,6 +141,69 @@ router.get("/admin/members", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
+  }
+});
+
+router.get("/admin/admins", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    const admins = await db
+      .select({
+        id: phoneAccountsTable.id,
+        phoneNumber: phoneAccountsTable.phoneNumber,
+        createdAt: adminAccountsTable.createdAt,
+      })
+      .from(adminAccountsTable)
+      .innerJoin(phoneAccountsTable, eq(adminAccountsTable.accountId, phoneAccountsTable.id))
+      .orderBy(desc(adminAccountsTable.createdAt));
+    res.json(GetAdminAccountsResponse.parse({ admins }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.admins.get" }, "Could not load administrator accounts");
+    res.status(500).json({ error: "Could not load administrator accounts." });
+  }
+});
+
+router.post("/admin/admins", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = AddAdminAccountBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Enter a valid member phone number." });
+    return;
+  }
+  const phoneNumber = normalizePhone(parsed.data.phoneNumber);
+  if (!phoneNumber) {
+    res.status(400).json({ error: "Enter a valid Ugandan mobile phone number." });
+    return;
+  }
+  try {
+    const [target] = await db
+      .select({ id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber })
+      .from(phoneAccountsTable)
+      .where(eq(phoneAccountsTable.phoneNumber, phoneNumber))
+      .limit(1);
+    if (!target) {
+      res.status(404).json({ error: "That phone number does not belong to a registered member." });
+      return;
+    }
+    const [granted] = await db
+      .insert(adminAccountsTable)
+      .values({ accountId: target.id, grantedByAccountId: admin.id })
+      .onConflictDoNothing()
+      .returning({ createdAt: adminAccountsTable.createdAt });
+    if (!granted) {
+      res.status(409).json({ error: "That member is already an administrator." });
+      return;
+    }
+    res.status(201).json(AddAdminAccountResponse.parse({
+      id: target.id,
+      phoneNumber: target.phoneNumber,
+      createdAt: granted.createdAt,
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.admins.post" }, "Could not grant administrator access");
+    res.status(500).json({ error: "Could not grant administrator access." });
   }
 });
 

@@ -20,6 +20,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminAccount,
+  AdminAccountInput,
+  AdminAccounts,
   AdminMembers,
   AdminOverview,
   ErrorResponse,
@@ -617,6 +620,171 @@ export function useGetAdminMembers<TData = Awaited<ReturnType<typeof getAdminMem
 
 
 
+
+export const getGetAdminAccountsUrl = () => {
+
+
+
+
+  return `/api/admin/admins`
+}
+
+/**
+ * @summary List additional administrator accounts
+ */
+export const getAdminAccounts = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminAccounts> => {
+
+  return customFetch<AdminAccounts>(getGetAdminAccountsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminAccountsQueryKey = () => {
+    return [
+    `/api/admin/admins`
+    ] as const;
+    }
+
+
+export const getGetAdminAccountsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAccounts>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminAccountsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAccounts>>> = ({ signal }) => getAdminAccounts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminAccountsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAccounts>>>
+export type GetAdminAccountsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List additional administrator accounts
+ */
+
+export function useGetAdminAccounts<TData = Awaited<ReturnType<typeof getAdminAccounts>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminAccountsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddAdminAccountUrl = () => {
+
+
+
+
+  return `/api/admin/admins`
+}
+
+/**
+ * @summary Grant administrator access to an existing account
+ */
+export const addAdminAccount = async (adminAccountInput: AdminAccountInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminAccount> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminAccount>(getAddAdminAccountUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminAccountInput)
+  }
+);}
+
+
+
+
+
+export const getAddAdminAccountMutationKey = () => ['addAdminAccount'] as const;
+
+export const getAddAdminAccountMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addAdminAccount>>, TError,AddAdminAccountMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addAdminAccount>>, TError,AddAdminAccountMutationVariables, TContext> => {
+
+const mutationKey = getAddAdminAccountMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addAdminAccount>>, AddAdminAccountMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  addAdminAccount(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddAdminAccountMutationResult = NonNullable<Awaited<ReturnType<typeof addAdminAccount>>>
+    export type AddAdminAccountMutationBody = BodyType<AdminAccountInput>
+    export type AddAdminAccountMutationError = ErrorType<ErrorResponse>
+    export type AddAdminAccountMutationVariables = {data: BodyType<AdminAccountInput>}
+
+    /**
+ * @summary Grant administrator access to an existing account
+ */
+export const useAddAdminAccount = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addAdminAccount>>, TError,AddAdminAccountMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addAdminAccount>>,
+        TError,
+        AddAdminAccountMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAddAdminAccountMutationOptions(options));
+    }
 
 export const getGetTaskCenterSettingsUrl = () => {
 

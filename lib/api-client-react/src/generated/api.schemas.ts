@@ -98,6 +98,25 @@ export interface AdminMembers {
   members: AdminMember[];
 }
 
+export interface AdminAccount {
+  id: string;
+  /** @pattern ^\+2567[0-9]{8}$ */
+  phoneNumber: string;
+  createdAt: string;
+}
+
+export interface AdminAccounts {
+  admins: AdminAccount[];
+}
+
+export interface AdminAccountInput {
+  /**
+     * @minLength 9
+     * @maxLength 16
+     */
+  phoneNumber: string;
+}
+
 export type TaskCenterTaskRewardFrequency = typeof TaskCenterTaskRewardFrequency[keyof typeof TaskCenterTaskRewardFrequency];
 
 

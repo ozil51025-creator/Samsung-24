@@ -170,6 +170,43 @@ export const GetAdminMembersResponse = zod.object({
 
 
 /**
+ * @summary List additional administrator accounts
+ */
+export const getAdminAccountsResponseAdminsItemPhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
+
+
+export const GetAdminAccountsResponse = zod.object({
+  "admins": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "phoneNumber": zod.string().regex(getAdminAccountsResponseAdminsItemPhoneNumberRegExp),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Grant administrator access to an existing account
+ */
+export const addAdminAccountBodyPhoneNumberMin = 9;
+export const addAdminAccountBodyPhoneNumberMax = 16;
+
+
+
+export const AddAdminAccountBody = zod.object({
+  "phoneNumber": zod.string().min(addAdminAccountBodyPhoneNumberMin).max(addAdminAccountBodyPhoneNumberMax)
+})
+
+export const addAdminAccountResponsePhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
+
+
+export const AddAdminAccountResponse = zod.object({
+  "id": zod.string().uuid(),
+  "phoneNumber": zod.string().regex(addAdminAccountResponsePhoneNumberRegExp),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get public task definitions
  */
 export const getTaskCenterSettingsResponseTasksItemIdMax = 64;

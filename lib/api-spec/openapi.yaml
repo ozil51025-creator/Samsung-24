@@ -188,6 +188,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/admins:
+    get:
+      operationId: getAdminAccounts
+      tags: [admin]
+      summary: List additional administrator accounts
+      responses:
+        "200":
+          description: Administrator accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccounts"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: addAdminAccount
+      tags: [admin]
+      summary: Grant administrator access to an existing account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAccountInput"
+      responses:
+        "201":
+          description: Administrator access granted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccount"
+        "400":
+          description: Invalid phone number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The phone number does not belong to an existing member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Account is already an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /task-center:
     get:
       operationId: getTaskCenterSettings
@@ -404,6 +475,29 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminMember"
+    AdminAccount:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        phoneNumber: { type: string, pattern: "^\\+2567[0-9]{8}$" }
+        createdAt: { type: string, format: date-time }
+    AdminAccounts:
+      type: object
+      additionalProperties: false
+      required: [admins]
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAccount"
+    AdminAccountInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber]
+      properties:
+        phoneNumber: { type: string, minLength: 9, maxLength: 16 }
     TaskCenterTask:
       type: object
       additionalProperties: false
