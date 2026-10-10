@@ -25,11 +25,11 @@ Registration and sign-in use a Ugandan mobile number plus password only: no emai
 
 **How to apply:** Keep login/signup screens limited to the mode switch, required form fields, validation/status messages, and submit action. Put account-access disclosures on another page, and do not imply ownership verification or promise self-service recovery.
 
-For the public login and registration screens, the user wants only the login/registration controls and their required fields. The latest direction is to show the Samsung Gadgets brand mark and name on registration, while keeping login unbranded.
+For the public login and registration screens, the user wants only the Samsung Gadgets brand and login/registration controls with their required fields. The root route should go directly to sign-in rather than showing a public marketing homepage.
 
-**Why:** The user asked to remove extra content from both auth pages, then specifically requested branding on the registration page.
+**Why:** The user objected to seeing the promotional homepage and asked to leave only registration and login with Samsung branding.
 
-**How to apply:** Keep `/sign-in` minimal. On `/sign-up`, show only the brand mark/name above the login/register switch and required form; do not restore the hero, marketing copy, or footer. Preserve the +256 phone flow, password visibility controls, signup confirmation, invite-code prefill, and 12-character minimum.
+**How to apply:** Redirect unauthenticated visitors from `/` to `/sign-in`; keep `/sign-in` and `/sign-up` limited to the brand mark/name, auth switch, required fields, and status messages. Do not restore the hero, public product marketing, or footer. Preserve the +256 phone flow, password visibility controls, signup confirmation, invite-code prefill, and 12-character minimum.
 
 Every account receives a persistent referral code automatically. Signup links prefill the code, and successful registrations store the direct inviter. Referral commissions and payouts remain inactive until their rules are defined.
 

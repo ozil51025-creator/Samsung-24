@@ -135,9 +135,8 @@ function Home() {
 }
 
 function HomeRedirect() {
-  const { user, status } = useAuth();
-  if (status === 'loading') return <Home />;
-  return user ? <Redirect to="/overview" /> : <Home />;
+  const { user } = useAuth();
+  return user ? <Redirect to="/overview" /> : <Redirect to="/sign-in" />;
 }
 
 const memberNav = [
@@ -546,11 +545,9 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   };
 
   return <AuthFrame>
-    {isSignUp && (
-      <div className="auth-register-brand">
-        <Brand inverse />
-      </div>
-    )}
+    <div className="auth-register-brand">
+      <Brand inverse />
+    </div>
     <section className="auth-card" aria-label={isSignUp ? 'Register' : 'Login'} data-testid={`panel-${mode}`}>
       <nav className="auth-mode-switch" aria-label="Choose account action">
         <Link href="/sign-in" aria-current={!isSignUp ? 'page' : undefined} className={`auth-mode-link ${!isSignUp ? 'is-active' : ''}`} data-testid="link-auth-login">Login</Link>
