@@ -1,8 +1,10 @@
 import { ProductIllustration } from '@/components/product-illustration';
-import type { ProductCatalogItem } from '@/data/product-catalog';
+import type { ProductIllustrationKind } from '@/data/product-catalog';
+
+type CatalogProduct = { id: string; name: string; price: number; illustration: ProductIllustrationKind };
 
 type ProductsCatalogProps = {
-  products: readonly ProductCatalogItem[];
+  products: readonly CatalogProduct[];
   formatPrice: (amount: number) => string;
   imageUrl: string;
   productImages: Readonly<Record<string, string>>;
