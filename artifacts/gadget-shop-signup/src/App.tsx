@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowRight, Bell, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, Bell, CalendarDays, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -229,7 +229,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     <>
         <main className={`shop-grain min-h-[100dvh] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:py-7 sm:pb-28 ${isHome ? 'home-shell' : isReferral ? 'referral-shell' : isProducts ? 'products-shell' : isAccount ? 'account-shell' : 'shop-shell'}`}>
           <div className="member-frame relative z-10 mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-[1240px] flex-col sm:min-h-[calc(100dvh-3.5rem)]">
-            <header className={`flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
+            <header className={`${isHome ? 'home-member-header ' : ''}flex flex-wrap items-center justify-between gap-x-4 gap-y-4 border-b pb-4 sm:pb-5 ${isProducts ? 'border-[#9bbfce]' : 'border-[#d8d4c7]'}`}>
                <Link href="/overview" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6dd0a0]" aria-label="Samsung Gadgets overview"><Brand small inverse={isOverview || isAccount} /></Link>
               <div className="flex items-center gap-3">
                     <span className="hidden max-w-[180px] truncate text-[12px] text-[#68756a] sm:inline">{user.phoneNumber}</span>
@@ -291,25 +291,59 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 }
 
 function HomePage() {
-  const { user } = useAuth();
+  const homeShortcuts = [
+    { href: '/products', label: 'Browse products', note: 'UGX sale prices', image: `${basePath}/samsung-s26-ultra.jpg`, position: 'home-feature-tall' },
+    { href: '/purchased-products', label: 'My purchases', note: 'Order history', image: `${basePath}/samsung-fold8-banner.jpg`, position: '' },
+    { href: '/account', label: 'My account', note: 'Account settings', image: `${basePath}/samsung-s26-ultra-banner.jpeg`, position: '' },
+  ];
   const homeActions = [
-    { href: '/home', label: 'Home', icon: Wallet },
-    { href: '/products', label: 'Products', icon: ShoppingBag },
-    { href: '/purchased-products', label: 'Purchased', icon: PackageOpen },
-    { href: '/referral', label: 'Referral team', icon: UsersRound },
-    { href: '/account', label: 'My account', icon: UserRound },
+    { label: 'Deposit', icon: Download, title: 'Deposits are unavailable until a payment provider is verified.' },
+    { label: 'Withdraw', icon: CreditCard, title: 'Withdrawals are unavailable until a payment provider is verified.' },
+    { label: 'Customer service', icon: Headphones, title: 'Customer support details have not been configured.' },
+    { label: 'Check-in', icon: CalendarDays, title: 'Daily check-in rewards are not active.' },
   ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
-      <div className="home-member-heading">
-        <div>
-          <p className="home-member-phone" data-testid="text-home-phone">{user?.phoneNumber ?? 'Samsung Gadgets member'}</p>
-          <span className="home-member-tier">Member</span>
+      <section className="home-top-hero" aria-label="Featured Samsung device">
+        <img src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip foldable smartphone" fetchPriority="high" />
+        <div className="home-top-hero-copy">
+          <p>Samsung Galaxy</p>
+          <h1>Explore the latest devices</h1>
+          <span>UGX sale prices · availability to confirm</span>
         </div>
-        <span className="home-brand-mini" aria-label="Samsung Gadgets">S</span>
+        <Link href="/products" className="home-top-hero-button">Browse</Link>
+      </section>
+
+      <div className="home-money-actions" aria-label="Account shortcuts">
+        {homeActions.map(({ label, icon: Icon, title }) => (
+          <button key={label} type="button" disabled title={title} aria-label={`${label}: unavailable`}>
+            <Icon aria-hidden="true" /><span>{label}</span>
+          </button>
+        ))}
       </div>
 
-      <div className="home-balance-grid">
+      <Link href="/products" className="home-task-banner" data-testid="card-home-task-center">
+        <img className="home-task-photo" src={`${basePath}/samsung-referral-banner.jpg`} alt="" aria-hidden="true" loading="lazy" />
+        <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
+        <div className="home-task-copy">
+          <p className="home-task-eyebrow">Samsung Gadgets</p>
+          <h2>Explore the product catalogue</h2>
+          <span className="home-task-cta">Browse products <ArrowRight aria-hidden="true" /></span>
+        </div>
+      </Link>
+
+      <p className="home-activity-note"><ShieldCheck aria-hidden="true" /> Checkout, deposits, and withdrawals aren’t connected yet.</p>
+
+      <section className="home-photo-grid" aria-label="Samsung Gadgets shortcuts">
+        {homeShortcuts.map(({ href, label, note, image, position }) => (
+          <Link key={label} href={href} className={`home-photo-card ${position}`} data-testid={`link-home-${label.toLowerCase().replaceAll(' ', '-')}`}>
+            <img src={image} alt="" aria-hidden="true" loading="lazy" />
+            <span className="home-photo-card-copy"><strong>{label}</strong><small>{note}</small></span>
+          </Link>
+        ))}
+      </section>
+
+      <section className="home-balance-grid" aria-label="Wallet totals">
         <article className="home-balance-card">
           <p className="home-balance-value" data-testid="text-home-wallet-balance">—</p>
           <p className="home-balance-label">Wallet balance</p>
@@ -320,52 +354,15 @@ function HomePage() {
           <p className="home-balance-label">Total accumulated</p>
           <span className="home-balance-note">UGX · No ledger yet</span>
         </article>
-      </div>
-
-      <div className="home-money-actions" aria-label="Wallet actions">
-        <button type="button" disabled title="Deposits are unavailable until a payment provider is verified." data-testid="button-home-deposit">
-          <Download aria-hidden="true" /><span>Deposit</span>
-        </button>
-        <button type="button" disabled title="Withdrawals are unavailable until a payment provider is verified." data-testid="button-home-withdraw">
-          <CreditCard aria-hidden="true" /><span>Withdraw</span>
-        </button>
-        <a href="#account-history" data-testid="link-home-history">
-          <History aria-hidden="true" /><span>History</span>
-        </a>
-      </div>
-
-      <article className="home-task-banner" data-testid="card-home-task-center">
-        <img className="home-task-photo" src={`${basePath}/samsung-home-flip.jpg`} alt="Samsung Galaxy Z Flip foldable smartphone" fetchPriority="high" />
-        <span className="home-task-mark" aria-hidden="true"><ShoppingBag /></span>
-        <div className="home-task-copy">
-          <p className="home-task-eyebrow">Samsung Gadgets</p>
-          <h1>Explore the product catalogue</h1>
-          <p>Review the current UGX sale-price tiers. Product availability and checkout are not connected yet.</p>
-          <Link href="/products" data-testid="link-home-browse-products">Browse products <ArrowRight aria-hidden="true" /></Link>
-        </div>
-      </article>
-
-      <section className="home-quick-links" aria-labelledby="home-shortcuts-title">
-        <div className="home-section-heading">
-          <div><p className="home-section-eyebrow">Your space</p><h2 id="home-shortcuts-title">Quick access</h2></div>
-          <span>5 pages</span>
-        </div>
-        <div className="home-quick-grid">
-          {homeActions.map(({ href, label, icon: Icon }) => (
-            <Link key={label} href={href} className="home-quick-link" data-testid={`link-home-${label.toLowerCase().replaceAll(' ', '-')}`}>
-              <span><Icon aria-hidden="true" /></span><strong>{label}</strong>
-            </Link>
-          ))}
-        </div>
       </section>
 
-      <section id="account-history" className="home-history-panel" aria-labelledby="home-history-title">
+      <Link href="/account" className="home-history-panel" data-testid="link-home-history">
         <div className="home-section-heading">
           <div><p className="home-section-eyebrow">Wallet records</p><h2 id="home-history-title">Account history</h2></div>
           <History aria-hidden="true" />
         </div>
-        <p>No wallet transactions are recorded yet. Deposit, withdrawal, and accumulated totals will appear here after a verified provider and ledger are connected.</p>
-      </section>
+        <p>No wallet transactions are recorded yet.</p>
+      </Link>
     </section>
   </MemberFrame>;
 }
