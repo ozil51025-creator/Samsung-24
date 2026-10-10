@@ -460,6 +460,8 @@ export const getReferralSummaryResponseLevelsItemMemberCountMin = 0;
 
 export const getReferralSummaryResponseLevelsItemRewardsUgxMin = 0;
 
+export const getReferralSummaryResponseLevelsItemEstimatedRewardsUgxMin = 0;
+
 
 
 export const GetReferralSummaryResponse = zod.object({
@@ -469,7 +471,8 @@ export const GetReferralSummaryResponse = zod.object({
   "level": zod.number().int().min(1).max(getReferralSummaryResponseLevelsItemLevelMax),
   "commissionPercent": zod.number().int().min(getReferralSummaryResponseLevelsItemCommissionPercentMin).max(getReferralSummaryResponseLevelsItemCommissionPercentMax),
   "memberCount": zod.number().int().min(getReferralSummaryResponseLevelsItemMemberCountMin),
-  "rewardsUgx": zod.number().int().min(getReferralSummaryResponseLevelsItemRewardsUgxMin)
+  "rewardsUgx": zod.number().int().min(getReferralSummaryResponseLevelsItemRewardsUgxMin),
+  "estimatedRewardsUgx": zod.number().int().min(getReferralSummaryResponseLevelsItemEstimatedRewardsUgxMin)
 }))
 })
 

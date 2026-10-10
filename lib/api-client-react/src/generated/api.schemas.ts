@@ -606,6 +606,8 @@ export interface ReferralLevelSummary {
   memberCount: number;
   /** @minimum 0 */
   rewardsUgx: number;
+  /** @minimum 0 */
+  estimatedRewardsUgx: number;
 }
 
 export interface ReferralSummary {

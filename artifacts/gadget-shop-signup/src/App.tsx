@@ -1754,7 +1754,7 @@ function PurchasedProductsPage() {
 function ReferralPage() {
   const { user } = useAuth();
   const [referralNotice, setReferralNotice] = useState('');
-  const [summary, setSummary] = useState<{ totalMembers: number; totalRewardsUgx: number; levels: Array<{ level: number; commissionPercent: number; memberCount: number; rewardsUgx: number }> } | null>(null);
+  const [summary, setSummary] = useState<{ totalMembers: number; totalRewardsUgx: number; levels: Array<{ level: number; commissionPercent: number; memberCount: number; rewardsUgx: number; estimatedRewardsUgx: number }> } | null>(null);
   const [summaryError, setSummaryError] = useState('');
   useEffect(() => {
     let active = true;
@@ -1823,7 +1823,7 @@ function ReferralPage() {
 
       <section className="referral-invite-card" aria-label="Referral invitation">
         <div className="referral-team-summary">
-          <div><span>Recorded rewards</span><strong>{summary ? `UGX ${money.format(summary.totalRewardsUgx)}` : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
+          <div><span>Total rewards</span><strong>{summary ? `${summary.levels.some((item) => item.estimatedRewardsUgx > 0) ? '≈ ' : ''}UGX ${money.format(summary.totalRewardsUgx)}` : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
           <div><span>Total members</span><strong>{summary ? money.format(summary.totalMembers) : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
         </div>
         <div className="referral-hero-art">
@@ -1856,13 +1856,13 @@ function ReferralPage() {
             <span className="referral-level-badge">Lv{level}</span>
             <div><strong>{stats ? `${stats.commissionPercent}%` : summaryError ? '—' : '…'}</strong><span>Commission</span></div>
             <div><strong>{stats ? money.format(stats.memberCount) : summaryError ? '—' : '…'}</strong><span>Members</span></div>
-            <div><strong>{stats ? money.format(stats.rewardsUgx) : summaryError ? '—' : '…'}</strong><span>Rewards</span></div>
+            <div><strong>{stats ? `${stats.estimatedRewardsUgx > 0 ? '≈ ' : ''}${money.format(stats.rewardsUgx)}` : summaryError ? '—' : '…'}</strong><span>Rewards</span></div>
           </article>
         );})}
       </section>
 
       <p className="referral-terms-note">
-        Eligible commissions are credited after a referred member’s first product purchase using deposited funds; deposits and signups alone do not trigger rewards. This page records new commissions going forward; earlier wallet credits were not stored as separate records.
+        Commissions are credited after a referred member’s first product purchase using deposited funds; signups and deposits alone do not trigger rewards. The ≈ marks historical totals estimated using the current rates; these estimates do not change wallet balances.
       </p>
       {summaryError && <p role="alert" className="referral-terms-note">{summaryError}</p>}
     </section>
