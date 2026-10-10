@@ -8,6 +8,7 @@ import {
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  productCatalogTable,
   rechargeRequestsTable,
   teamDepositMilestoneClaimsTable,
   taskCenterSettingsTable,
@@ -28,6 +29,8 @@ import {
   GetTaskCenterSettingsResponse,
   UpdateAdminTaskCenterSettingsBody,
   UpdateAdminTaskCenterSettingsResponse,
+  ProductCatalogInput,
+  ProductCatalogResponse,
 } from "@workspace/api-zod";
 import {
   calculateLevelOneToThreeTeamDeposits,
@@ -42,6 +45,20 @@ const defaultTaskDefinitions = [
   { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "presence", title: "Presence", objective: 1, objectiveUnit: "day", rewardUgx: 500, rewardFrequency: "daily", enabled: true },
 ];
+const initialProductCatalog = [
+  ["usb-c-cable", "Samsung USB-C Cable", 30000, "cable"],
+  ["usb-c-adapter", "Samsung 25W USB-C Adapter", 50000, "charger"],
+  ["usb-c-earphones", "Samsung USB-C Earphones", 115000, "earphones"],
+  ["smarttag2", "Galaxy SmartTag2 Tracker", 250000, "tag"],
+  ["galaxy-buds", "Galaxy Buds Wireless Earbuds", 370000, "buds"],
+  ["galaxy-fit", "Galaxy Fit Fitness Band", 250000, "band"],
+  ["galaxy-a-lte", "Galaxy A Series LTE Phone", 775000, "phone"],
+  ["galaxy-a-5g", "Galaxy A Series 5G Phone", 1650000, "phone5g"],
+  ["galaxy-tab-a", "Galaxy Tab A Series Tablet", 3000000, "tablet"],
+  ["galaxy-s-fe", "Galaxy S FE Smartphone", 5000000, "sfe"],
+  ["galaxy-s-ultra", "Galaxy S Ultra Smartphone", 8000000, "ultra"],
+  ["galaxy-z-fold", "Galaxy Z Fold Smartphone", 12000000, "fold"],
+] as const;
 
 function isLegacyCheckInTask(task: { id: string; title: string }) {
   return task.id === "daily-check-in" || /\bcheck[\s-]*in\b/i.test(task.title);
