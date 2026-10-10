@@ -1009,7 +1009,7 @@ function AdminTaskCenterPage() {
     <header className="admin-dashboard-header">
       <Link href="/home" className="admin-dashboard-brand"><Brand small /><span><strong>Samsung</strong><small>ADMIN</small></span></Link>
       <span className="admin-live-badge"><i />Live</span>
-      <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadRechargeRequests(); loadTasks(); }}><Bell /></button>
+      <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminProducts(); loadRechargeRequests(); loadTasks(); }}><Bell /></button>
       <Link href="/home" className="admin-exit-button" aria-label="Return to member portal"><ArrowRight /></Link>
     </header>
     <div className="admin-task-body">
@@ -1171,16 +1171,30 @@ function AdminTaskCenterPage() {
 }
 
 function ProductsPage() {
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [catalogState, setCatalogState] = useState<'loading' | 'ready' | 'error'>('loading');
+  useEffect(() => {
+    fetch('/api/products/catalog')
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error('Could not load the product catalog.');
+        setProducts((data.products as AdminCatalogItem[]).map(({ id, name, priceUgx, illustration }) => ({ id, name, price: priceUgx, illustration })));
+        setCatalogState('ready');
+      })
+      .catch(() => setCatalogState('error'));
+  }, []);
   return <MemberFrame active="/products">
-    <ProductsCatalog
-      products={productCatalog}
+    {catalogState === 'loading' && <p className="catalog-load-state" role="status">Loading products…</p>}
+    {catalogState === 'error' && <p className="catalog-load-state" role="alert">The product catalog could not be loaded.</p>}
+    {catalogState === 'ready' && <ProductsCatalog
+      products={products}
       formatPrice={(price) => money.format(price)}
       imageUrl={`${basePath}/samsung-s26-ultra-banner.jpeg`}
       productImages={{
         'galaxy-s-ultra': `${basePath}/samsung-s26-ultra.jpg`,
         'galaxy-z-fold': `${basePath}/samsung-fold8-banner.jpg`,
       }}
-    />
+    />}
   </MemberFrame>;
 }
 
