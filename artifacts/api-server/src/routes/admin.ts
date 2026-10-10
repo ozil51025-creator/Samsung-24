@@ -8,8 +8,8 @@ import {
   phoneSessionsTable,
 } from "@workspace/db";
 import {
-  AdminMembers,
-  AdminOverview,
+  GetAdminMembersResponse,
+  GetAdminOverviewResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -73,7 +73,7 @@ router.get("/admin/overview", async (req, res): Promise<void> => {
       .select({ value: count() })
       .from(phoneReferralCodesTable)
       .where(isNotNull(phoneReferralCodesTable.referredByAccountId));
-    res.json(AdminOverview.parse({
+    res.json(GetAdminOverviewResponse.parse({
       totalUsers: users.value,
       referredUsers: referred.value,
       financialRecordsAvailable: false,
@@ -100,7 +100,7 @@ router.get("/admin/members", async (req, res): Promise<void> => {
       .leftJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
       .orderBy(desc(phoneAccountsTable.createdAt))
       .limit(250);
-    res.json(AdminMembers.parse({ members: rows }));
+    res.json(GetAdminMembersResponse.parse({ members: rows }));
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
