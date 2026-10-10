@@ -492,6 +492,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProductCatalogResponse"
+  /products/{productId}/purchase:
+    post:
+      operationId: purchaseProduct
+      tags: [products]
+      summary: Buy an active product using the signed-in member's wallet
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 60 }
+      responses:
+        "200":
+          description: Purchase recorded and wallet updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPurchaseResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Insufficient wallet balance or product is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /admin/products:
     get:
       operationId: getAdminProducts
@@ -571,6 +600,24 @@ components:
           minItems: 1
           maxItems: 50
           items: { $ref: "#/components/schemas/ProductCatalogItem" }
+    ProductPurchaseResponse:
+      type: object
+      additionalProperties: false
+      required: [orderId, productName, priceUgx, walletBalanceUgx, isFirstPurchase, commissions]
+      properties:
+        orderId: { type: string, format: uuid }
+        productName: { type: string }
+        priceUgx: { type: integer }
+        walletBalanceUgx: { type: integer }
+        isFirstPurchase: { type: boolean }
+        commissions:
+          type: array
+          items:
+            type: object
+            required: [level, amountUgx]
+            properties:
+              level: { type: integer, minimum: 1, maximum: 3 }
+              amountUgx: { type: integer }
     HealthStatus:
       type: object
       properties:

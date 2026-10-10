@@ -465,6 +465,36 @@ export const GetProductCatalogResponse = zod.object({
 
 
 /**
+ * @summary Buy an active product using the signed-in member's wallet
+ */
+export const purchaseProductPathProductIdMax = 60;
+
+
+export const purchaseProductPathProductIdRegExp = new RegExp('^[a-z0-9-]+$');
+
+
+export const PurchaseProductParams = zod.object({
+  "productId": zod.coerce.string().max(purchaseProductPathProductIdMax).regex(purchaseProductPathProductIdRegExp)
+})
+
+export const purchaseProductResponseCommissionsItemLevelMax = 3;
+
+
+
+export const PurchaseProductResponse = zod.object({
+  "orderId": zod.string().uuid(),
+  "productName": zod.string(),
+  "priceUgx": zod.number().int(),
+  "walletBalanceUgx": zod.number().int(),
+  "isFirstPurchase": zod.boolean(),
+  "commissions": zod.array(zod.object({
+  "level": zod.number().int().min(1).max(purchaseProductResponseCommissionsItemLevelMax),
+  "amountUgx": zod.number().int()
+}))
+})
+
+
+/**
  * @summary Get all editable catalog products
  */
 export const getAdminProductsResponseProductsItemIdMax = 60;

@@ -37,6 +37,7 @@ import type {
   PhonePasswordInput,
   ProductCatalogInput,
   ProductCatalogResponse,
+  ProductPurchaseResponse,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
   TaskCenterSettingsInput,
@@ -1518,6 +1519,80 @@ export function useGetProductCatalog<TData = Awaited<ReturnType<typeof getProduc
 
 
 
+
+export const getPurchaseProductUrl = (productId: string,) => {
+
+
+
+
+  return `/api/products/${productId}/purchase`
+}
+
+/**
+ * @summary Buy an active product using the signed-in member's wallet
+ */
+export const purchaseProduct = async (productId: string, options?: Parameters<typeof customFetch>[1]): Promise<ProductPurchaseResponse> => {
+
+  return customFetch<ProductPurchaseResponse>(getPurchaseProductUrl(productId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getPurchaseProductMutationKey = () => ['purchaseProduct'] as const;
+
+export const getPurchaseProductMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseProduct>>, TError,PurchaseProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof purchaseProduct>>, TError,PurchaseProductMutationVariables, TContext> => {
+
+const mutationKey = getPurchaseProductMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof purchaseProduct>>, PurchaseProductMutationVariables> = (props) => {
+          const {productId} = props ?? {};
+
+          return  purchaseProduct(productId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PurchaseProductMutationResult = NonNullable<Awaited<ReturnType<typeof purchaseProduct>>>
+
+    export type PurchaseProductMutationError = ErrorType<ErrorResponse>
+    export type PurchaseProductMutationVariables = {productId: string}
+
+    /**
+ * @summary Buy an active product using the signed-in member's wallet
+ */
+export const usePurchaseProduct = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseProduct>>, TError,PurchaseProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof purchaseProduct>>,
+        TError,
+        PurchaseProductMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPurchaseProductMutationOptions(options));
+    }
 
 export const getGetAdminProductsUrl = () => {
 

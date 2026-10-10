@@ -56,6 +56,24 @@ export interface ProductCatalogInput {
   products: ProductCatalogItem[];
 }
 
+export type ProductPurchaseResponseCommissionsItem = {
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  level: number;
+  amountUgx: number;
+};
+
+export interface ProductPurchaseResponse {
+  orderId: string;
+  productName: string;
+  priceUgx: number;
+  walletBalanceUgx: number;
+  isFirstPurchase: boolean;
+  commissions: ProductPurchaseResponseCommissionsItem[];
+}
+
 export interface HealthStatus {
   status: string;
 }

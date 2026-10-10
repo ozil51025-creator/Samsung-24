@@ -29,6 +29,8 @@ export * from './productCatalogInput';
 export * from './productCatalogItem';
 export * from './productCatalogItemIllustration';
 export * from './productCatalogResponse';
+export * from './productPurchaseResponse';
+export * from './productPurchaseResponseCommissionsItem';
 export * from './registerPhoneAccountInput';
 export * from './taskCenterSettings';
 export * from './taskCenterSettingsInput';
