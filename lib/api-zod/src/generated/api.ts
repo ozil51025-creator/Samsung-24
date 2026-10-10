@@ -244,14 +244,11 @@ export const CreateAdminWalletAdjustmentResponse = zod.object({
 /**
  * @summary Review recent administrator actions
  */
-export const getAdminAuditLogsResponseLogsItemPerformedByPhoneRegExp = new RegExp('^\\+2567[0-9]{8}$');
-
-
 export const GetAdminAuditLogsResponse = zod.object({
   "logs": zod.array(zod.object({
   "id": zod.number().int(),
   "action": zod.string(),
-  "performedByPhone": zod.string().regex(getAdminAuditLogsResponseLogsItemPerformedByPhoneRegExp),
+  "performedByPhone": zod.string(),
   "targetPhone": zod.string().nullable(),
   "amountUgx": zod.number().int().nullable(),
   "reason": zod.string().nullable(),

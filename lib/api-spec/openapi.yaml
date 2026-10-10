@@ -668,7 +668,7 @@ components:
       properties:
         id: { type: integer }
         action: { type: string }
-        performedByPhone: { type: string, pattern: "^\\+2567[0-9]{8}$" }
+        performedByPhone: { type: string }
         targetPhone: { type: ["string", "null"] }
         amountUgx: { type: ["integer", "null"] }
         reason: { type: ["string", "null"] }

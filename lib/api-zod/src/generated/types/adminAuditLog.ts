@@ -9,7 +9,6 @@
 export interface AdminAuditLog {
   id: number;
   action: string;
-  /** @pattern ^\+2567[0-9]{8}$ */
   performedByPhone: string;
   /** @nullable */
   targetPhone: string | null;

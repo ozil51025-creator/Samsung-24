@@ -74,6 +74,7 @@ async function currentAccountId(req: Request, res: Response): Promise<string | n
     .where(and(
       eq(phoneSessionsTable.tokenHash, hashSessionToken(token)),
       gt(phoneSessionsTable.expiresAt, new Date()),
+      eq(phoneAccountsTable.isActive, true),
     ))
     .limit(1);
   if (!account) {
@@ -427,7 +428,8 @@ router.post("/auth/login", requireSameOrigin, async (req, res) => {
       .from(phoneAccountsTable)
       .where(eq(phoneAccountsTable.phoneNumber, phoneNumber))
       .limit(1);
-    if (!(await verifyPassword(parsed.data.password, account?.passwordHash))) {
+    const passwordValid = await verifyPassword(parsed.data.password, account?.passwordHash);
+    if (!passwordValid || !account?.isActive) {
       res.status(401).json({ error: "Invalid phone number or password." });
       return;
     }
@@ -475,12 +477,14 @@ router.get("/auth/me", async (req, res) => {
         createdAt: phoneAccountsTable.createdAt,
         walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
         totalAccumulatedUgx: phoneAccountsTable.totalAccumulatedUgx,
+        isActive: phoneAccountsTable.isActive,
       })
       .from(phoneSessionsTable)
       .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))
       .where(and(
         eq(phoneSessionsTable.tokenHash, hashSessionToken(token)),
         gt(phoneSessionsTable.expiresAt, new Date()),
+      eq(phoneAccountsTable.isActive, true),
       ))
       .limit(1);
 
