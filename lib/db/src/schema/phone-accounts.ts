@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -12,6 +12,7 @@ export const phoneAccountsTable = pgTable(
     depositBalanceUgx: integer("deposit_balance_ugx").notNull().default(0),
     totalDepositedUgx: integer("total_deposited_ugx").notNull().default(0),
     totalAccumulatedUgx: integer("total_accumulated_ugx").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
