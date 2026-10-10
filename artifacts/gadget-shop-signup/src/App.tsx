@@ -794,6 +794,13 @@ function RechargeHistoryPage() {
 function AdminTaskCenterPage() {
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
+  const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
+  const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null }>>([]);
+  const [admins, setAdmins] = useState<Array<{ id: string; phoneNumber: string; createdAt: string }>>([]);
+  const [adminPhone, setAdminPhone] = useState('');
+  const [adminMessage, setAdminMessage] = useState('');
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [directoryStatus, setDirectoryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [rechargeStatus, setRechargeStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [message, setMessage] = useState('');
@@ -814,6 +821,30 @@ function AdminTaskCenterPage() {
       });
   };
   useEffect(() => { loadTasks(); }, []);
+  const loadAdminDirectory = () => {
+    setDirectoryStatus('loading');
+    Promise.all([
+      fetch('/api/admin/overview', { credentials: 'include' }),
+      fetch('/api/admin/members', { credentials: 'include' }),
+      fetch('/api/admin/admins', { credentials: 'include' }),
+    ])
+      .then(async ([overviewResponse, membersResponse, adminsResponse]) => {
+        const [overviewData, membersData, adminsData] = await Promise.all([
+          overviewResponse.json(),
+          membersResponse.json(),
+          adminsResponse.json(),
+        ]);
+        if (!overviewResponse.ok || !membersResponse.ok || !adminsResponse.ok) {
+          throw new Error('Could not load the admin dashboard. Check your admin access and try again.');
+        }
+        setOverview(overviewData);
+        setMembers(membersData.members);
+        setAdmins(adminsData.admins);
+        setDirectoryStatus('ready');
+      })
+      .catch(() => setDirectoryStatus('error'));
+  };
+  useEffect(() => { loadAdminDirectory(); }, []);
   const loadRechargeRequests = () => {
     setRechargeStatus('loading');
     fetch('/api/admin/recharge-requests', { credentials: 'include' })
@@ -832,6 +863,28 @@ function AdminTaskCenterPage() {
       credentials: 'include',
     });
     if (response.ok) loadRechargeRequests();
+  };
+  const addAdmin = async (event: FormEvent) => {
+    event.preventDefault();
+    setAddingAdmin(true);
+    setAdminMessage('');
+    try {
+      const response = await fetch('/api/admin/admins', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: adminPhone }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not add administrator.');
+      setAdmins((current) => [data, ...current]);
+      setAdminPhone('');
+      setAdminMessage('Administrator access granted.');
+    } catch (error) {
+      setAdminMessage(error instanceof Error ? error.message : 'Could not add administrator.');
+    } finally {
+      setAddingAdmin(false);
+    }
   };
   const changeTask = (id: string, changes: Partial<TaskDefinition>) =>
     setTasks((current) => current.map((task) => task.id === id ? { ...task, ...changes } : task));
@@ -857,9 +910,49 @@ function AdminTaskCenterPage() {
     }
   };
   return <main className="admin-task-page">
-    <header className="admin-task-header"><Link href="/home" aria-label="Back to Home"><ArrowLeft /></Link><div><p>Admin settings</p><h1>Task Center</h1></div></header>
+    <header className="admin-task-header"><Link href="/home" aria-label="Back to Home"><ArrowLeft /></Link><div><p>Site controls</p><h1>Admin panel</h1></div></header>
     <div className="admin-task-body">
-      <p className="admin-task-note">Edit task goals and UGX rewards. Saving these terms does not enable referral tracking or process payouts.</p>
+      <p className="admin-task-note">Manage members, administrator access, task rules, and verified deposit requests. Financial totals and checkout controls are not available until those systems record verified transactions.</p>
+      <nav className="admin-section-nav" aria-label="Admin panel sections">
+        <a href="#admin-overview">Overview</a><a href="#admin-members">Members</a><a href="#admin-access">Admins</a><a href="#admin-tasks">Task Center</a><a href="#admin-recharges">Deposits</a>
+      </nav>
+      <section id="admin-overview" className="admin-panel-section">
+        <h2>Overview</h2>
+        {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
+        {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load admin data.</p><button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
+        {overview && <div className="admin-overview-grid">
+          <article><span>Total members</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
+          <article><span>Referred members</span><strong>{overview.referredUsers.toLocaleString()}</strong></article>
+          <article><span>Verified financial records</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
+        </div>}
+      </section>
+      <section id="admin-members" className="admin-panel-section">
+        <h2>Members</h2>
+        {directoryStatus === 'ready' && members.length === 0 && <p>No member accounts yet.</p>}
+        {members.length > 0 && <div className="admin-member-list">
+          {members.map((member) => <article key={member.id}>
+            <div><strong>{member.phoneNumber}</strong><span>Joined {new Date(member.createdAt).toLocaleDateString()}</span></div>
+            <div><span>Referral code</span><strong>{member.referralCode ?? '—'}</strong></div>
+            <div><span>Invited by</span><strong>{member.referredByAccountId ? 'Referred member' : 'Direct signup'}</strong></div>
+          </article>)}
+        </div>}
+        <p className="admin-task-note">Member profiles are view-only here. Wallet edits, password resets, and account suspension need dedicated audited controls.</p>
+      </section>
+      <section id="admin-access" className="admin-panel-section">
+        <h2>Administrator access</h2>
+        <p className="admin-task-note">Add an existing member by their Ugandan phone number. Added admins receive the same access to this panel.</p>
+        <form className="admin-add-form" onSubmit={addAdmin}>
+          <label htmlFor="admin-phone">Member phone number</label>
+          <div><input id="admin-phone" type="tel" autoComplete="tel" required value={adminPhone} onChange={(event) => setAdminPhone(event.target.value)} placeholder="+256 7XX XXX XXX" /><button type="submit" disabled={addingAdmin}>{addingAdmin ? 'Adding…' : 'Add admin'}</button></div>
+          {adminMessage && <p role="status">{adminMessage}</p>}
+        </form>
+        <h3>Additional admins</h3>
+        {directoryStatus === 'ready' && admins.length === 0 && <p>No additional admins have been added.</p>}
+        {admins.map((admin) => <article className="admin-recharge-review-item" key={admin.id}><strong>{admin.phoneNumber}</strong><span> Added {new Date(admin.createdAt).toLocaleDateString()}</span></article>)}
+      </section>
+      <section id="admin-tasks" className="admin-panel-section">
+        <h2>Task Center settings</h2>
+        <p className="admin-task-note">Edit task goals and UGX rewards. Saving these terms does not enable referral tracking or process payouts.</p>
       {status === 'loading' && <p role="status">Loading settings…</p>}
       {status === 'error' && <div className="admin-task-error" role="alert"><p>{message}</p><button type="button" onClick={loadTasks}>Try again</button></div>}
       {status === 'ready' && <form onSubmit={saveTasks}>
@@ -883,7 +976,8 @@ function AdminTaskCenterPage() {
         </div>
         {message && <p className="admin-task-message" role="status">{message}</p>}
       </form>}
-      <section className="admin-recharge-review">
+      </section>
+      <section id="admin-recharges" className="admin-recharge-review admin-panel-section">
         <h2>Manual recharge requests</h2>
         <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification credits the member’s deposited wallet balance.</p>
         {rechargeStatus === 'loading' && <p>Loading requests…</p>}
