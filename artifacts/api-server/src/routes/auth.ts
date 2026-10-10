@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
-import { and, eq, gt, sum } from "drizzle-orm";
+import { and, eq, gt, sql, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
@@ -95,7 +95,7 @@ async function currentPresenceTask() {
   const rewardUgx = typeof configured?.rewardUgx === "number" && Number.isSafeInteger(configured.rewardUgx) && configured.rewardUgx > 0
     ? configured.rewardUgx
     : 500;
-  return { enabled: configured?.enabled === true, rewardUgx };
+  return { enabled: configured ? configured.enabled === true : true, rewardUgx };
 }
 
 function createReferralCode() {
@@ -561,11 +561,26 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
       res.status(409).json({ error: "Presence is not active yet." });
       return;
     }
-    const claimed = await db
-      .insert(presenceClaimsTable)
-      .values({ accountId, attendanceDate: kampalaDate(), rewardUgx: task.rewardUgx })
-      .onConflictDoNothing()
-      .returning({ id: presenceClaimsTable.id });
+    const attendanceDate = kampalaDate();
+    const wasNewClaim = await db.transaction(async (tx) => {
+      const claimed = await tx
+        .insert(presenceClaimsTable)
+        .values({ accountId, attendanceDate, rewardUgx: task.rewardUgx })
+        .onConflictDoNothing()
+        .returning({ id: presenceClaimsTable.id });
+      if (claimed.length === 0) return false;
+
+      const [updatedAccount] = await tx
+        .update(phoneAccountsTable)
+        .set({
+          walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${task.rewardUgx}`,
+          totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${task.rewardUgx}`,
+        })
+        .where(eq(phoneAccountsTable.id, accountId))
+        .returning({ id: phoneAccountsTable.id });
+      if (!updatedAccount) throw new Error("Presence claimant account no longer exists.");
+      return true;
+    });
     const claims = await db
       .select({ rewardUgx: presenceClaimsTable.rewardUgx })
       .from(presenceClaimsTable)
@@ -573,7 +588,7 @@ router.post("/presence/claim", requireSameOrigin, async (req, res) => {
     res.json({
       ...task,
       claimedToday: true,
-      wasNewClaim: claimed.length > 0,
+      wasNewClaim,
       totalUgx: claims.reduce((total, claim) => total + claim.rewardUgx, 0),
       days: claims.length,
     });

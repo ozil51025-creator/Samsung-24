@@ -1,4 +1,3 @@
-import { ShoppingBag } from 'lucide-react';
 import { ProductIllustration } from '@/components/product-illustration';
 import type { ProductCatalogItem } from '@/data/product-catalog';
 
@@ -10,6 +9,10 @@ type ProductsCatalogProps = {
 };
 
 export function ProductsCatalog({ products, formatPrice, imageUrl, productImages }: ProductsCatalogProps) {
+  const prices = products.map((product) => product.price);
+  const lowestPrice = prices.length ? Math.min(...prices) : 0;
+  const highestPrice = prices.length ? Math.max(...prices) : 0;
+
   return (
     <>
       <header className="product-page-heading">
@@ -19,12 +22,14 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
       <section className="product-summary-banner" aria-label="Catalog information">
         <img className="product-summary-photo" src={imageUrl} alt="Samsung Galaxy devices" fetchPriority="high" />
         <div>
-          <p className="product-summary-value">Catalog</p>
-          <p className="product-summary-label">Purchases are not recorded</p>
+          <p className="product-summary-eyebrow">Samsung</p>
+          <p className="product-summary-value">{products.length}</p>
+          <p className="product-summary-label">Catalog products</p>
         </div>
         <div className="product-summary-range">
-          <p className="product-summary-value">UGX</p>
-          <p className="product-summary-label">Prices shown in UGX</p>
+          <p className="product-summary-eyebrow">Sale price range</p>
+          <p className="product-summary-value">{formatPrice(lowestPrice)}–{formatPrice(highestPrice)}</p>
+          <p className="product-summary-label">UGX · Listed prices only</p>
         </div>
       </section>
       <section className="product-catalog-list" aria-label="Samsung products">
@@ -37,21 +42,21 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
                 : <ProductIllustration kind={product.illustration} name={product.name} />}
             </div>
             <div className="product-card-price-row">
-              <p className="product-card-price">{formatPrice(product.price)} UGX</p>
+              <p className="product-card-price">UGX {formatPrice(product.price)}</p>
               <button className="product-buy-button" type="button" disabled aria-label={`Buy ${product.name}; checkout unavailable`} title="Checkout is unavailable">
-                <ShoppingBag aria-hidden="true" /> Buy
+                Buy
               </button>
             </div>
             <div className="product-card-details">
               <div><span>Availability:</span><strong>Not confirmed</strong></div>
-              <div><span>Unverified daily estimate:</span><strong>UGX {formatPrice(product.daily)}</strong></div>
-              <div><span>Payout terms:</span><strong>Not active</strong></div>
+              <div><span>Checkout:</span><strong>Not active</strong></div>
+              <div><span>Earnings:</span><strong>No guaranteed returns</strong></div>
             </div>
           </article>
         ))}
       </section>
       <p className="product-checkout-note">
-        Daily and total figures are unverified estimates, not promised returns. Reward terms and payouts are not active. Exact product models and stock are still being confirmed.
+        Listed prices are for catalog display only. Product models, stock, and checkout must be confirmed before sale.
       </p>
     </>
   );

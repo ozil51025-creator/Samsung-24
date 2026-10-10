@@ -431,7 +431,9 @@ function PresencePage() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not record presence.');
       setPresence(result);
-      setPresenceMessage(result.wasNewClaim ? 'Presence recorded.' : 'You have already recorded presence today.');
+      setPresenceMessage(result.wasNewClaim
+        ? `UGX ${result.rewardUgx.toLocaleString()} added to your wallet. Come back after midnight to claim again.`
+        : 'You have already claimed today’s bonus.');
     } catch {
       setPresenceMessage('Presence could not be recorded. Try again.');
     } finally {
@@ -458,12 +460,14 @@ function PresencePage() {
         <div><strong>{presence ? `UGX ${presence.totalUgx.toLocaleString()}` : 'UGX —'}</strong><span>Cumulative bonus</span></div>
         <div><strong>{presence?.days ?? '—'}</strong><span>Days of attendance</span></div>
       </div>
-      <button type="button" disabled={!presence || !presence.enabled || presence.claimedToday || claiming} onClick={claimPresence} aria-describedby="presence-unavailable" data-testid="button-presence-point">Point</button>
-      <p id="presence-unavailable" className="presence-unavailable" role="status">{presenceMessage || (presence?.claimedToday ? 'Presence already recorded today.' : presence && !presence.enabled ? 'Presence is not active yet.' : 'Daily attendance is recorded once per day.')}</p>
+      <button type="button" disabled={!presence || !presence.enabled || presence.claimedToday || claiming} onClick={claimPresence} aria-describedby="presence-unavailable" data-testid="button-presence-point">
+        {claiming ? 'Claiming…' : presence?.claimedToday ? 'Claimed today' : 'Claim daily bonus'}
+      </button>
+      <p id="presence-unavailable" className="presence-unavailable" role="status">{presenceMessage || (presence?.claimedToday ? 'You have claimed today’s bonus. Claim again after midnight (Kampala time).' : presence && !presence.enabled ? 'Daily bonus is not active yet.' : 'Claim once per day; it is never credited automatically.')}</p>
       <ol>
         <li>Daily presence reward: {presence?.rewardUgx.toLocaleString() ?? '500'} UGX.</li>
-        <li>Log in once a day.</li>
-        <li>Log in again after midnight (00:00) each day.</li>
+        <li>Tap “Claim daily bonus” to receive it.</li>
+        <li>One claim is allowed per calendar day in Kampala time.</li>
       </ol>
     </section>
   </main>;

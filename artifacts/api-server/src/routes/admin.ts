@@ -29,7 +29,7 @@ const defaultTaskDefinitions = [
   { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
-  { id: "presence", title: "Presence", objective: 1, objectiveUnit: "day", rewardUgx: 500, rewardFrequency: "daily", enabled: false },
+  { id: "presence", title: "Presence", objective: 1, objectiveUnit: "day", rewardUgx: 500, rewardFrequency: "daily", enabled: true },
 ];
 
 function isLegacyCheckInTask(task: { id: string; title: string }) {
