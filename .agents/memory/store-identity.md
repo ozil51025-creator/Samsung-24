@@ -3,7 +3,7 @@ name: Rewards site scope
 description: The user's business model direction and branding for this website.
 ---
 
-For this project, the user wants the public-facing site name "samsung" for a Samsung gadget catalog in Uganda, with Ugandan-phone registration. Present it as an independent retailer, not as Samsung's official store. They initially selected real-sales rewards over daily investment returns, then most recently asked for the supplied daily (25%) and hourly (1.0417%) figures to appear alongside the UGX prices. The payout basis and terms, exact product models/stock, and cash-bonus terms remain unverified or unspecified. They requested six member pages—Overview, Home, Products, Purchased, Referral, and Account—plus a UGX 5,000 welcome bonus as withdrawable cash. They specified referral bonus rates of 26%, 2%, and 1% for levels 1–3; the calculation base and qualifying event remain undefined.
+For this project, the user wants the public-facing site name "samsung" for a Samsung gadget catalog, without showing the word Uganda in the site copy. The phone flow retains its existing +256 prefix and prices remain in UGX. Present it as an independent retailer, not as Samsung's official store. They initially selected real-sales rewards over daily investment returns, then most recently asked for the supplied daily (25%) and hourly (1.0417%) figures to appear alongside the UGX prices. The payout basis and terms, exact product models/stock, and cash-bonus terms remain unverified or unspecified. They requested six member pages—Overview, Home, Products, Purchased, Referral, and Account—plus a UGX 5,000 welcome bonus as withdrawable cash. They specified referral bonus rates of 26%, 2%, and 1% for levels 1–3; the calculation base and qualifying event remain undefined.
 
 The user requested Samsung blue, dark neutrals, white, and translucent surfaces across every page.
 
@@ -57,8 +57,8 @@ All displayed currency is UGX. Remove non-Uganda recharge country choices; do no
 
 **How to apply:** Display the confirmed UGX 10,000 minimum and 20% fee. Do not add payout destination choices beyond the latest supplied screenshot, and do not submit or persist payout details until the user confirms the destination and a provider that supports it is verified. Keep balances and transaction history inactive until server-backed data exists.
 
-Task Center task text, goals, and UGX reward terms should be editable in the admin panel. Editing those terms does not itself create eligibility tracking, earnings, or payouts; keep tasks inactive by default and do not show rewards as earned until qualifying events and a verified ledger exist.
+The Daily Check-in reward is 500 UGX. Task Center task text, goals, and UGX reward terms should be editable in the admin panel. Editing those terms does not itself create eligibility tracking, earnings, or payouts; keep tasks inactive by default and do not show rewards as earned until qualifying events and a verified ledger exist.
 
-**Why:** The user said they will set the Task Center terms through the admin panel, while referral, purchase, and payout verification systems are still incomplete.
+**Why:** The user specified the Daily Check-in amount and said they will set other Task Center terms through the admin panel, while referral, purchase, and payout verification systems are still incomplete.
 
 **How to apply:** Keep task definitions persistent and admin-only editable, but do not imply configured rewards are guaranteed or already accruing without verified event tracking and ledger support.

@@ -88,7 +88,7 @@ function Home() {
               <Link href="/sign-up" className="group inline-flex h-[52px] items-center justify-center gap-3 rounded-full bg-[#315f49] px-7 text-[14px] font-bold text-[#fffdf7] shadow-[0_9px_20px_rgba(49,95,73,.17)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49] focus-visible:ring-offset-2" data-testid="link-create-account">
                 Create an account <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Link>
-              <span className="inline-flex items-center gap-2 text-[12px] text-[#6c786d]"><LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Ugandan phone and password</span>
+              <span className="inline-flex items-center gap-2 text-[12px] text-[#6c786d]"><LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" /> Phone and password</span>
             </div>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 border-t border-[#d8d4c7] pt-5 text-[12px] font-medium text-[#53675b]">
               <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#477553]" aria-hidden="true" /> Account signup only</span>
@@ -120,7 +120,7 @@ function Home() {
         <section className="border-t border-[#d8d4c7] pt-8 sm:pt-10" aria-labelledby="prices-title">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">Uganda · UGX</p>
+              <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">UGX</p>
               <h2 id="prices-title" className="mt-2 font-[Syne] text-[30px] font-bold tracking-[-.055em] text-[#243b31] sm:text-[38px]">Suggested product tiers</h2>
             </div>
             <p className="max-w-[400px] text-[12px] leading-5 text-[#70796f]">Daily and hourly figures are user-provided estimates, not verified or guaranteed returns. No payouts are active; confirm exact models and availability before listing.</p>
@@ -153,7 +153,7 @@ function Home() {
           <Link href="/sign-up" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" data-testid="link-footer-signup">Create account <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </section>
         <footer className="mt-8 flex flex-col gap-3 border-t border-[#d8d4c7] pt-5 text-[11px] leading-5 text-[#758078] sm:flex-row sm:items-center sm:justify-between">
-          <span>samsung · Independent retailer · Uganda</span>
+          <span>samsung · Independent retailer</span>
           <span>Not affiliated with Samsung. Reward amounts and payout rules are not active or configured yet.</span>
         </footer>
       </div>
@@ -215,7 +215,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     const previousOgDescription = ogDescriptionTag?.content;
     const pageTitle = `${activePage?.label ?? 'Member portal'} — samsung`;
     document.title = pageTitle;
-    const description = 'Member account portal for samsung, an independent retailer in Uganda. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
+    const description = 'Member account portal for samsung, an independent retailer. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
     if (descriptionTag) descriptionTag.content = description;
     if (ogTitleTag) ogTitleTag.content = pageTitle;
     if (ogDescriptionTag) ogDescriptionTag.content = description;
@@ -255,7 +255,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
             </header>
             <div className={`flex-1 ${isOverview ? 'py-5 sm:py-8' : 'py-7 sm:py-10'}`}>
               {!isOverview && !isReferral && <div className="mb-7">
-                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">samsung · Uganda</p>
+                <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#75816f]">samsung</p>
                 <h1 className="mt-2 font-[Syne] text-[32px] font-bold leading-tight tracking-[-.06em] text-[#243b31] sm:text-[42px]">{activePage?.label}</h1>
               </div>}
               {children}
@@ -281,7 +281,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
                 <Brand small />
               </div>
               <div className="member-notice-content">
-                <p className="member-notice-eyebrow">samsung · Uganda</p>
+                <p className="member-notice-eyebrow">samsung</p>
                 <h2 id="member-notice-title">Welcome to your account</h2>
                 <p className="member-notice-intro">Important information about current products and account services:</p>
                 <ul>
@@ -910,9 +910,9 @@ function PhoneAuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
       <form className="auth-form" onSubmit={handleSubmit} data-testid={`form-${mode}`}>
         <div>
-          <label htmlFor="phone-number" className="auth-label">Ugandan mobile number</label>
+          <label htmlFor="phone-number" className="auth-label">Mobile number</label>
           <div className="auth-phone-control">
-            <span className="auth-phone-prefix" aria-label="Uganda country code">+256</span>
+            <span className="auth-phone-prefix" aria-label="Country calling code">+256</span>
             <input
               id="phone-number"
               name="phoneNumber"

@@ -320,7 +320,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
         </nav>
         <div className="admin-sidebar-footer">
           <span className="admin-protection-icon"><Shield size={15} /></span>
-          <span><strong>Protected workspace</strong><small>Uganda · East Africa</small></span>
+          <span><strong>Protected workspace</strong><small>Operations</small></span>
         </div>
       </aside>
 
@@ -328,7 +328,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
         <header className="admin-topbar">
           <div className="admin-breadcrumb"><span>samsung</span><ChevronRight size={13} /><span>Operations</span><ChevronRight size={13} /><strong>{activeSection}</strong></div>
           <div className="admin-topbar-right">
-            <span className="admin-region"><span className="admin-region-dot" />UGANDA OPERATIONS</span>
+            <span className="admin-region"><span className="admin-region-dot" />OPERATIONS</span>
             <button className="admin-icon-button" type="button" title="Notifications unavailable" aria-label="Notifications unavailable" disabled data-testid="button-admin-notifications"><Bell size={17} /></button>
             <span className="admin-operator-avatar" aria-hidden="true">{operatorName?.trim()?.slice(0, 1).toUpperCase() || 'A'}</span>
             <span className="admin-operator-name">{operatorName?.trim() || 'Administrator'}</span>
@@ -360,7 +360,7 @@ export function AdminConsole({ sections, onAction, onRetry, operatorName }: Admi
         <div className="admin-content">
           <div className="admin-page-heading">
             <div>
-              <div className="admin-eyebrow"><span className="admin-eyebrow-line" />INTERNAL OPERATIONS <span className="admin-eyebrow-divider">/</span> UGANDA</div>
+              <div className="admin-eyebrow"><span className="admin-eyebrow-line" />INTERNAL OPERATIONS</div>
               <h1 data-testid="text-admin-section-title">{activeSection}</h1>
               <p>{activeData?.description ?? sectionMeta[activeSection].description}</p>
             </div>

@@ -19,7 +19,7 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
       <section className="product-summary-banner" aria-label="Catalog summary">
         <img className="product-summary-photo" src={imageUrl} alt="" aria-hidden="true" loading="lazy" />
         <div>
-          <p className="product-summary-eyebrow">samsung · Uganda</p>
+          <p className="product-summary-eyebrow">samsung</p>
           <p className="product-summary-value">{products.length}</p>
           <p className="product-summary-label">Catalog products</p>
         </div>
