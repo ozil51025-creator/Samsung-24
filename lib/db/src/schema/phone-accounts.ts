@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -8,6 +8,8 @@ export const phoneAccountsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     phoneNumber: text("phone_number").notNull(),
     passwordHash: text("password_hash").notNull(),
+    walletBalanceUgx: integer("wallet_balance_ugx").notNull().default(0),
+    totalAccumulatedUgx: integer("total_accumulated_ugx").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({

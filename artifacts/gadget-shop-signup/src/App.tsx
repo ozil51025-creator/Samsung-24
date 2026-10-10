@@ -311,6 +311,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 }
 
 function HomePage() {
+  const { user } = useAuth();
   const homeSummaryCards = [
     { label: 'Pay', image: `${basePath}/samsung-s26-ultra.jpg`, position: 'home-feature-tall' },
     { label: 'Cumulative', image: `${basePath}/samsung-fold8-banner.jpg`, position: '' },
@@ -368,7 +369,13 @@ function HomePage() {
           <article key={label} className={`home-photo-card ${position}`}>
             <img src={image} alt="" aria-hidden="true" loading="lazy" />
             <span className="home-photo-card-copy">
-              <strong>{label !== 'Withdrawal' ? 'UGX 5,000' : '— UGX'}</strong>
+              <strong>
+                {label === 'Pay'
+                  ? `UGX ${user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}`
+                  : label === 'Cumulative'
+                    ? `UGX ${user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}`
+                    : '— UGX'}
+              </strong>
               <small>{label}</small>
             </span>
           </article>
@@ -483,9 +490,8 @@ function TaskCenterPage() {
     <section className="task-center-hero">
       <img src={`${basePath}/samsung-s26-ultra.jpg`} alt="Samsung Galaxy device" fetchPriority="high" />
       <div className="task-center-hero-copy">
-        <strong>— UGX</strong>
+          <strong>UGX {user.totalAccumulatedUgx.toLocaleString('en-UG')}</strong>
         <span>Total rewards accumulated</span>
-        <small>Rewards are not active yet</small>
       </div>
     </section>
     <section className="task-center-list" aria-label="Tasks">
@@ -494,13 +500,15 @@ function TaskCenterPage() {
       {tasksStatus === 'ready' && tasks.length === 0 && <p className="task-center-message">No tasks have been added yet.</p>}
       {tasks.map((task) => (
         <article className="task-center-item" key={task.id}>
-          <h2>{task.title}</h2>
+          <h2>
+            {task.title}
+            {task.rewardUgx !== null && ` · UGX ${money.format(task.rewardUgx)}`}
+          </h2>
           <div className="task-center-progress">
             <div><strong>—</strong><span>Current</span></div>
             <div><strong>{task.objective.toLocaleString()} {task.objectiveUnit}</strong><span>Objective</span></div>
             <div><strong>—</strong><span>Progress</span></div>
           </div>
-          <p>{task.rewardUgx === null ? 'Reward amount not set' : `${money.format(task.rewardUgx)} UGX · ${task.rewardFrequency === 'daily' ? 'daily' : 'one-time'}`} · Progress tracking not connected</p>
           <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
         </article>
       ))}
@@ -975,11 +983,11 @@ function AccountPage() {
 
       <section className="account-balance-row" aria-label="Wallet totals">
         <article>
-          <strong>UGX 5,000</strong>
+          <strong>UGX {user?.walletBalanceUgx.toLocaleString('en-UG') ?? '—'}</strong>
           <span>Wallet balance</span>
         </article>
         <article>
-          <strong>UGX 5,000</strong>
+          <strong>UGX {user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}</strong>
           <span>Total accumulated</span>
         </article>
       </section>

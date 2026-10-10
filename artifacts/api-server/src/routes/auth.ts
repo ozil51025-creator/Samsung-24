@@ -273,7 +273,13 @@ async function createSession(accountId: string, res: Response) {
 }
 
 function publicAccount(
-  account: { id: string; phoneNumber: string; createdAt: Date },
+  account: {
+    id: string;
+    phoneNumber: string;
+    createdAt: Date;
+    walletBalanceUgx: number;
+    totalAccumulatedUgx: number;
+  },
   referralCode: string,
 ) {
   return {
@@ -281,6 +287,8 @@ function publicAccount(
     phoneNumber: account.phoneNumber,
     createdAt: account.createdAt.toISOString(),
     referralCode,
+    walletBalanceUgx: account.walletBalanceUgx,
+    totalAccumulatedUgx: account.totalAccumulatedUgx,
   };
 }
 
@@ -332,7 +340,13 @@ router.post("/auth/register", requireSameOrigin, async (req, res) => {
 
     const passwordHash = await hashPassword(parsed.data.password);
     const token = randomBytes(32).toString("hex");
-    let account: { id: string; phoneNumber: string; createdAt: Date } | undefined;
+    let account: {
+      id: string;
+      phoneNumber: string;
+      createdAt: Date;
+      walletBalanceUgx: number;
+      totalAccumulatedUgx: number;
+    } | undefined;
     let referralCode = "";
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const candidateReferralCode = createReferralCode();
@@ -340,11 +354,13 @@ router.post("/auth/register", requireSameOrigin, async (req, res) => {
         account = await db.transaction(async (tx) => {
           const [created] = await tx
             .insert(phoneAccountsTable)
-            .values({ phoneNumber, passwordHash })
+            .values({ phoneNumber, passwordHash, walletBalanceUgx: 5000, totalAccumulatedUgx: 5000 })
             .returning({
               id: phoneAccountsTable.id,
               phoneNumber: phoneAccountsTable.phoneNumber,
               createdAt: phoneAccountsTable.createdAt,
+              walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+              totalAccumulatedUgx: phoneAccountsTable.totalAccumulatedUgx,
             });
           await tx.insert(phoneReferralCodesTable).values({
             accountId: created.id,
@@ -454,6 +470,8 @@ router.get("/auth/me", async (req, res) => {
         id: phoneAccountsTable.id,
         phoneNumber: phoneAccountsTable.phoneNumber,
         createdAt: phoneAccountsTable.createdAt,
+        walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+        totalAccumulatedUgx: phoneAccountsTable.totalAccumulatedUgx,
       })
       .from(phoneSessionsTable)
       .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))

@@ -58,6 +58,16 @@ export interface PhoneAccount {
      * @pattern ^[A-Z2-9]{10}$
      */
   referralCode: string;
+  /**
+     * Current wallet balance in UGX
+     * @minimum 0
+     */
+  walletBalanceUgx: number;
+  /**
+     * Total accumulated rewards in UGX
+     * @minimum 0
+     */
+  totalAccumulatedUgx: number;
 }
 
 export interface PhoneAccountResponse {

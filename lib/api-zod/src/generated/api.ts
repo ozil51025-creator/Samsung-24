@@ -45,6 +45,10 @@ export const registerPhoneAccountResponseUserReferralCodeMax = 10;
 
 
 export const registerPhoneAccountResponseUserReferralCodeRegExp = new RegExp('^[A-Z2-9]{10}$');
+export const registerPhoneAccountResponseUserWalletBalanceUgxMin = 0;
+
+export const registerPhoneAccountResponseUserTotalAccumulatedUgxMin = 0;
+
 
 
 export const RegisterPhoneAccountResponse = zod.object({
@@ -52,7 +56,9 @@ export const RegisterPhoneAccountResponse = zod.object({
   "id": zod.string().uuid(),
   "phoneNumber": zod.string().regex(registerPhoneAccountResponseUserPhoneNumberRegExp),
   "createdAt": zod.coerce.date(),
-  "referralCode": zod.string().min(registerPhoneAccountResponseUserReferralCodeMin).max(registerPhoneAccountResponseUserReferralCodeMax).regex(registerPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account')
+  "referralCode": zod.string().min(registerPhoneAccountResponseUserReferralCodeMin).max(registerPhoneAccountResponseUserReferralCodeMax).regex(registerPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account'),
+  "walletBalanceUgx": zod.number().int().min(registerPhoneAccountResponseUserWalletBalanceUgxMin).describe('Current wallet balance in UGX'),
+  "totalAccumulatedUgx": zod.number().int().min(registerPhoneAccountResponseUserTotalAccumulatedUgxMin).describe('Total accumulated rewards in UGX')
 })
 })
 
@@ -79,6 +85,10 @@ export const loginPhoneAccountResponseUserReferralCodeMax = 10;
 
 
 export const loginPhoneAccountResponseUserReferralCodeRegExp = new RegExp('^[A-Z2-9]{10}$');
+export const loginPhoneAccountResponseUserWalletBalanceUgxMin = 0;
+
+export const loginPhoneAccountResponseUserTotalAccumulatedUgxMin = 0;
+
 
 
 export const LoginPhoneAccountResponse = zod.object({
@@ -86,7 +96,9 @@ export const LoginPhoneAccountResponse = zod.object({
   "id": zod.string().uuid(),
   "phoneNumber": zod.string().regex(loginPhoneAccountResponseUserPhoneNumberRegExp),
   "createdAt": zod.coerce.date(),
-  "referralCode": zod.string().min(loginPhoneAccountResponseUserReferralCodeMin).max(loginPhoneAccountResponseUserReferralCodeMax).regex(loginPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account')
+  "referralCode": zod.string().min(loginPhoneAccountResponseUserReferralCodeMin).max(loginPhoneAccountResponseUserReferralCodeMax).regex(loginPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account'),
+  "walletBalanceUgx": zod.number().int().min(loginPhoneAccountResponseUserWalletBalanceUgxMin).describe('Current wallet balance in UGX'),
+  "totalAccumulatedUgx": zod.number().int().min(loginPhoneAccountResponseUserTotalAccumulatedUgxMin).describe('Total accumulated rewards in UGX')
 })
 })
 
@@ -106,6 +118,10 @@ export const getCurrentPhoneAccountResponseUserReferralCodeMax = 10;
 
 
 export const getCurrentPhoneAccountResponseUserReferralCodeRegExp = new RegExp('^[A-Z2-9]{10}$');
+export const getCurrentPhoneAccountResponseUserWalletBalanceUgxMin = 0;
+
+export const getCurrentPhoneAccountResponseUserTotalAccumulatedUgxMin = 0;
+
 
 
 export const GetCurrentPhoneAccountResponse = zod.object({
@@ -113,7 +129,9 @@ export const GetCurrentPhoneAccountResponse = zod.object({
   "id": zod.string().uuid(),
   "phoneNumber": zod.string().regex(getCurrentPhoneAccountResponseUserPhoneNumberRegExp),
   "createdAt": zod.coerce.date(),
-  "referralCode": zod.string().min(getCurrentPhoneAccountResponseUserReferralCodeMin).max(getCurrentPhoneAccountResponseUserReferralCodeMax).regex(getCurrentPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account')
+  "referralCode": zod.string().min(getCurrentPhoneAccountResponseUserReferralCodeMin).max(getCurrentPhoneAccountResponseUserReferralCodeMax).regex(getCurrentPhoneAccountResponseUserReferralCodeRegExp).describe('Unique, persistent referral code for this account'),
+  "walletBalanceUgx": zod.number().int().min(getCurrentPhoneAccountResponseUserWalletBalanceUgxMin).describe('Current wallet balance in UGX'),
+  "totalAccumulatedUgx": zod.number().int().min(getCurrentPhoneAccountResponseUserTotalAccumulatedUgxMin).describe('Total accumulated rewards in UGX')
 })
 })
 

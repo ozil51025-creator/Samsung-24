@@ -3,7 +3,7 @@ name: Rewards site scope
 description: The user's business model direction and branding for this website.
 ---
 
-For this project, the user wants the public-facing site name "samsung" for a Samsung gadget catalog, without showing the word Uganda in the site copy. The phone flow retains its existing +256 prefix and prices remain in UGX. Present it as an independent retailer, not as Samsung's official store. They initially selected real-sales rewards over daily investment returns, then most recently asked for the supplied daily (25%) and hourly (1.0417%) figures to appear alongside the UGX prices. The payout basis and terms, exact product models/stock, and cash-bonus terms remain unverified or unspecified. They requested six member pages—Overview, Home, Products, Purchased, Referral, and Account—plus a UGX 5,000 welcome bonus as withdrawable cash. The confirmed referral commission rates are 35%, 2%, and 1% for levels 1–3; the calculation base and qualifying event remain undefined.
+For this project, the user wants the public-facing site name "samsung" for a Samsung gadget catalog, without showing the word Uganda in the site copy. The phone flow retains its existing +256 prefix and prices remain in UGX. Present it as an independent retailer, not as Samsung's official store. The user specified a UGX 5,000 welcome bonus credited immediately to every successful signup, including signups with unverified phone numbers. Other payout basis/terms and exact product models/stock remain unverified. They requested six member pages—Overview, Home, Products, Purchased, Referral, and Account—plus the bonus as withdrawable cash. The confirmed referral commission rates are 35%, 2%, and 1% for levels 1–3; the calculation base and qualifying event remain undefined.
 
 The user requested Samsung blue, dark neutrals, white, and translucent surfaces across every page.
 
@@ -31,7 +31,7 @@ The user does not want an investment chart displayed in the site.
 
 **Why:** The user first chose the sales-rewards option and sale prices only, then corrected the catalog display after noticing their supplied daily/hourly figures were missing. Their requested values have not been supported by verified payout terms. They also requested member pages, a cash welcome bonus, real checkout, and multi-level referral bonuses. They corrected a preview that showed only three unlabeled icons instead of the five pages.
 
-**How to apply:** Use "samsung" as the site name and keep the independent-retailer disclaimer visible; do not imply Samsung affiliation. Keep persistent mobile and desktop navigation labeled Overview, Home, Products, Purchased, Referral, and Account; do not reduce it to icon-only shortcuts. Keep wallet activity and history on Home, separate from the Overview dashboard. Show supplied daily/hourly amounts as unverified estimates, never as guaranteed payouts. Keep payouts inactive until their basis, eligibility, and terms are clear and verified; do not credit cash bonuses before rules are configured.
+**How to apply:** Use "samsung" as the site name and keep the independent-retailer disclaimer visible; do not imply Samsung affiliation. Keep persistent mobile and desktop navigation labeled Overview, Home, Products, Purchased, Referral, and Account; do not reduce it to icon-only shortcuts. Keep wallet activity and history on Home, separate from the Overview dashboard. Show supplied daily/hourly amounts as unverified estimates, never as guaranteed payouts. Do not credit other cash rewards until their basis, eligibility, and terms are clear and verified.
 
 **Why:** The user said registration will use a Ugandan phone number.
 
@@ -69,8 +69,8 @@ The daily 500 UGX Task Center reward is named "Presence," not "Daily Check-in." 
 
 **How to apply:** Keep task definitions persistent and admin-only editable, but do not imply configured rewards are guaranteed or already accruing without verified event tracking and ledger support.
 
-The user confirmed the UGX 5,000 welcome bonus has been credited and wants it reflected in both Pay and Accumulated. Do not show a standalone bonus card.
+Each successful signup receives the UGX 5,000 welcome bonus immediately, even though phone ownership is not verified. The user wants it reflected in both Pay and Accumulated. Do not show a standalone bonus card.
 
-**Why:** The user confirmed the bonus was credited and supplied a screenshot where the wallet balance and total accumulated show the same amount.
+**Why:** The user confirmed the bonus is already credited and explicitly chose immediate credit for every new signup, including unverified phone numbers.
 
-**How to apply:** Display UGX 5,000 under Pay and Accumulated on Home and Account without a Pending label. Do not add a separate bonus card.
+**How to apply:** Credit UGX 5,000 exactly once as part of successful account creation, and show server-reported wallet balance and accumulated totals on Home and Account without a Pending label. Do not add a separate bonus card.
