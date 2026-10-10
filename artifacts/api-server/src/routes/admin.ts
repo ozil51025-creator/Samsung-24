@@ -30,6 +30,10 @@ function isLegacyCheckInTask(task: { id: string; title: string }) {
   return task.id === "daily-check-in" || /\bcheck[\s-]*in\b/i.test(task.title);
 }
 
+function isInviteMilestone(task: { id: string; title: string }) {
+  return task.id.toLowerCase().startsWith("invite-") || /\binvit/i.test(task.title);
+}
+
 function cookieName() {
   return process.env.NODE_ENV === "production" ? "__Host-rewards_session" : "rewards_session";
 }
@@ -134,7 +138,7 @@ async function readTaskCenterSettings() {
 
 router.get("/task-center", async (req, res): Promise<void> => {
   try {
-    const tasks = (await readTaskCenterSettings()).filter((task) => task.id !== "presence");
+    const tasks = (await readTaskCenterSettings()).filter(isInviteMilestone);
     res.json(GetTaskCenterSettingsResponse.parse({ tasks }));
   } catch (error) {
     req.log.error({ error, route: "task-center.get" }, "Could not load task definitions");
