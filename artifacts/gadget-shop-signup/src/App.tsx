@@ -355,7 +355,10 @@ function HomePage() {
           <h2 id="home-welcome-bonus-title">Welcome bonus</h2>
           <strong>UGX 5,000</strong>
         </div>
-        <p>Not active yet. It has not been credited to your wallet.</p>
+        <div className="home-welcome-bonus-status">
+          <span>Pending</span>
+          <small>Not credited until activation rules are confirmed.</small>
+        </div>
       </section>
 
       <article className="home-task-banner" data-testid="card-home-task-center">

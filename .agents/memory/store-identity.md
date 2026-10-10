@@ -68,3 +68,9 @@ The daily 500 UGX Task Center reward is named "Presence," not "Daily Check-in." 
 **Why:** The user specified the daily reward amount and corrected its label to Presence; referral, purchase, and payout verification systems remain incomplete.
 
 **How to apply:** Keep task definitions persistent and admin-only editable, but do not imply configured rewards are guaranteed or already accruing without verified event tracking and ledger support.
+
+The UGX 5,000 welcome bonus must display as Pending until its activation rules are confirmed; it must not appear credited before then.
+
+**Why:** The user specified that the welcome bonus status should be Pending.
+
+**How to apply:** Show the Pending status and clarify that no wallet credit has been issued while payout rules remain unconfirmed.
