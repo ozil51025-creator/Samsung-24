@@ -921,3 +921,233 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Samsung-inspired blue glass theme across public, member, and auth routes. */
+:root {
+  --background: 218 45% 96%;
+  --foreground: 224 39% 15%;
+  --border: 218 28% 80%;
+  --input: 218 28% 80%;
+  --ring: 228 76% 48%;
+  --card: 218 45% 98%;
+  --card-foreground: 224 39% 15%;
+  --popover: 218 45% 98%;
+  --popover-foreground: 224 39% 15%;
+  --primary: 231 78% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 218 38% 90%;
+  --secondary-foreground: 224 39% 15%;
+  --muted: 218 32% 91%;
+  --muted-foreground: 220 18% 39%;
+  --accent: 218 86% 70%;
+  --accent-foreground: 224 39% 15%;
+  --chart-1: 231 78% 36%;
+  --chart-2: 215 90% 63%;
+  --chart-3: 202 73% 57%;
+  --chart-4: 224 39% 15%;
+  --chart-5: 218 28% 68%;
+  --sidebar: 218 45% 96%;
+  --sidebar-foreground: 224 39% 15%;
+  --sidebar-border: 218 28% 80%;
+  --sidebar-primary: 231 78% 36%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 218 38% 90%;
+  --sidebar-accent-foreground: 224 39% 15%;
+  --sidebar-ring: 228 76% 48%;
+}
+
+.shop-shell,
+.products-shell,
+.referral-shell {
+  color: #14213d;
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(72, 120, 245, .16), transparent 32rem),
+    radial-gradient(ellipse at 8% 48%, rgba(75, 147, 232, .12), transparent 30rem),
+    linear-gradient(145deg, #eaf1ff 0%, #dce8fa 52%, #e9f3fc 100%);
+}
+
+.overview-shell {
+  color: #f7f9ff;
+  background:
+    radial-gradient(ellipse 82% 38% at 50% 8%, rgba(52, 91, 209, .34), transparent 72%),
+    radial-gradient(ellipse 64% 36% at 100% 64%, rgba(61, 137, 232, .18), transparent 70%),
+    linear-gradient(165deg, #101c3c 0%, #0b1532 48%, #080e20 100%);
+}
+
+.overview-aura,
+.overview-panel-glow {
+  background:
+    radial-gradient(ellipse at 48% 30%, rgba(63, 115, 244, .26), transparent 65%),
+    radial-gradient(ellipse at 78% 60%, rgba(71, 159, 241, .15), transparent 55%);
+}
+
+.overview-panel {
+  border-color: rgba(151, 183, 255, .24);
+  background:
+    linear-gradient(145deg, rgba(63, 97, 181, .48), rgba(20, 34, 73, .52) 54%, rgba(30, 50, 96, .45));
+  backdrop-filter: blur(24px);
+}
+
+.overview-status-card,
+.overview-wallet-panel {
+  border-color: rgba(167, 193, 255, .22);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .105), rgba(103, 145, 239, .065));
+  backdrop-filter: blur(18px);
+}
+
+.products-shell .product-row,
+.products-shell .product-row > div,
+.referral-shell section:not(:first-child),
+.referral-shell header,
+.shop-shell article,
+.shop-shell aside,
+.shop-shell section[class*="rounded"] {
+  border-color: rgba(57, 92, 171, .2) !important;
+  background-color: rgba(255, 255, 255, .48) !important;
+  backdrop-filter: blur(18px);
+}
+
+.products-shell .product-row > div[class*="bg-[#5c94d1]"] {
+  border-color: rgba(61, 106, 205, .32) !important;
+  background: linear-gradient(140deg, rgba(47, 88, 202, .76), rgba(43, 130, 213, .68)) !important;
+  color: white;
+}
+
+.referral-shell section:first-of-type {
+  border: 1px solid rgba(158, 190, 255, .28);
+  background: linear-gradient(135deg, rgba(20, 40, 160, .88), rgba(38, 92, 203, .8), rgba(13, 29, 74, .82)) !important;
+  backdrop-filter: blur(18px);
+}
+
+.overview-shell .overview-wallet-panel {
+  background: linear-gradient(145deg, rgba(37, 65, 131, .64), rgba(13, 27, 65, .58));
+}
+
+.member-bottom-nav:not(.products-bottom-nav) {
+  border-color: rgba(157, 185, 255, .24);
+  background: rgba(12, 24, 55, .76);
+  backdrop-filter: blur(24px);
+}
+
+.products-bottom-nav {
+  border-top-color: rgba(44, 84, 180, .2);
+  background: rgba(221, 234, 255, .74);
+  backdrop-filter: blur(22px);
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #2f55d4 0%, #1428a0 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 6px 18px rgba(20,40,160,.22);
+}
+
+.auth-shell {
+  color: #f6f8ff;
+  background:
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(49, 85, 209, .3), transparent 72%),
+    radial-gradient(ellipse 55% 60% at 100% 100%, rgba(60, 133, 224, .18), transparent 76%),
+    linear-gradient(145deg, #111c3b 0%, #0a1024 58%, #101a35 100%);
+}
+
+.auth-card {
+  border-color: rgba(153, 183, 255, .24);
+  background: linear-gradient(145deg, rgba(255,255,255,.105), rgba(54, 82, 153, .1)), rgba(19, 31, 67, .52);
+  backdrop-filter: blur(24px);
+}
+
+.auth-mode-switch {
+  border-color: rgba(158, 184, 255, .2);
+  background: rgba(8, 16, 39, .45);
+}
+
+.auth-mode-link.is-active {
+  background: rgba(54, 88, 204, .42);
+  color: #dce7ff;
+  box-shadow: inset 0 0 0 1px rgba(145, 174, 255, .28);
+}
+
+.auth-input,
+.auth-phone-control {
+  border-color: rgba(159, 185, 255, .25);
+  background: rgba(7, 15, 38, .36);
+}
+
+.auth-submit {
+  border-color: rgba(207, 220, 255, .34);
+  background: linear-gradient(110deg, #3158d4, #1428a0);
+  color: white;
+  box-shadow: 0 8px 22px rgba(12, 25, 86, .32), inset 0 1px 0 rgba(255,255,255,.25);
+}
+
+.auth-mode-link:focus-visible,
+.auth-password-toggle:focus-visible,
+.auth-submit:focus-visible {
+  outline-color: #a9c4ff;
+}
+
+/* Recolor existing hard-coded green and warm accent utilities to Samsung blue. */
+[class*="text-[#243b31]"],
+[class*="text-[#294637]"],
+[class*="text-[#315f49]"],
+[class*="text-[#3e7658]"],
+[class*="text-[#405e6c]"],
+[class*="text-[#456474]"],
+[class*="text-[#31586b]"],
+[class*="text-[#173448]"] {
+  color: #1428a0 !important;
+}
+
+[class*="text-[#bfa873]"],
+[class*="text-[#e3b67a]"],
+[class*="text-[#f0c98e]"],
+[class*="text-[#e5b28e]"],
+[class*="text-[#edbd76]"],
+[class*="text-[#e4a16f]"],
+[class*="text-[#9b4b14]"],
+[class*="text-[#9e4b12]"] {
+  color: #a9c4ff !important;
+}
+
+[class*="bg-[#315f49]"],
+[class*="bg-[#244b38]"],
+[class*="bg-[#9e4b12]"],
+[class*="bg-[#813c0d]"] {
+  background-color: #1428a0 !important;
+}
+
+[class*="bg-[#e9b975]"] {
+  background-color: #3158d4 !important;
+  color: white !important;
+}
+
+[class*="bg-[#fffdf7]"],
+[class*="bg-[#faf7ed]"],
+[class*="bg-[#f4eadb]"],
+[class*="bg-[#fff8ef]"],
+[class*="bg-[#fafaf9]"],
+[class*="bg-white"] {
+  background-color: rgba(255, 255, 255, .54) !important;
+  backdrop-filter: blur(16px);
+}
+
+[class*="border-[#d8d4c7]"],
+[class*="border-[#dedbce]"],
+[class*="border-[#e5e7e9]"],
+[class*="border-[#e7e8e7]"],
+[class*="border-[#c9cbbb]"],
+[class*="border-[#a3c8d7]"],
+[class*="border-[#98bfd0]"] {
+  border-color: rgba(52, 88, 177, .2) !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .overview-panel,
+  .overview-status-card,
+  .overview-wallet-panel,
+  .products-shell .product-row,
+  .referral-shell section:not(:first-child),
+  .shop-shell article,
+  .shop-shell aside,
+  .auth-card {
+    backdrop-filter: none;
+  }
+}
