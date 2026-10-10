@@ -1041,6 +1041,8 @@ function AppRoutes() {
         <Route path="/admin" component={AdminTaskCenterPage} />
         <Route path="/withdrawal" component={WithdrawalPage} />
         <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />
+        <Route path="/bank-accounts" component={BankAccountsPage} />
+        <Route path="/link-bank-card" component={LinkBankCardPage} />
         <Route path="/recharge" component={RechargePage} />
         <Route path="/recharge-history" component={RechargeHistoryPage} />
         <Route path="/products" component={ProductsPage} />

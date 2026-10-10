@@ -1583,32 +1583,38 @@ button.account-menu-row {
 .admin-task-message,.admin-task-error { margin-top: 13px; color: #526277; font-size: 12px; }
 .admin-task-error { display: grid; gap: 10px; }
 .admin-task-error button { justify-self: start; }
-.withdraw-content { width: min(100%,680px); min-height: calc(100dvh - 64px); margin: 0 auto; padding: 0 0 28px; background: #f4f6fa; color: #17202c; }
+.withdraw-content { width: min(100%,680px); min-height: 100dvh; margin: 0 auto; padding: 0 0 24px; background: #f2f1f7; color: #17202c; }
 .withdraw-heading { display: flex; min-height: 58px; align-items: center; gap: 14px; padding: 0 18px; background: #fff; border-bottom: 1px solid #e6e9ef; }
 .withdraw-heading a { display: grid; width: 32px; height: 36px; flex: 0 0 auto; place-items: center; color: #1e293b; }
 .withdraw-heading a svg { width: 21px; height: 21px; }
 .withdraw-heading h1 { flex: 1; font-size: 17px; font-weight: 600; }
-.withdraw-balance { display: grid; gap: 9px; padding: 20px 18px 24px; background: linear-gradient(145deg,#e9f1ff,#cbdaf1); }
-.withdraw-balance > p { color: #22324a; font-size: 25px; font-weight: 600; }
-.withdraw-balance > span { margin-bottom: 18px; color: #5d6a7c; font-size: 12px; }
-.withdraw-balance label,.withdraw-details label { color: #5c6778; font-size: 11px; font-weight: 600; }
-.withdraw-balance input,.withdraw-details input,.withdraw-details select { min-height: 44px; padding: 0 12px; border: 1px solid #d7deea; border-radius: 9px; background: #fff; color: #1f2937; font-size: 14px; }
-.withdraw-details { display: grid; gap: 10px; padding: 20px 18px; }
-.withdraw-details h2 { margin-bottom: 3px; font-size: 15px; font-weight: 700; }
-.withdraw-summary { display: grid; gap: 0; margin-top: 12px; padding: 4px 13px; border: 1px solid #e2e6ed; border-radius: 10px; background: rgba(255,255,255,.82); }
-.withdraw-summary p { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #edf0f4; font-size: 12px; }
-.withdraw-summary p:last-child { border: 0; }
-.withdraw-summary span { color: #667184; }
-.withdraw-summary strong { color: #202b3b; text-align: right; }
-.withdraw-details > button { min-height: 46px; margin-top: 3px; border: 0; border-radius: 10px; background: #1428a0; color: #fff; font-size: 14px; font-weight: 700; }
-.withdraw-details > button:disabled { background: #9ba6b8; cursor: not-allowed; }
-.withdraw-notice { padding: 11px 12px; border: 1px solid #eadba6; border-radius: 9px; background: #fff9e8; color: #6f5b25; font-size: 11px; line-height: 1.55; }
-.withdraw-history-link { display: flex; align-items: center; justify-content: space-between; padding: 13px 3px; color: #2440a6; font-size: 12px; text-decoration: none; }
-.withdraw-history-link svg { width: 16px; height: 16px; }
-.withdraw-empty { display: grid; justify-items: center; gap: 9px; padding: 68px 20px; color: #687487; text-align: center; }
-.withdraw-empty svg { width: 30px; height: 30px; color: #8792a3; }
-.withdraw-empty p { color: #273449; font-size: 15px; font-weight: 600; }
-.withdraw-empty span { font-size: 12px; }
+.withdraw-hero { position: relative; display: flex; min-height: 340px; flex-direction: column; align-items: center; padding: 6px 18px 76px; overflow: hidden; background: linear-gradient(145deg,#e5edf5,#b9ccdf); color: #34465a; }
+.withdraw-hero > p { margin-top: 0; font-size: 23px; line-height: 1.25; }
+.withdraw-hero > span { margin-top: 3px; font-size: 14px; }
+.withdraw-hero > img { position: absolute; top: 102px; left: 50%; width: 200px; height: 148px; transform: translateX(-50%); object-fit: cover; mix-blend-mode: multiply; }
+.withdraw-hero > label { position: absolute; right: 18px; bottom: 74px; left: 18px; z-index: 1; display: flex; height: 48px; align-items: center; gap: 9px; padding: 0 14px; border-radius: 15px; background: #fff; color: #46566a; }
+.withdraw-hero > label strong { font-size: 19px; font-weight: 500; }
+.withdraw-hero > label input { width: 100%; min-width: 0; border: 0; outline: 0; color: #34465a; font-size: 14px; }
+.withdraw-details { display: grid; gap: 12px; padding: 25px 20px 18px; }
+.withdraw-details h2 { margin: 0; color: #8b8994; font-size: 11px; font-weight: 400; text-align: center; }
+.withdraw-bank-select { display: flex; min-height: 62px; align-items: center; gap: 12px; padding: 0 20px; border-radius: 14px; background: #fff; color: #1f1f24; text-decoration: none; }
+.withdraw-bank-select span { flex: 1; font-size: 14px; }
+.withdraw-bank-select svg { width: 20px; height: 20px; }
+.withdraw-confirm { width: 76%; min-height: 54px; justify-self: center; margin-top: 8px; border: 0; border-radius: 28px; background: #000; color: #fff; font-size: 18px; }
+.withdraw-confirm:disabled { opacity: 1; }
+.withdraw-terms { display: grid; gap: 2px; margin: 8px 0 0; padding-left: 20px; color: #535866; font-size: 12px; line-height: 1.55; }
+.withdrawal-history-page { background: #fff; }
+.bank-list-page,.bank-link-page { width: min(100%,680px); min-height: 100dvh; margin: 0 auto; background: #f1f1f1; color: #17171b; }
+.bank-add-button { display: flex; width: 76%; min-height: 48px; align-items: center; justify-content: center; margin: 32px auto; border-radius: 25px; background: #000; color: #fff; font-size: 19px; font-weight: 600; text-decoration: none; }
+.bank-link-page { background: #34495f; }
+.bank-car-image { display: block; width: 100%; height: 200px; object-fit: cover; }
+.bank-link-form { display: grid; gap: 4px; padding: 32px 36px 70px; background: #34495f; color: #fff; }
+.bank-link-form label { margin-top: 24px; font-size: 16px; }
+.bank-link-form input,.bank-link-form select { min-height: 47px; padding: 0 14px; border: 0; border-bottom: 1px solid rgba(255,255,255,.75); border-radius: 0; outline: 0; background: transparent; color: #fff; font-size: 13px; }
+.bank-link-form select option { color: #1f2937; }
+.bank-link-form input::placeholder { color: #fff; opacity: .95; }
+.bank-link-form button { width: 78%; min-height: 48px; justify-self: center; margin-top: 48px; border: 0; border-radius: 25px; background: #fff; color: #34495f; font-size: 18px; font-weight: 600; }
+.bank-link-form button:disabled { opacity: 1; }
 .recharge-content { width: min(100%,680px); min-height: calc(100dvh - 64px); margin: 0 auto; padding: 0 0 28px; background: #f3f2f8; color: #17202c; }
 .recharge-amount-card { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 7px 12px; min-height: 164px; margin: 14px 14px 20px; padding: 18px; overflow: hidden; border-radius: 13px; background: linear-gradient(125deg,#101a32,#244671 65%,#17243a); color: #fff; }
 .recharge-amount-card > span { grid-column: 1 / -1; align-self: start; color: #d8e7fb; font-size: 21px; }
