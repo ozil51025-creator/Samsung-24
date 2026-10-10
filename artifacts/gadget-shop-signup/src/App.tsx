@@ -546,7 +546,7 @@ function RechargePage() {
         <div>{amounts.map((preset) => <button type="button" key={preset} aria-pressed={amount === String(preset)} onClick={() => setAmount(String(preset))}>{money.format(preset)}</button>)}</div>
       </section>
       <section className="recharge-channel">
-        <button className="recharge-confirm" type="button" disabled>Confirm</button>
+        <Link className="recharge-confirm" href={`/recharge/payment?amount=${encodeURIComponent(amount)}`} data-testid="link-recharge-confirm">Confirm</Link>
         <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <a href={customerServiceUrl} target="_blank" rel="noopener noreferrer">click here</a>.</p>
         <ol className="recharge-terms">
           <li>The minimum top-up amount is 2,000 UGX; amounts below this threshold cannot be credited to your account.</li>
@@ -556,6 +556,50 @@ function RechargePage() {
         </ol>
       </section>
     </main>;
+}
+
+function RechargePaymentPage() {
+  const { user, status } = useAuth();
+  const [phone, setPhone] = useState('');
+  const amount = Number(new URLSearchParams(window.location.search).get('amount'));
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = 'Payment — samsung';
+    return () => { document.title = previousTitle; };
+  }, []);
+
+  if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
+  if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
+  if (!user) return <Redirect to="/sign-in" />;
+  if (!Number.isFinite(amount) || amount < 2000) return <Redirect to="/recharge" />;
+
+  return <main className="recharge-payment-page" data-testid="page-recharge-payment">
+    <header className="recharge-payment-header">
+      <span>samsung</span>
+      <Link href="/recharge" aria-label="Close payment page">×</Link>
+    </header>
+    <section className="recharge-payment-amount" aria-label="Amount to pay">
+      <span>AMOUNT TO PAY</span>
+      <strong>UGX {money.format(amount)}</strong>
+    </section>
+    <section className="recharge-payment-form">
+      <label htmlFor="recharge-mobile-number">Mobile money number (MTN or Airtel)</label>
+      <input
+        id="recharge-mobile-number"
+        type="tel"
+        inputMode="numeric"
+        autoComplete="tel-national"
+        placeholder="Enter mobile money number"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+        data-testid="input-recharge-mobile-number"
+      />
+      <p className="recharge-payment-warning">Check the mobile money number before continuing.</p>
+      <button type="button" disabled data-testid="button-recharge-payment-continue">Continue</button>
+      <p className="recharge-payment-unavailable">Mobile money payment processing is not connected yet.</p>
+    </section>
+  </main>;
 }
 
 function RechargeHistoryPage() {
@@ -1042,6 +1086,7 @@ function AppRoutes() {
         <Route path="/bank-accounts" component={BankAccountsPage} />
         <Route path="/link-bank-card" component={LinkBankCardPage} />
         <Route path="/recharge" component={RechargePage} />
+        <Route path="/recharge/payment" component={RechargePaymentPage} />
         <Route path="/recharge-history" component={RechargeHistoryPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/purchased-products" component={PurchasedProductsPage} />

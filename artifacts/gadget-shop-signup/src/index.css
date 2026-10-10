@@ -1630,13 +1630,26 @@ button.account-menu-row {
 .recharge-network-list button.selected { border-color: #9db9df; background: #9db9df; color: #fff; }
 .recharge-network-list button.selected svg { color: #fff; }
 .recharge-network-list button svg:last-child { margin-left: auto; }
-.recharge-confirm { display: block; width: 76%; min-height: 48px; margin: 5px auto 0; border: 0; border-radius: 26px; background: #000; color: #fff; font-size: 17px; font-weight: 700; }
+.recharge-confirm { display: flex; width: 76%; min-height: 48px; align-items: center; justify-content: center; margin: 5px auto 0; border: 0; border-radius: 26px; background: #000; color: #fff; font-size: 17px; font-weight: 700; text-decoration: none; }
 .recharge-confirm:disabled { opacity: 1; cursor: not-allowed; }
 .recharge-support { margin: 0; color: #111; font-size: 12px; line-height: 1.5; text-align: center; }
 .recharge-support a { color: inherit; text-decoration: underline; }
 .recharge-terms { display: grid; gap: 2px; margin: 10px 2px 0; padding-left: 20px; color: #535866; font-size: 11px; line-height: 1.55; }
 .recharge-shell { min-height: 100dvh; padding: 32px 20px; background: #f3f2f8; color: #253247; text-align: center; }
 .recharge-history-empty { padding: 36px 20px; color: #666; font-size: 14px; text-align: center; }
+.recharge-payment-page { width: min(100%,680px); min-height: calc(100dvh - 64px); margin: 0 auto; background: #f4f4f4; color: #263341; }
+.recharge-payment-header { display: flex; height: 68px; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,.2); background: #0b3f80; color: #fff; }
+.recharge-payment-header span { font-size: 21px; font-weight: 700; letter-spacing: -.04em; }
+.recharge-payment-header a { position: absolute; right: max(18px,calc((100vw - 644px)/2)); color: #fff; font-size: 28px; line-height: 1; text-decoration: none; }
+.recharge-payment-amount { display: grid; min-height: 152px; align-content: center; justify-items: center; gap: 10px; background: #0b3f80; color: #ffd629; }
+.recharge-payment-amount span { font-size: 13px; font-weight: 700; letter-spacing: .08em; }
+.recharge-payment-amount strong { font-size: clamp(32px,9vw,48px); }
+.recharge-payment-form { display: grid; gap: 14px; padding: 26px 14px; }
+.recharge-payment-form label { color: #525a62; font-size: 15px; font-weight: 600; }
+.recharge-payment-form input { min-height: 58px; padding: 0 16px; border: 2px solid #0b3f80; border-radius: 12px; background: #fff; color: #202b34; font-size: 16px; }
+.recharge-payment-warning { margin: 0; padding: 14px; border-radius: 10px; background: #fff2ca; color: #755e14; font-size: 13px; line-height: 1.5; }
+.recharge-payment-form button { min-height: 54px; margin-top: 24px; border: 0; border-radius: 14px; background: #8eaac7; color: #fff; font-size: 17px; font-weight: 700; }
+.recharge-payment-unavailable { margin: 0; color: #6b7075; font-size: 12px; text-align: center; }
 .home-activity-strip { display: flex; min-height: 58px; align-items: center; gap: 9px; overflow: hidden; margin: 0 12px; padding: 10px 13px; border-radius: 10px; background: #fff; color: #626874; font-size: 12px; white-space: nowrap; }
 .home-activity-strip svg { width: 20px; height: 20px; flex: 0 0 auto; color: #9299a5; }
 .home-photo-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); grid-template-rows: repeat(2,142px); gap: 8px; margin: 0 12px; }
