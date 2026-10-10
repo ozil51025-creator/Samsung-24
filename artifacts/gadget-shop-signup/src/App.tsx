@@ -7,7 +7,7 @@ import { ProductsCatalog } from '@/components/products-catalog';
 import { productCatalog } from '@/data/product-catalog';
 import samsungPresenceImage from '../../../attached_assets/main_895c72cd-d6f4-4c0e-be9b-6fca99eae985_1791616689408.jpg';
 import NotFound from '@/pages/not-found';
-import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, CalendarDays, Check, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LockKeyhole, PackageOpen, ShieldCheck, ShoppingBag, UserRound, UsersRound, Wallet } from 'lucide-react';
+import { Activity, ArrowDownRight, ArrowLeft, ArrowRight, BarChart3, Bell, CalendarDays, Check, ChevronDown, ChevronRight, CircleDollarSign, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, MapPin, MessageSquare, Package, PackageOpen, Settings2, ShieldCheck, ShoppingBag, Ticket, UserRound, UsersRound, Wallet, WalletCards } from 'lucide-react';
 import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -23,6 +23,23 @@ type TaskDefinition = {
   rewardFrequency: 'once' | 'daily';
   enabled: boolean;
 };
+const adminSections = [
+  { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { id: 'analytics', label: 'Analytics', Icon: BarChart3 },
+  { id: 'users', label: 'Users', Icon: UsersRound },
+  { id: 'payments', label: 'Payments', Icon: ArrowDownRight },
+  { id: 'withdrawals', label: 'Withdrawals', Icon: WalletCards },
+  { id: 'products', label: 'Products', Icon: Package },
+  { id: 'gift-codes', label: 'Gift Codes', Icon: Ticket },
+  { id: 'messages', label: 'Messages', Icon: MessageSquare },
+  { id: 'transactions', label: 'Transactions', Icon: CircleDollarSign },
+  { id: 'referrals', label: 'Referrals', Icon: UsersRound },
+  { id: 'settings', label: 'Settings', Icon: Settings2 },
+  { id: 'countries', label: 'Countries', Icon: MapPin },
+  { id: 'admins', label: 'Admins', Icon: ShieldCheck },
+  { id: 'activity-log', label: 'Activity Log', Icon: Activity },
+] as const;
+type AdminSectionId = typeof adminSections[number]['id'];
 
 function queueMemberNotice() {
   try {
@@ -792,6 +809,7 @@ function RechargeHistoryPage() {
 }
 
 function AdminTaskCenterPage() {
+  const [activeSection, setActiveSection] = useState<AdminSectionId>('dashboard');
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
   const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
@@ -950,23 +968,40 @@ function AdminTaskCenterPage() {
     }
   };
   return <main className="admin-task-page">
-    <header className="admin-task-header"><Link href="/home" aria-label="Back to Home"><ArrowLeft /></Link><div><p>Site controls</p><h1>Admin panel</h1></div></header>
+    <header className="admin-dashboard-header">
+      <Link href="/home" className="admin-dashboard-brand"><Brand small /><span><strong>Samsung</strong><small>ADMIN</small></span></Link>
+      <span className="admin-live-badge"><i />Live</span>
+      <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadRechargeRequests(); loadTasks(); }}><Bell /></button>
+      <Link href="/home" className="admin-exit-button" aria-label="Return to member portal"><ArrowRight /></Link>
+    </header>
     <div className="admin-task-body">
-      <p className="admin-task-note">Manage members, administrator access, task rules, and verified deposit requests. Financial totals and checkout controls are not available until those systems record verified transactions.</p>
-      <nav className="admin-section-nav" aria-label="Admin panel sections">
-        <a href="#admin-overview">Overview</a><a href="#admin-members">Members</a><a href="#admin-access">Admins</a><a href="#admin-tasks">Task Center</a><a href="#admin-recharges">Deposits</a><a href="#admin-audit">Audit log</a>
+      <nav className="admin-module-grid" aria-label="Admin panel sections">
+        {adminSections.map(({ id, label, Icon }) => <button key={id} type="button" aria-pressed={activeSection === id} onClick={() => setActiveSection(id)} className={activeSection === id ? 'active' : ''}>
+          <Icon aria-hidden="true" /><span>{label}</span>
+        </button>)}
       </nav>
-      <section id="admin-overview" className="admin-panel-section">
+      <section id="admin-overview" className="admin-panel-section" hidden={activeSection !== 'dashboard'}>
         <h2>Overview</h2>
+        <p className="admin-section-subtitle">A current view of the Samsung rewards portal.</p>
         {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
         {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load admin data.</p><button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
         {overview && <div className="admin-overview-grid">
           <article><span>Total members</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
+          <article><span>Active members</span><strong>{members.filter((member) => member.isActive).length.toLocaleString()}</strong></article>
+          <article><span>Disabled members</span><strong>{members.filter((member) => !member.isActive).length.toLocaleString()}</strong></article>
           <article><span>Referred members</span><strong>{overview.referredUsers.toLocaleString()}</strong></article>
-          <article><span>Verified financial records</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
+          <article><span>Withdrawable balances</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
+          <article><span>Product funds</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
+          <article><span>Verified transactions</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
         </div>}
       </section>
-      <section id="admin-members" className="admin-panel-section">
+      <section className="admin-panel-section" hidden={activeSection !== 'analytics'}>
+        <h2>Analytics</h2>
+        <p className="admin-section-subtitle">Account and referral counts from registered member records.</p>
+        {overview && <div className="admin-overview-grid"><article><span>Registered members</span><strong>{overview.totalUsers.toLocaleString()}</strong></article><article><span>Referred members</span><strong>{overview.referredUsers.toLocaleString()}</strong></article><article><span>Financial analytics</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article></div>}
+        {!overview?.financialRecordsAvailable && <p className="admin-task-note">Sales, withdrawal, and revenue analytics are unavailable because verified product purchases and payout records are not connected.</p>}
+      </section>
+      <section id="admin-members" className="admin-panel-section" hidden={activeSection !== 'users'}>
         <h2>Members</h2>
         {directoryStatus === 'ready' && members.length === 0 && <p>No member accounts yet.</p>}
         {members.length > 0 && <div className="admin-member-list">
@@ -984,7 +1019,7 @@ function AdminTaskCenterPage() {
         </div>}
         <p className="admin-task-note">Password resets issue a temporary password once and sign out existing sessions. Wallet changes require a reason, affect the available wallet only, and do not rewrite earnings or deposit totals.</p>
       </section>
-      <section id="admin-access" className="admin-panel-section">
+      <section id="admin-access" className="admin-panel-section" hidden={activeSection !== 'admins'}>
         <h2>Administrator access</h2>
         <p className="admin-task-note">Add an existing member by their Ugandan phone number. Added admins receive the same access to this panel.</p>
         <form className="admin-add-form" onSubmit={addAdmin}>
@@ -996,7 +1031,7 @@ function AdminTaskCenterPage() {
         {directoryStatus === 'ready' && admins.length === 0 && <p>No additional admins have been added.</p>}
         {admins.map((admin) => <article className="admin-recharge-review-item" key={admin.id}><strong>{admin.phoneNumber}</strong><span> Added {new Date(admin.createdAt).toLocaleDateString()}</span></article>)}
       </section>
-      <section id="admin-tasks" className="admin-panel-section">
+      <section id="admin-tasks" className="admin-panel-section" hidden={activeSection !== 'settings'}>
         <h2>Task Center settings</h2>
         <p className="admin-task-note">Edit task goals and UGX rewards. Saving these terms does not enable referral tracking or process payouts.</p>
       {status === 'loading' && <p role="status">Loading settings…</p>}
@@ -1023,8 +1058,9 @@ function AdminTaskCenterPage() {
         {message && <p className="admin-task-message" role="status">{message}</p>}
       </form>}
       </section>
-      <section id="admin-recharges" className="admin-recharge-review admin-panel-section">
-        <h2>Manual recharge requests</h2>
+      <section id="admin-recharges" className="admin-recharge-review admin-panel-section" hidden={activeSection !== 'payments'}>
+        <h2>Payments</h2>
+        <p className="admin-section-subtitle">Manual recharge requests pending verification.</p>
         <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification credits the member’s deposited wallet balance.</p>
         {rechargeStatus === 'loading' && <p>Loading requests…</p>}
         {rechargeStatus === 'error' && <button type="button" onClick={loadRechargeRequests}>Retry loading requests</button>}
@@ -1035,8 +1071,8 @@ function AdminTaskCenterPage() {
           {request.status === 'pending' && <button type="button" onClick={() => void verifyRecharge(request.id)}>Verify transfer</button>}
         </article>)}
       </section>
-      <section id="admin-audit" className="admin-panel-section">
-        <h2>Administrator audit log</h2>
+      <section id="admin-audit" className="admin-panel-section" hidden={activeSection !== 'activity-log'}>
+        <h2>Activity Log</h2>
         {auditLogs.length === 0 && directoryStatus === 'ready' && <p>No administrator actions recorded yet.</p>}
         <div className="admin-audit-list">
           {auditLogs.map((entry) => <article key={entry.id}>
@@ -1047,6 +1083,38 @@ function AdminTaskCenterPage() {
             {entry.details && <p>{entry.details}</p>}
           </article>)}
         </div>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'withdrawals'}>
+        <h2>Withdrawals</h2>
+        <p className="admin-connection-state"><WalletCards /> Withdrawal processing is not connected. No withdrawable balance or payout history is shown until verified payout records are available.</p>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'products'}>
+        <h2>Products</h2>
+        <p className="admin-connection-state"><Package /> The member catalog shows listed Samsung prices. Purchase checkout and order records are not connected, so this panel cannot report sales or collected funds.</p>
+        <Link href="/products" className="admin-panel-link">View member catalog <ArrowRight /></Link>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'gift-codes'}>
+        <h2>Gift Codes</h2>
+        <p className="admin-connection-state"><Gift /> Gift-code creation and redemption are not connected. No codes are available to manage.</p>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'messages'}>
+        <h2>Messages</h2>
+        <p className="admin-connection-state"><MessageSquare /> Member messaging is not connected. No message records are available.</p>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'transactions'}>
+        <h2>Transactions</h2>
+        <p className="admin-connection-state"><CircleDollarSign /> There is no unified financial ledger yet. Manual recharge requests are available under Payments; purchases, withdrawals, and wallet transaction history are not connected.</p>
+        <button type="button" className="admin-panel-link-button" onClick={() => setActiveSection('payments')}>View payment requests <ArrowRight /></button>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'referrals'}>
+        <h2>Referrals</h2>
+        {overview && <div className="admin-overview-grid"><article><span>Members from referrals</span><strong>{overview.referredUsers.toLocaleString()}</strong></article><article><span>Direct signups</span><strong>{Math.max(0, overview.totalUsers - overview.referredUsers).toLocaleString()}</strong></article></div>}
+        <p className="admin-task-note">Referral commission and team deposit totals are not presented as settled money until verified deposit and purchase records are connected.</p>
+      </section>
+      <section className="admin-panel-section" hidden={activeSection !== 'countries'}>
+        <h2>Countries</h2>
+        <article className="admin-country-card"><strong>Uganda</strong><span>Current supported market · UGX</span></article>
+        <p className="admin-task-note">Country-level enable/disable controls are not connected. This portal currently supports Uganda only.</p>
       </section>
     </div>
   </main>;
