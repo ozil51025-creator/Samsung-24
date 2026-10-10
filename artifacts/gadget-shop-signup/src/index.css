@@ -1607,6 +1607,43 @@ button.account-menu-row {
 .admin-audit-list strong { color: #27364b; font-size: 12px; text-transform: capitalize; }
 .admin-audit-list span,.admin-audit-list p { color: #6d7889; font-size: 10px; overflow-wrap: anywhere; }
 .admin-audit-list p { margin: 0; line-height: 1.45; }
+.admin-task-page { min-height: 100vh; background: #f4f6fa; color: #17202c; }
+.admin-dashboard-header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; min-height: 66px; padding: 10px max(14px, calc((100vw - 960px)/2)); border-bottom: 1px solid #e7eaf0; background: #fff; }
+.admin-dashboard-brand { display: inline-flex; flex: 1; align-items: center; gap: 10px; min-width: 0; color: #17202c; text-decoration: none; }
+.admin-dashboard-brand > span:last-child { display: grid; gap: 1px; }
+.admin-dashboard-brand strong { font-size: 14px; line-height: 1.15; }
+.admin-dashboard-brand small { color: #7a8493; font-size: 9px; font-weight: 700; letter-spacing: .15em; }
+.admin-live-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px; border-radius: 999px; background: #edf8f4; color: #19634a; font-size: 11px; font-weight: 700; }
+.admin-live-badge i { width: 7px; height: 7px; border-radius: 50%; background: #2dbb83; }
+.admin-refresh-button,.admin-exit-button { display: grid; width: 38px; height: 38px; place-items: center; border: 0; border-radius: 50%; background: #f0f3f8; color: #667386; }
+.admin-refresh-button svg,.admin-exit-button svg { width: 17px; height: 17px; }
+.admin-task-body { width: min(100%, 1000px); margin: 0 auto; padding: 15px 14px 32px; }
+.admin-module-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; padding: 0 0 14px; border-bottom: 1px solid #e4e8ef; }
+.admin-module-grid button { display: flex; min-height: 44px; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: #586678; font-size: 10px; font-weight: 650; text-align: left; }
+.admin-module-grid button svg { width: 15px; height: 15px; flex: none; }
+.admin-module-grid button.active { border-color: #cfe3ff; background: #e8f2ff; color: #1268cb; }
+.admin-panel-section[hidden] { display: none !important; }
+.admin-panel-section { margin-top: 17px; padding: 17px; border: 1px solid #e5e9f0; border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgb(20 37 61 / 3%); }
+.admin-panel-section > h2 { margin: 0 0 4px; font-size: 20px; font-weight: 750; letter-spacing: -.03em; }
+.admin-section-subtitle { margin: 0 0 15px; color: #768293; font-size: 12px; line-height: 1.5; }
+.admin-overview-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.admin-overview-grid article { min-height: 90px; padding: 14px; border: 1px solid #e6eaf0; border-radius: 15px; background: #fff; box-shadow: 0 2px 5px rgb(20 37 61 / 3%); }
+.admin-overview-grid strong { color: #152033; font-size: clamp(16px,4.8vw,23px); }
+.admin-overview-grid span { font-size: 11px; }
+.admin-connection-state { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0 0; padding: 14px; border-radius: 12px; background: #f5f7fa; color: #667386; font-size: 12px; line-height: 1.55; }
+.admin-connection-state svg { width: 18px; height: 18px; flex: none; color: #71809a; }
+.admin-panel-link,.admin-panel-link-button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; margin-top: 14px; padding: 0 13px; border: 0; border-radius: 999px; background: #e8f2ff; color: #1268cb; font-size: 11px; font-weight: 700; text-decoration: none; }
+.admin-panel-link svg,.admin-panel-link-button svg { width: 15px; height: 15px; }
+.admin-country-card { display: grid; gap: 5px; padding: 14px; border: 1px solid #e6eaf0; border-radius: 12px; }
+.admin-country-card strong { font-size: 14px; }
+.admin-country-card span { color: #768293; font-size: 11px; }
+@media (min-width: 720px) {
+  .admin-task-body { padding-top: 22px; }
+  .admin-module-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px; }
+  .admin-module-grid button { min-height: 46px; font-size: 12px; }
+  .admin-overview-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .admin-panel-section { padding: 22px; }
+}
 .admin-task-card { display: grid; gap: 12px; margin: 0 0 13px; padding: 15px; border: 1px solid #e1e6ee; border-radius: 12px; background: #fff; }
 .admin-task-card legend { max-width: 90%; padding: 0 6px; color: #526277; font-size: 11px; }
 .admin-task-card label { display: grid; gap: 6px; color: #526277; font-size: 11px; font-weight: 600; }
