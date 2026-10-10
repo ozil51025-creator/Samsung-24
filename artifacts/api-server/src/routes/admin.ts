@@ -9,6 +9,7 @@ import {
   phoneReferralCodesTable,
   phoneSessionsTable,
   productCatalogTable,
+  productOrdersTable,
   rechargeRequestsTable,
   teamDepositMilestoneClaimsTable,
   taskCenterSettingsTable,
@@ -149,7 +150,15 @@ router.get("/products/catalog", async (_req, res): Promise<void> => {
   try {
     await ensureProductCatalog();
     const products = await db.select().from(productCatalogTable);
-    res.json(GetProductCatalogResponse.parse({ products: products.filter((product) => product.isActive) }));
+    const [totals] = await db.select({
+      purchasedCount: count(),
+      totalCollected: sum(productOrdersTable.priceUgx),
+    }).from(productOrdersTable);
+    res.json(GetProductCatalogResponse.parse({
+      products: products.filter((product) => product.isActive),
+      purchasedCount: totals?.purchasedCount ?? 0,
+      totalCollectedUgx: Number(totals?.totalCollected ?? 0),
+    }));
   } catch {
     res.status(500).json({ error: "Could not load the product catalog." });
   }

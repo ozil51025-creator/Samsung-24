@@ -8,9 +8,14 @@ type ProductsCatalogProps = {
   formatPrice: (amount: number) => string;
   imageUrl: string;
   productImages: Readonly<Record<string, string>>;
+  purchaseCount: number;
+  totalCollectedUgx: number;
+  buyingProductId: string | null;
+  purchaseMessage: string;
+  onPurchase: (productId: string) => void;
 };
 
-export function ProductsCatalog({ products, formatPrice, imageUrl, productImages }: ProductsCatalogProps) {
+export function ProductsCatalog({ products, formatPrice, imageUrl, productImages, purchaseCount, totalCollectedUgx, buyingProductId, purchaseMessage, onPurchase }: ProductsCatalogProps) {
   return (
     <>
       <header className="product-page-heading">
@@ -21,12 +26,12 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
         <img className="product-summary-photo" src={imageUrl} alt="Samsung Galaxy devices" fetchPriority="high" />
         <div>
           <p className="product-summary-eyebrow">Purchase count</p>
-          <p className="product-summary-value">0</p>
+          <p className="product-summary-value">{purchaseCount.toLocaleString()}</p>
           <p className="product-summary-label">Purchased products</p>
         </div>
         <div className="product-summary-collected">
           <p className="product-summary-eyebrow">Total collected</p>
-          <p className="product-summary-value">UGX 0</p>
+          <p className="product-summary-value">UGX {formatPrice(totalCollectedUgx)}</p>
           <p className="product-summary-label">From product purchases</p>
         </div>
       </section>
@@ -41,21 +46,20 @@ export function ProductsCatalog({ products, formatPrice, imageUrl, productImages
             </div>
             <div className="product-card-price-row">
               <p className="product-card-price">UGX {formatPrice(product.price)}</p>
-              <button className="product-buy-button" type="button" disabled aria-label={`Buy ${product.name}; checkout unavailable`} title="Checkout is unavailable">
-                Buy
+              <button className="product-buy-button" type="button" disabled={buyingProductId !== null} onClick={() => onPurchase(product.id)} aria-label={`Buy ${product.name}`}>
+                {buyingProductId === product.id ? 'Processing…' : 'Buy'}
               </button>
             </div>
             <div className="product-card-details">
-              <div><span>Availability:</span><strong>Not confirmed</strong></div>
-              <div><span>Checkout:</span><strong>Not active</strong></div>
-              <div><span>Earnings:</span><strong>No guaranteed returns</strong></div>
+              <div><span>Daily estimate (25%):</span><strong>UGX {formatPrice(Math.floor(product.price * 0.25))}</strong></div>
+              <div><span>Total estimate (150 days):</span><strong>UGX {formatPrice(Math.floor(product.price * 0.25) * 150)}</strong></div>
+              <div><span>Order fulfillment:</span><strong>Pending</strong></div>
             </div>
           </article>
         ))}
       </section>
-      <p className="product-checkout-note">
-        Listed prices are for catalog display only. Product models, stock, and checkout must be confirmed before sale.
-      </p>
+      {purchaseMessage && <p className="product-checkout-note" role="status" aria-live="polite">{purchaseMessage}</p>}
+      <p className="product-checkout-note">Daily and total figures are estimates only, not guaranteed returns. Purchased orders are recorded as pending fulfillment.</p>
     </>
   );
 }
