@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ProductsCatalog } from '@/components/products-catalog';
-import type { ProductIllustrationKind } from '@/data/product-catalog';
+import { productCatalog, type ProductIllustrationKind } from '@/data/product-catalog';
 import samsungPresenceImage from '../../../attached_assets/main_895c72cd-d6f4-4c0e-be9b-6fca99eae985_1791616689408.jpg';
 import NotFound from '@/pages/not-found';
 import { Activity, ArrowDownRight, ArrowLeft, ArrowRight, BarChart3, Bell, CalendarDays, Check, ChevronDown, ChevronRight, CircleDollarSign, Copy, CreditCard, Download, Eye, EyeOff, FileText, Gift, Headphones, History, LayoutDashboard, LockKeyhole, MapPin, MessageSquare, Package, PackageOpen, Settings2, ShieldCheck, ShoppingBag, Ticket, UserRound, UsersRound, Wallet, WalletCards } from 'lucide-react';
