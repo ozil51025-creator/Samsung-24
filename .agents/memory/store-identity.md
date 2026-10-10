@@ -57,8 +57,8 @@ All displayed currency is UGX. Remove non-Uganda recharge country choices; do no
 
 **How to apply:** Display the confirmed UGX 10,000 minimum and 20% fee. Do not add payout destination choices beyond the latest supplied screenshot, and do not submit or persist payout details until the user confirms the destination and a provider that supports it is verified. Keep balances and transaction history inactive until server-backed data exists.
 
-Task Center task text, goals, and UGX reward terms should be editable in the admin panel. Editing those terms does not itself create eligibility tracking, earnings, or payouts; keep tasks inactive by default and do not show rewards as earned until qualifying events and a verified ledger exist.
+The daily 500 UGX Task Center reward is named "Presence," not "Daily Check-in." Task Center task text, goals, and UGX reward terms should be editable in the admin panel. Editing those terms does not itself create eligibility tracking, earnings, or payouts; keep tasks inactive by default and do not show rewards as earned until qualifying events and a verified ledger exist.
 
-**Why:** The user said they will set Task Center terms through the admin panel, while referral, purchase, and payout verification systems are still incomplete.
+**Why:** The user specified the daily reward amount and corrected its label to Presence; referral, purchase, and payout verification systems remain incomplete.
 
 **How to apply:** Keep task definitions persistent and admin-only editable, but do not imply configured rewards are guaranteed or already accruing without verified event tracking and ledger support.

@@ -22,9 +22,10 @@ const defaultTaskDefinitions = [
   { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
   { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
+  { id: "presence", title: "Presence", objective: 1, objectiveUnit: "day", rewardUgx: 500, rewardFrequency: "daily", enabled: false },
 ];
 
-function isPresenceTask(task: { id: string; title: string }) {
+function isLegacyCheckInTask(task: { id: string; title: string }) {
   return task.id === "daily-check-in" || /\bcheck[\s-]*in\b/i.test(task.title);
 }
 
@@ -127,7 +128,7 @@ async function readTaskCenterSettings() {
     .where(eq(taskCenterSettingsTable.id, "default"))
     .limit(1);
   const settings = GetAdminTaskCenterSettingsResponse.parse({ tasks: stored?.tasks ?? defaultTaskDefinitions });
-  return settings.tasks.filter((task) => !isPresenceTask(task));
+  return settings.tasks.filter((task) => !isLegacyCheckInTask(task));
 }
 
 router.get("/task-center", async (req, res): Promise<void> => {
@@ -158,7 +159,7 @@ router.put("/admin/task-center", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Check each task title, objective, UGX reward, and frequency." });
     return;
   }
-  const tasks = parsed.data.tasks.filter((task) => !isPresenceTask(task));
+  const tasks = parsed.data.tasks.filter((task) => !isLegacyCheckInTask(task));
   const ids = tasks.map((task) => task.id);
   if (new Set(ids).size !== ids.length) {
     res.status(400).json({ error: "Each task must have a unique ID." });

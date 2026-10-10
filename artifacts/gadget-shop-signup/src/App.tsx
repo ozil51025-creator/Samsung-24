@@ -12,6 +12,7 @@ import { Link, Redirect, Route, Switch, useLocation, Router as WouterRouter } fr
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const money = new Intl.NumberFormat('en-UG', { maximumFractionDigits: 0 });
 const memberNoticeKey = 'samsung-gadgets:show-member-notice';
+const customerServiceUrl = 'https://t.me/kalljem';
 type TaskDefinition = {
   id: string;
   title: string;
@@ -317,8 +318,8 @@ function HomePage() {
   const homeActions = [
     { label: 'Recharge', icon: Download, href: '/recharge' },
     { label: 'Withdrawal', icon: CreditCard, href: '/withdrawal' },
-    { label: 'Customer service', icon: Headphones, title: 'Customer support details have not been configured.' },
-    { label: 'Presence', icon: CalendarDays, title: 'Presence is currently unavailable.' },
+    { label: 'Customer service', icon: Headphones, href: customerServiceUrl },
+    { label: 'Presence', icon: CalendarDays, href: '/tasks' },
   ];
   return <MemberFrame active="/home">
     <section className="home-dashboard mx-auto max-w-[760px]" data-testid="page-home">
@@ -333,12 +334,16 @@ function HomePage() {
       </section>
 
       <div className="home-money-actions" aria-label="Account shortcuts">
-        {homeActions.map(({ label, icon: Icon, title, href }) => (
+        {homeActions.map(({ label, icon: Icon, href }) => (
           href
-            ? <Link key={label} href={href} aria-label={label}>
+            ? href.startsWith('https://')
+              ? <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                  <Icon aria-hidden="true" /><span>{label}</span>
+                </a>
+              : <Link key={label} href={href} aria-label={label}>
                 <Icon aria-hidden="true" /><span>{label}</span>
               </Link>
-            : <button key={label} type="button" disabled title={title} aria-label={`${label}: unavailable`}>
+            : <button key={label} type="button" disabled aria-label={`${label}: unavailable`}>
                 <Icon aria-hidden="true" /><span>{label}</span>
               </button>
         ))}
@@ -542,12 +547,12 @@ function RechargePage() {
       </section>
       <section className="recharge-channel">
         <button className="recharge-confirm" type="button" disabled>Confirm</button>
-        <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <Link href="/account">click here</Link>.</p>
+        <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <a href={customerServiceUrl} target="_blank" rel="noopener noreferrer">click here</a>.</p>
         <ol className="recharge-terms">
           <li>The minimum top-up amount is 2,000 UGX; amounts below this threshold cannot be credited to your account.</li>
           <li>The order amount must match the actual payment amount.</li>
           <li>Please ensure you use the most up-to-date bank details for each top-up; do not use outdated information.</li>
-          <li>Once the transfer is initiated, please allow 10 to 60 minutes for processing. If the funds have not arrived after this time, please enter your payment details on the top-up page or contact the official customer service for assistance.</li>
+          <li>Once the transfer is initiated, please allow 10 to 60 minutes for processing. If the funds have not arrived after this time, please enter your payment details on the top-up page or contact <a href={customerServiceUrl} target="_blank" rel="noopener noreferrer">customer service</a> for assistance.</li>
         </ol>
       </section>
     </main>;
@@ -764,7 +769,7 @@ function AccountPage() {
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
   const accountActions = [
     { id: 'about', label: 'About samsung', icon: FileText, detail: 'Independent gadget retailer. Exact device models and stock are still being confirmed.' },
-    { id: 'help', label: 'Customer service', icon: Headphones, detail: 'Customer support contact details have not been configured yet.' },
+    { id: 'help', label: 'Customer service', icon: Headphones, href: customerServiceUrl },
     { id: 'history', label: 'Account history', icon: History, detail: 'No verified wallet transactions are available yet.' },
     { id: 'terms', label: 'Terms & conditions', icon: FileText, detail: 'Terms have not been published yet. Product availability, checkout, rewards, and wallet services are not active.' },
     { id: 'install', label: 'Install app', icon: Download, detail: 'If your browser offers an Install app option in its menu, you can use it to add this site to your device.' },
@@ -815,13 +820,15 @@ function AccountPage() {
       </Link>
 
       <section className="account-shortcut-grid" aria-label="Account shortcuts">
-        {accountActions.map(({ id, label, icon: Icon, detail }) => {
+        {accountActions.map(({ id, label, icon: Icon, detail, href }) => {
           const isExpanded = expandedAction === id;
           return (
             <div className="account-shortcut" key={id}>
               {id === 'link-card'
                 ? <Link href="/bank-accounts" className="account-shortcut-link" data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></Link>
-                : <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></button>}
+                : href?.startsWith('https://')
+                  ? <a href={href} target="_blank" rel="noopener noreferrer" className="account-shortcut-link" data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></a>
+                  : <button type="button" aria-expanded={isExpanded} onClick={() => setExpandedAction(isExpanded ? null : id)} data-testid={`button-account-${id}`}><Icon aria-hidden="true" /><span>{label}</span></button>}
               {isExpanded && <p role="status" data-testid={`status-account-${id}`}>{detail}</p>}
             </div>
           );
