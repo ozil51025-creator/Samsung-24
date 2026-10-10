@@ -6,13 +6,23 @@ import {
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  taskCenterSettingsTable,
 } from "@workspace/db";
 import {
+  GetAdminTaskCenterSettingsResponse,
   GetAdminMembersResponse,
   GetAdminOverviewResponse,
+  GetTaskCenterSettingsResponse,
+  UpdateAdminTaskCenterSettingsBody,
+  UpdateAdminTaskCenterSettingsResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+const defaultTaskDefinitions = [
+  { id: "invite-3", title: "Invite 3 Level 1 members", objective: 3, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
+  { id: "invite-10", title: "Invite 10 Level 1 members", objective: 10, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
+  { id: "invite-30", title: "Invite 30 Level 1 members", objective: 30, objectiveUnit: "members", rewardUgx: null, rewardFrequency: "once", enabled: false },
+];
 
 function cookieName() {
   return process.env.NODE_ENV === "production" ? "__Host-rewards_session" : "rewards_session";
@@ -104,6 +114,56 @@ router.get("/admin/members", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
+  }
+});
+
+async function readTaskCenterSettings() {
+  const [stored] = await db.select({ tasks: taskCenterSettingsTable.tasks })
+    .from(taskCenterSettingsTable)
+    .where(eq(taskCenterSettingsTable.id, "default"))
+    .limit(1);
+  return stored?.tasks ?? defaultTaskDefinitions;
+}
+
+router.get("/task-center", async (req, res): Promise<void> => {
+  try {
+    res.json(GetTaskCenterSettingsResponse.parse({ tasks: await readTaskCenterSettings() }));
+  } catch (error) {
+    req.log.error({ error, route: "task-center.get" }, "Could not load task definitions");
+    res.status(500).json({ error: "Could not load task definitions." });
+  }
+});
+
+router.get("/admin/task-center", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  try {
+    res.json(GetAdminTaskCenterSettingsResponse.parse({ tasks: await readTaskCenterSettings() }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.task-center.get" }, "Could not load admin task definitions");
+    res.status(500).json({ error: "Could not load task definitions." });
+  }
+});
+
+router.put("/admin/task-center", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const parsed = UpdateAdminTaskCenterSettingsBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Check each task title, objective, UGX reward, and frequency." });
+    return;
+  }
+  try {
+    await db.insert(taskCenterSettingsTable)
+      .values({ id: "default", tasks: parsed.data.tasks, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: taskCenterSettingsTable.id,
+        set: { tasks: parsed.data.tasks, updatedAt: new Date() },
+      });
+    res.json(UpdateAdminTaskCenterSettingsResponse.parse({ tasks: parsed.data.tasks }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.task-center.put" }, "Could not save task definitions");
+    res.status(500).json({ error: "Could not save task definitions." });
   }
 });
 
