@@ -1023,7 +1023,7 @@ function RechargePaymentPage() {
         <h2>PesaJet payment request</h2>
         <p>{requestStatusMessage}</p>
         <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
-        <p>Reference: <strong>{requestId.slice(0, 8).toUpperCase()}</strong></p>
+        <p>Reference: <strong>{requestId}</strong></p>
         <p>Your wallet is not credited until an administrator confirms the payment.</p>
       </section>}
     </section>
