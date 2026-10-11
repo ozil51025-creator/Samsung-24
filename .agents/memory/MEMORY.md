@@ -1,1 +1,2 @@
 - [Rewards site scope](store-identity.md) — Use the user's own branding for a site where rewards come from confirmed product sales.
+- [Admin dashboard reference](admin-panel-reference.md) — Keep overview metrics, recent wallet activity, and member-level balances/payout details accessible to admins.
