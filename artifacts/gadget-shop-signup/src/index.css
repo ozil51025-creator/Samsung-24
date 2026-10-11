@@ -1618,6 +1618,25 @@ button.account-menu-row {
 .admin-add-form > p { color: #526277; font-size: 11px; }
 .admin-member-actions { display: flex !important; flex-wrap: wrap; justify-content: flex-start !important; gap: 7px !important; }
 .admin-member-actions button { min-height: 34px; padding: 0 10px; border: 1px solid #cbd4e0; border-radius: 7px; background: #fff; color: #24354b; font-size: 10px; font-weight: 700; }
+.admin-member-open { padding: 0; border: 0; background: transparent; color: #1268cb; font-size: 12px; font-weight: 750; text-align: left; text-decoration: underline; }
+.admin-member-profile { display: grid; gap: 12px; margin-top: 16px; padding: 15px; border: 1px solid #cbd8e8; border-radius: 14px; background: #fff; }
+.admin-member-profile-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding-bottom: 10px; border-bottom: 1px solid #e8edf3; }
+.admin-member-profile-heading h3 { margin: 0; font-size: 17px; }
+.admin-member-profile-heading p { margin: 4px 0 0; color: #758194; font-size: 10px; }
+.admin-member-profile-heading button,.admin-gift-product button { min-height: 34px; padding: 0 11px; border: 0; border-radius: 8px; background: #eaf2fc; color: #17599d; font-size: 10px; font-weight: 700; }
+.admin-member-profile-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.admin-member-profile-grid > div { display: grid; gap: 5px; min-width: 0; padding: 10px; border-radius: 9px; background: #f5f7fa; }
+.admin-member-profile-grid span { color: #778394; font-size: 9px; }
+.admin-member-profile-grid strong { color: #24334a; font-size: 11px; overflow-wrap: anywhere; }
+.admin-member-profile h4 { margin: 5px 0 -5px; font-size: 13px; }
+.admin-profile-list { display: grid; }
+.admin-profile-list article { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #edf0f4; color: #667386; font-size: 10px; }
+.admin-profile-list article strong { color: #27364b; font-size: 10px; font-weight: 600; text-align: right; }
+.admin-profile-list article strong.is-debit { color: #a33c47; }
+.admin-profile-list article strong.is-credit { color: #238360; }
+.admin-gift-product { display: flex; gap: 8px; }
+.admin-gift-product select { min-height: 38px; min-width: 0; flex: 1; padding: 0 9px; border: 1px solid #dce2eb; border-radius: 8px; background: #fff; color: #25344a; font-size: 11px; }
+.admin-gift-product button:disabled { opacity: .5; }
 .admin-audit-list { display: grid; gap: 9px; }
 .admin-audit-list article { display: grid; gap: 5px; padding: 11px; border: 1px solid #e6e9ef; border-radius: 9px; }
 .admin-audit-list strong { color: #27364b; font-size: 12px; text-transform: capitalize; }
