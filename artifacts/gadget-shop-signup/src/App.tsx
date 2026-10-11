@@ -560,6 +560,8 @@ function TaskCenterPage() {
   const { user, status } = useAuth();
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [tasksStatus, setTasksStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [referralSummary, setReferralSummary] = useState<{ levels: { level: number; memberCount: number }[] } | null>(null);
+  const [referralSummaryStatus, setReferralSummaryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [depositMilestones, setDepositMilestones] = useState<{
     teamDepositsUgx: number;
     totalRewardsUgx: number;
@@ -593,6 +595,13 @@ function TaskCenterPage() {
         setDepositMilestonesStatus('ready');
       })
       .catch(() => setDepositMilestonesStatus('error'));
+    fetch('/api/referral/summary', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load referral progress.');
+        setReferralSummary(await response.json());
+        setReferralSummaryStatus('ready');
+      })
+      .catch(() => setReferralSummaryStatus('error'));
   }, [user]);
 
   if (status === 'loading') {
@@ -619,18 +628,31 @@ function TaskCenterPage() {
       {tasksStatus === 'loading' && <p className="task-center-message">Loading tasks…</p>}
       {tasksStatus === 'error' && <p className="task-center-message" role="alert">Tasks could not be loaded. Please try again later.</p>}
       {levelOneInviteTasks.map((task) => (
-        <article className="task-center-item" key={task.id}>
+        (() => {
+          const current = referralSummary?.levels.find((level) => level.level === 1)?.memberCount;
+          const progress = current === undefined ? null : Math.min(current, task.objective);
+          const statusLabel = !task.enabled
+            ? 'Not active'
+            : referralSummaryStatus === 'loading'
+              ? 'Loading progress…'
+              : referralSummaryStatus === 'error'
+                ? 'Progress unavailable'
+                : current !== undefined && current >= task.objective
+                  ? 'Goal reached'
+                  : 'In progress';
+          return <article className="task-center-item" key={task.id}>
           <h2>
             {task.title}
             {task.rewardUgx !== null && ` · UGX ${money.format(task.rewardUgx)}`}
           </h2>
           <div className="task-center-progress">
-            <div><strong>—</strong><span>Current</span></div>
+            <div><strong>{current === undefined ? '—' : current.toLocaleString()}</strong><span>Current</span></div>
             <div><strong>{task.objective.toLocaleString()} {task.objectiveUnit}</strong><span>Objective</span></div>
-            <div><strong>—</strong><span>Progress</span></div>
+            <div><strong>{progress === null ? '—' : `${progress}/${task.objective}`}</strong><span>Progress</span></div>
           </div>
-          <button type="button" disabled>{task.enabled ? 'Progress unavailable' : 'Not active'}</button>
-        </article>
+          <button type="button" disabled>{statusLabel}</button>
+        </article>;
+        })()
       ))}
       {depositMilestonesStatus === 'loading' && <p className="task-center-message">Loading deposit milestones…</p>}
       {depositMilestonesStatus === 'error' && <p className="task-center-message" role="alert">Deposit milestones could not be loaded.</p>}
