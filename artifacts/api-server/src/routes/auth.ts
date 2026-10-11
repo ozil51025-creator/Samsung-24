@@ -1099,7 +1099,7 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       });
     } catch (error) {
       req.log.warn({ error, route: "recharge-requests.pesajet", requestId: request.id }, "PesaJet response was not received; request remains pending for reconciliation");
-      res.status(202).json({ requestId: request.id, status: "pending", message: "Payment status is being checked. Approve any phone prompt and do not submit another request yet." });
+      res.status(202).json({ requestId: request.id, status: "pending", message: "PesaJet’s response is delayed. If a mobile-money PIN prompt arrived, complete it only on your phone; do not submit another request yet." });
       return;
     }
     if (!paymentResponse.ok) {
@@ -1110,7 +1110,7 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       res.status(502).json({ error: "PesaJet could not start this payment. Check the number and try again." });
       return;
     }
-    res.status(201).json({ requestId: request.id, status: "pending", message: "Approve the payment prompt on your phone. Your wallet will be credited after an administrator confirms receipt." });
+    res.status(201).json({ requestId: request.id, status: "pending", message: `Check the ${provider.toUpperCase()} number for a PesaJet payment prompt. Enter your PIN only in the official mobile-money prompt, never on this site. Your wallet is credited after an administrator confirms receipt.` });
   } catch (error) {
     req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");
     res.status(500).json({ error: "Could not create the recharge request." });

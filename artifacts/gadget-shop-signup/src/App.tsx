@@ -971,7 +971,7 @@ function RechargePaymentPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Could not create recharge request.');
       setRequestId(data.requestId as string);
-      setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Approve the payment prompt on your phone. Your wallet will be credited after an administrator confirms receipt.');
+      setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Check your phone for the mobile-money payment prompt. Enter your PIN only on that official prompt, never on this site. Your wallet is credited after an administrator confirms receipt.');
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : 'Could not create recharge request.');
     } finally {
@@ -1016,7 +1016,7 @@ function RechargePaymentPage() {
         onChange={(event) => setPhone(event.target.value)}
         data-testid="input-recharge-mobile-number"
       />
-      <p className="recharge-payment-warning">Check the mobile money number before continuing.</p>
+      <p className="recharge-payment-warning">Check the mobile money number before continuing. Enter your PIN only on the official phone prompt, never on this site.</p>
       <button type="button" disabled={!validPhone || !provider || creatingRequest || Boolean(requestId)} onClick={createRechargeRequest} data-testid="button-recharge-payment-continue">{creatingRequest ? 'Please wait…' : 'Continue'}</button>
       {requestError && <p role="alert">{requestError}</p>}
       {requestId && <section className="recharge-manual-instructions" aria-live="polite" data-testid="recharge-manual-instructions">
