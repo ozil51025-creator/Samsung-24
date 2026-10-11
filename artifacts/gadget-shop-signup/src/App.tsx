@@ -940,9 +940,9 @@ function RechargePage() {
         <p className="recharge-support">If the top-up hasn’t been credited for a long time, please <a href={customerServiceUrl} target="_blank" rel="noopener noreferrer">click here</a>.</p>
         <ol className="recharge-terms">
           <li>The minimum top-up amount is 2,000 UGX; amounts below this threshold cannot be credited to your account.</li>
-          <li>The order amount must match the actual payment amount.</li>
-          <li>Please ensure you use the most up-to-date bank details for each top-up; do not use outdated information.</li>
-          <li>Once the transfer is initiated, please allow 10 to 60 minutes for processing. If the funds have not arrived after this time, please enter your payment details on the top-up page or contact <a href={customerServiceUrl} target="_blank" rel="noopener noreferrer">customer service</a> for assistance.</li>
+          <li>Choose the mobile-money network and number that should receive the PesaJet payment prompt.</li>
+          <li>Approve only the amount shown on this page in your mobile-money prompt.</li>
+          <li>Your deposit balance is credited only after an administrator confirms that the payment was received.</li>
         </ol>
       </section>
     </main>;
