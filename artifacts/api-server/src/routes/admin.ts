@@ -229,6 +229,12 @@ router.post("/admin/login", async (req, res): Promise<void> => {
   const configuredUsername = process.env.ADMIN_USERNAME?.trim().toLowerCase();
   const configuredPassword = process.env.ADMIN_PASSWORD;
   if (!configuredPhone || !configuredUsername || !configuredPassword || configuredPassword.length < 12) {
+    req.log.error({
+      adminPhoneConfigured: Boolean(configuredPhone),
+      adminUsernameConfigured: Boolean(configuredUsername),
+      adminPasswordConfigured: Boolean(configuredPassword),
+      adminPasswordMeetsMinimum: (configuredPassword?.length ?? 0) >= 12,
+    }, "Admin sign-in credentials are incomplete");
     res.status(503).json({ error: "Admin sign-in is not configured. Set the admin credentials in project settings." });
     return;
   }
