@@ -1102,15 +1102,33 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       res.status(202).json({ requestId: request.id, status: "pending", message: "PesaJet’s response is delayed. If a mobile-money PIN prompt arrived, complete it only on your phone; do not submit another request yet." });
       return;
     }
+    const paymentBody = await paymentResponse.json().catch(() => null);
+    const paymentRecord = paymentBody && typeof paymentBody === "object" && !Array.isArray(paymentBody)
+      ? paymentBody as Record<string, unknown>
+      : null;
+    const paymentData = paymentRecord?.data && typeof paymentRecord.data === "object" && !Array.isArray(paymentRecord.data)
+      ? paymentRecord.data as Record<string, unknown>
+      : null;
+    const cleanProviderText = (value: unknown): string | undefined => typeof value === "string"
+      ? value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\b(?:pk|sk)_[A-Za-z0-9_-]{12,}\b/gi, "[redacted]").slice(0, 240)
+      : undefined;
+    const providerMessage = cleanProviderText(paymentRecord?.message) ?? cleanProviderText(paymentRecord?.error);
+    const providerStatus = cleanProviderText(paymentRecord?.status) ?? cleanProviderText(paymentData?.status);
     if (!paymentResponse.ok) {
       await db.update(rechargeRequestsTable)
         .set({ status: "failed" })
         .where(and(eq(rechargeRequestsTable.id, request.id), eq(rechargeRequestsTable.status, "pending")));
       req.log.warn({ route: "recharge-requests.pesajet", requestId: request.id, statusCode: paymentResponse.status }, "PesaJet rejected collection request");
-      res.status(502).json({ error: "PesaJet could not start this payment. Check the number and try again." });
+      res.status(502).json({ error: providerMessage ? `PesaJet: ${providerMessage}` : "PesaJet could not start this payment. Check the number and try again." });
       return;
     }
-    res.status(201).json({ requestId: request.id, status: "pending", message: `Check the ${provider.toUpperCase()} number for a PesaJet payment prompt. Enter your PIN only in the official mobile-money prompt, never on this site. Your wallet is credited after an administrator confirms receipt.` });
+    res.status(201).json({
+      requestId: request.id,
+      status: "pending",
+      providerMessage,
+      providerStatus,
+      message: `Check the ${provider.toUpperCase()} number for a PesaJet payment prompt. Enter your PIN only in the official mobile-money prompt, never on this site. Your wallet is credited after an administrator confirms receipt.`,
+    });
   } catch (error) {
     req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");
     res.status(500).json({ error: "Could not create the recharge request." });

@@ -954,6 +954,7 @@ function RechargePaymentPage() {
   const [provider, setProvider] = useState<'mtn' | 'airtel' | ''>('');
   const [requestId, setRequestId] = useState('');
   const [requestStatusMessage, setRequestStatusMessage] = useState('');
+  const [providerReply, setProviderReply] = useState('');
   const [requestError, setRequestError] = useState('');
   const [creatingRequest, setCreatingRequest] = useState(false);
   const amount = Number(new URLSearchParams(window.location.search).get('amount'));
@@ -972,6 +973,7 @@ function RechargePaymentPage() {
       if (!response.ok) throw new Error(data.error ?? 'Could not create recharge request.');
       setRequestId(data.requestId as string);
       setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Check your phone for the mobile-money payment prompt. Enter your PIN only on that official prompt, never on this site. Your wallet is credited after an administrator confirms receipt.');
+      setProviderReply([data.providerStatus, data.providerMessage].filter((value) => typeof value === 'string' && value.length > 0).join(' · '));
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : 'Could not create recharge request.');
     } finally {
@@ -1022,6 +1024,7 @@ function RechargePaymentPage() {
       {requestId && <section className="recharge-manual-instructions" aria-live="polite" data-testid="recharge-manual-instructions">
         <h2>PesaJet payment request</h2>
         <p>{requestStatusMessage}</p>
+        {providerReply && <p>PesaJet response: {providerReply}</p>}
         <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
         <p>Reference: <strong>{requestId}</strong></p>
         <p>Your wallet is not credited until an administrator confirms the payment.</p>
