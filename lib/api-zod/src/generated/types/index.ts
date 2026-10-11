@@ -18,6 +18,7 @@ export * from './adminMember';
 export * from './adminMemberDetails';
 export * from './adminMemberDetailsActivityItem';
 export * from './adminMemberDetailsProductOrdersItem';
+export * from './adminMemberDetailsReferralCountsByLevel';
 export * from './adminMemberDetailsReferralsItem';
 export * from './adminMemberProductGrant';
 export * from './adminMembers';

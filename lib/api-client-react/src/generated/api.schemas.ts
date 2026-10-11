@@ -471,6 +471,7 @@ export interface AdminMember {
 
 export interface AdminMembers {
   members: AdminMember[];
+  ownerActionsAllowed: boolean;
 }
 
 export type AdminMemberDetailsReferralsItem = {
@@ -504,6 +505,15 @@ export type AdminMemberDetailsActivityItem = {
   createdAt: string;
 };
 
+export type AdminMemberDetailsReferralCountsByLevel = {
+  /** @minimum 0 */
+  level1: number;
+  /** @minimum 0 */
+  level2: number;
+  /** @minimum 0 */
+  level3: number;
+};
+
 export interface AdminMemberDetails {
   member: AdminMember;
   /** @nullable */
@@ -511,6 +521,9 @@ export interface AdminMemberDetails {
   referrals: AdminMemberDetailsReferralsItem[];
   productOrders: AdminMemberDetailsProductOrdersItem[];
   activity: AdminMemberDetailsActivityItem[];
+  referralCountsByLevel: AdminMemberDetailsReferralCountsByLevel;
+  /** @minimum 0 */
+  checkinStreak: number;
 }
 
 export interface AdminMemberProductGrant {

@@ -8,6 +8,7 @@
 import type { AdminMember } from './adminMember';
 import type { AdminMemberDetailsActivityItem } from './adminMemberDetailsActivityItem';
 import type { AdminMemberDetailsProductOrdersItem } from './adminMemberDetailsProductOrdersItem';
+import type { AdminMemberDetailsReferralCountsByLevel } from './adminMemberDetailsReferralCountsByLevel';
 import type { AdminMemberDetailsReferralsItem } from './adminMemberDetailsReferralsItem';
 
 export interface AdminMemberDetails {
@@ -17,4 +18,7 @@ export interface AdminMemberDetails {
   referrals: AdminMemberDetailsReferralsItem[];
   productOrders: AdminMemberDetailsProductOrdersItem[];
   activity: AdminMemberDetailsActivityItem[];
+  referralCountsByLevel: AdminMemberDetailsReferralCountsByLevel;
+  /** @minimum 0 */
+  checkinStreak: number;
 }

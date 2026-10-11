@@ -302,7 +302,8 @@ export const GetAdminMembersResponse = zod.object({
   "payoutProvider": zod.string().nullable(),
   "payoutHolderName": zod.string().nullable(),
   "payoutPhone": zod.string().nullable()
-}))
+})),
+  "ownerActionsAllowed": zod.boolean()
 })
 
 
@@ -321,6 +322,14 @@ export const getAdminMemberDetailsResponseMemberDepositBalanceUgxMin = 0;
 export const getAdminMemberDetailsResponseMemberTotalDepositedUgxMin = 0;
 
 export const getAdminMemberDetailsResponseReferralsItemLevelMax = 3;
+
+export const getAdminMemberDetailsResponseReferralCountsByLevelLevel1Min = 0;
+
+export const getAdminMemberDetailsResponseReferralCountsByLevelLevel2Min = 0;
+
+export const getAdminMemberDetailsResponseReferralCountsByLevelLevel3Min = 0;
+
+export const getAdminMemberDetailsResponseCheckinStreakMin = 0;
 
 
 
@@ -361,7 +370,13 @@ export const GetAdminMemberDetailsResponse = zod.object({
   "amountUgx": zod.number().int(),
   "status": zod.string(),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "referralCountsByLevel": zod.object({
+  "level1": zod.number().int().min(getAdminMemberDetailsResponseReferralCountsByLevelLevel1Min),
+  "level2": zod.number().int().min(getAdminMemberDetailsResponseReferralCountsByLevelLevel2Min),
+  "level3": zod.number().int().min(getAdminMemberDetailsResponseReferralCountsByLevelLevel3Min)
+}),
+  "checkinStreak": zod.number().int().min(getAdminMemberDetailsResponseCheckinStreakMin)
 })
 
 

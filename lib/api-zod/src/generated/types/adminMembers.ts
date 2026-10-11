@@ -9,4 +9,5 @@ import type { AdminMember } from './adminMember';
 
 export interface AdminMembers {
   members: AdminMember[];
+  ownerActionsAllowed: boolean;
 }
