@@ -1740,7 +1740,9 @@ function AdminTaskCenterPage() {
         {withdrawalStatus === 'ready' && withdrawalRequests.length === 0 && <p>No withdrawal requests.</p>}
         {withdrawalRequests.map((request) => <article className="admin-recharge-review-item" key={request.id}>
           <p><strong>UGX {money.format(request.amountUgx)}</strong> · {request.status}</p>
-          <p>Member: {request.memberPhone} · Pay to: {request.payoutProvider.toUpperCase()} {request.payoutHolderName ? `· ${request.payoutHolderName} · ` : '· '}{request.payoutPhone}</p>
+          <p>Member: {request.memberPhone}</p>
+          <p>Account holder: {request.payoutHolderName ?? 'Name not available — ask the member to save payout details.'}</p>
+          <p>Pay to: {request.payoutProvider.toUpperCase()} · {request.payoutPhone}</p>
           <p>Fee: UGX {money.format(request.feeUgx)} · Member receives: UGX {money.format(request.receivedUgx)}</p>
           <p>Requested: {new Date(request.createdAt).toLocaleString()}</p>
           {request.resolutionNote && <p>Admin note: {request.resolutionNote}</p>}

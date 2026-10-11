@@ -936,7 +936,7 @@ router.get("/admin/withdrawals", async (req, res): Promise<void> => {
       receivedUgx: withdrawalRequestsTable.receivedUgx,
       payoutPhone: withdrawalRequestsTable.payoutPhone,
       payoutProvider: withdrawalRequestsTable.payoutProvider,
-      payoutHolderName: withdrawalRequestsTable.payoutHolderName,
+      payoutHolderName: sql<string | null>`COALESCE(${withdrawalRequestsTable.payoutHolderName}, ${payoutAccountsTable.holderName})`,
       status: withdrawalRequestsTable.status,
       createdAt: withdrawalRequestsTable.createdAt,
       processedAt: withdrawalRequestsTable.processedAt,
@@ -944,6 +944,7 @@ router.get("/admin/withdrawals", async (req, res): Promise<void> => {
       memberPhone: phoneAccountsTable.phoneNumber,
     }).from(withdrawalRequestsTable)
       .innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id))
+      .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, withdrawalRequestsTable.accountId))
       .orderBy(sql`${withdrawalRequestsTable.createdAt} DESC`)
       .limit(100);
     res.json(GetAdminWithdrawalsResponse.parse({ withdrawals }));
