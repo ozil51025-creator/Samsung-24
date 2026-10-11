@@ -1081,7 +1081,7 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       : await db.insert(rechargeRequestsTable)
         .values({ accountId, amountUgx: amount, payerPhone, provider })
         .returning({ id: rechargeRequestsTable.id });
-    let paymentResponse: Response;
+    let paymentResponse: globalThis.Response;
     try {
       paymentResponse = await fetch("https://payments.pesajet.com/api/v1/payments", {
         method: "POST",
