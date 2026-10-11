@@ -1258,6 +1258,11 @@ router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> =
         .for("update")
         .limit(1);
       if (!account) return { kind: "missing" as const };
+      const [productOrder] = await tx.select({ id: productOrdersTable.id })
+        .from(productOrdersTable)
+        .where(eq(productOrdersTable.buyerAccountId, accountId))
+        .limit(1);
+      if (!productOrder) return { kind: "product-required" as const };
       if (account.walletBalanceUgx < parsed.data.amountUgx) return { kind: "insufficient" as const };
       if (settings.maximumWithdrawalsPerMemberPerDay > 0) {
         const [daily] = await tx.select({ total: count() }).from(withdrawalRequestsTable)
@@ -1300,6 +1305,10 @@ router.post("/withdrawals", requireSameOrigin, async (req, res): Promise<void> =
     }
     if (result.kind === "insufficient") {
       res.status(409).json({ error: "Your available wallet balance is too low for this withdrawal." });
+      return;
+    }
+    if (result.kind === "product-required") {
+      res.status(409).json({ error: "Buy at least one product to activate withdrawals." });
       return;
     }
     if (result.kind === "daily-limit") {

@@ -42,3 +42,17 @@ mtime_ms = 1791703244073
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/9bc49a60-10ec-4a4e-9295-63e4beb3363a/0444c443-9e23-4e6f-b771-b1b84be9d72a"
 storage_version_token = "1791703249109377"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "mINmkfk0beUOxYwHw4k6r"
+uri = "file://generated-artifacts/rewards-program-platform-source-20261011-v2.zip"
+type = "unspecified"
+title = "Updated platform source code"
+description = "Updated full source-code backup, including the withdrawal product requirement. Credentials, dependencies, build output, and chat attachments are excluded."
+logical_id = "59487388-95e2-499a-8e06-04edd92e20f5"
+content_hash = "sha256:4d2453ba2271618cbc53fee1a152f9d91b305a0d7574181cec1f6ef402e2d344"
+size = 1466233
+mtime_ms = 1791703793781
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/59487388-95e2-499a-8e06-04edd92e20f5/0aa7ffd4-352e-47fa-9876-06d0e955f7b9"
+storage_version_token = "1791703800823707"
+content_type = "application/octet-stream"

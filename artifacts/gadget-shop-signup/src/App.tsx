@@ -738,6 +738,7 @@ function WithdrawalPage() {
   const { user, status: authStatus, refresh } = useAuth();
   const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
   const [withdrawalRules, setWithdrawalRules] = useState({ minimumWithdrawalUgx: 3000, withdrawalFeePercent: 0 });
+  const [productEligibility, setProductEligibility] = useState<'loading' | 'eligible' | 'ineligible' | 'error'>('loading');
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -754,6 +755,11 @@ function WithdrawalPage() {
         setWithdrawalRules({ minimumWithdrawalUgx: data.minimumWithdrawalUgx, withdrawalFeePercent: data.withdrawalFeePercent });
       }
     }).catch(() => {});
+    fetch('/api/products/orders', { credentials: 'include', cache: 'no-store' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok || !Array.isArray(data.orders)) throw new Error('Could not verify product ownership.');
+      setProductEligibility(data.orders.length > 0 ? 'eligible' : 'ineligible');
+    }).catch(() => setProductEligibility('error'));
   }, []);
   useEffect(() => {
     const previousTitle = document.title;
@@ -773,10 +779,13 @@ function WithdrawalPage() {
       </section>
       <section className="withdraw-details">
         <h2>Manual payout destination</h2>
+        {productEligibility === 'loading' && <p role="status">Checking product eligibility…</p>}
+        {productEligibility === 'ineligible' && <p role="status">Buy at least one product to activate withdrawals. <Link href="/products">Browse products</Link></p>}
+        {productEligibility === 'error' && <p role="alert">Could not verify product ownership. Refresh the page to try again.</p>}
         <div className="withdraw-bank-select"><CreditCard /><span>{payoutAccount ? `${payoutAccount.provider.toUpperCase()} Money · ${payoutAccount.holderName} · ${payoutAccount.phoneNumber}` : user?.phoneNumber ?? 'Registered phone number'}</span></div>
         <Link className="payout-destination-link" href="/bank-accounts">{payoutAccount ? 'Change payout destination' : 'Add Airtel or MTN payout number'}</Link>
         <p className="withdraw-estimate">You receive: <strong>UGX {money.format(Math.max(0, Number(amount || 0) - fee))}</strong> · fee: UGX {money.format(fee)}</p>
-        <button className="withdraw-confirm" type="button" disabled={submitting || !Number.isSafeInteger(Number(amount)) || Number(amount) < withdrawalRules.minimumWithdrawalUgx || Number(amount) > (user?.walletBalanceUgx ?? 0)} onClick={async () => {
+        <button className="withdraw-confirm" type="button" disabled={productEligibility !== 'eligible' || submitting || !Number.isSafeInteger(Number(amount)) || Number(amount) < withdrawalRules.minimumWithdrawalUgx || Number(amount) > (user?.walletBalanceUgx ?? 0)} onClick={async () => {
           setSubmitting(true); setError(''); setMessage('');
           try {
             const response = await fetch('/api/withdrawals', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUgx: Number(amount) }) });
@@ -794,6 +803,7 @@ function WithdrawalPage() {
         {message && <p role="status">{message} <Link href="/withdrawal-history">View history</Link></p>}
         {error && <p role="alert">{error}</p>}
         <ol className="withdraw-terms">
+          <li>You must have at least one product purchase before you can request a withdrawal.</li>
           <li>The minimum withdrawal amount is UGX 10,000.</li>
           <li>A 20% fee is deducted; the amount shown above is the amount you will receive.</li>
           <li>Your request is paid manually by an administrator. The requested amount is reserved from your wallet while pending.</li>
