@@ -84,3 +84,17 @@ mtime_ms = 1791704602514
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/672804eb-5695-4187-a9e4-267d43e0df99/1c6b30fb-6b5c-4e94-bd7e-ca1ff4ce6fd5"
 storage_version_token = "1791704607695964"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "-6oVzcwAiecHzG41uHo9a"
+uri = "file://generated-artifacts/samsung-rewards-source.zip"
+type = "unspecified"
+title = "Samsung Rewards Portal — Source Code"
+description = "Download the complete tracked application source, configuration, lockfile, and app assets. Secrets and dependency folders are excluded."
+logical_id = "b0c717f2-52c4-41f4-bb41-ca7f79995185"
+content_hash = "sha256:a332575313f6fd9c417e8e30ead577f576b22d698dd8eaa0fbce9202f722d716"
+size = 1390718
+mtime_ms = 1791709761150
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/b0c717f2-52c4-41f4-bb41-ca7f79995185/2d365d3f-38fa-478c-a0c4-4d2791becf57"
+storage_version_token = "1791709765901311"
+content_type = "application/octet-stream"
