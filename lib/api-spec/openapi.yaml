@@ -1493,9 +1493,10 @@ components:
     ReferralSummary:
       type: object
       additionalProperties: false
-      required: [totalMembers, totalRewardsUgx, levels]
+      required: [totalMembers, taskQualifiedLevel1Members, totalRewardsUgx, levels]
       properties:
         totalMembers: { type: integer, minimum: 0 }
+        taskQualifiedLevel1Members: { type: integer, minimum: 0 }
         totalRewardsUgx: { type: integer, minimum: 0 }
         levels:
           type: array

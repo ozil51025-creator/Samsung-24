@@ -659,7 +659,7 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
       memberCounts.push(next.size);
       frontier = next;
     }
-    const [siteSettings, rewardRows, firstPurchaseOrders] = await Promise.all([
+    const [siteSettings, rewardRows, firstPurchaseOrders, taskQualifiedLevelOneRows] = await Promise.all([
       readSiteSettings(),
       db.select({
         level: referralCommissionsTable.level,
@@ -674,6 +674,15 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
         buyerAccountId: productOrdersTable.buyerAccountId,
         priceUgx: productOrdersTable.priceUgx,
       }).from(productOrdersTable).where(eq(productOrdersTable.isFirstPurchase, true)),
+      db.select({ accountId: phoneAccountsTable.id })
+        .from(phoneAccountsTable)
+        .innerJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+        .innerJoin(productOrdersTable, eq(productOrdersTable.buyerAccountId, phoneAccountsTable.id))
+        .where(and(
+          eq(phoneReferralCodesTable.referredByAccountId, accountId),
+          sql`${phoneAccountsTable.totalDepositedUgx} > 0`,
+        ))
+        .groupBy(phoneAccountsTable.id),
     ]);
     const rates = [
       siteSettings.referralCommissionLevel1Percent,
@@ -702,6 +711,7 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
     }));
     res.json(GetReferralSummaryResponse.parse({
       totalMembers: memberCounts.reduce((total, count) => total + count, 0),
+      taskQualifiedLevelOneMembers: taskQualifiedLevelOneRows.length,
       totalRewardsUgx: levels.reduce((total, item) => total + item.rewardsUgx, 0),
       levels,
     }));
