@@ -1276,6 +1276,9 @@ function AdminTaskCenterPage() {
     setMemberDetail(null);
     setMemberDetailStatus('loading');
     setMemberDetailMessage('');
+    window.setTimeout(() => {
+      document.querySelector('[data-testid="panel-admin-member-profile"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
     try {
       const response = await fetch(`/api/admin/members/${encodeURIComponent(memberId)}/details`, { credentials: 'include' });
       const data = await response.json();
