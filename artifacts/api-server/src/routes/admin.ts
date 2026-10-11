@@ -171,7 +171,7 @@ function hashTemporaryPassword(password: string): Promise<string> {
   });
 }
 
-async function requireAdmin(req: Request, res: Response): Promise<{ id: string } | null> {
+async function requireAdmin(req: Request, res: Response): Promise<{ id: string; isOwner: boolean } | null> {
   const configuredPhone = typeof process.env.ADMIN_PHONE === "string"
     ? normalizePhone(process.env.ADMIN_PHONE)
     : null;
@@ -213,7 +213,7 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string }
     res.status(403).json({ error: "This account is not authorized to use the admin panel." });
     return null;
   }
-  return { id: account.id };
+  return { id: account.id, isOwner: account.phoneNumber === configuredPhone };
 }
 
 async function ensureProductCatalog() {
@@ -379,7 +379,7 @@ router.get("/admin/members", async (req, res): Promise<void> => {
       .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, phoneAccountsTable.id))
       .orderBy(desc(phoneAccountsTable.createdAt))
       .limit(250);
-    res.json(GetAdminMembersResponse.parse({ members: rows }));
+    res.json(GetAdminMembersResponse.parse({ members: rows, ownerActionsAllowed: admin.isOwner }));
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
@@ -431,6 +431,18 @@ router.get("/admin/members/:memberId/details", async (req, res): Promise<void> =
       db.select({ id: giftCodesTable.id, amountUgx: giftCodesTable.amountUgx, createdAt: giftCodesTable.redeemedAt }).from(giftCodesTable).where(and(eq(giftCodesTable.redeemedByAccountId, memberId), isNotNull(giftCodesTable.redeemedAt))),
       db.select({ id: adminAuditLogsTable.id, action: adminAuditLogsTable.action, amountUgx: adminAuditLogsTable.amountUgx, details: adminAuditLogsTable.details, createdAt: adminAuditLogsTable.createdAt }).from(adminAuditLogsTable).where(and(eq(adminAuditLogsTable.targetAccountId, memberId), inArray(adminAuditLogsTable.action, ["wallet.credit", "wallet.debit", "member.product.grant"]))),
     ]);
+    const levelCounts = [1, 2, 3].map((level) => referrals.filter((referral) => referral.level === level).length);
+    const checkinDates = [...new Set(checkins.map((claim) => claim.createdAt.toLocaleDateString("en-CA", { timeZone: "Africa/Kampala" })))].sort().reverse();
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Kampala" });
+    const yesterday = new Date(Date.now() - 86_400_000).toLocaleDateString("en-CA", { timeZone: "Africa/Kampala" });
+    let checkinStreak = 0;
+    let expected = checkinDates[0] === today ? today : checkinDates[0] === yesterday ? yesterday : "";
+    while (expected && checkinDates.includes(expected)) {
+      checkinStreak += 1;
+      const previous = new Date(`${expected}T00:00:00Z`);
+      previous.setUTCDate(previous.getUTCDate() - 1);
+      expected = previous.toISOString().slice(0, 10);
+    }
     const activity = [
       ...productOrders.map((item) => ({ id: item.id, type: `Product purchase · ${item.productName}`, amountUgx: -item.priceUgx, status: item.status, createdAt: item.createdAt })),
       ...deposits.map((item) => ({ id: item.id, type: "Deposit credit", amountUgx: item.amountUgx, status: item.status, createdAt: item.createdAt })),
@@ -443,6 +455,8 @@ router.get("/admin/members/:memberId/details", async (req, res): Promise<void> =
     ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     res.json(GetAdminMemberDetailsResponse.parse({
       member: memberRow, invitedByPhone: inviter?.phoneNumber ?? null, referrals, productOrders, activity,
+      referralCountsByLevel: { level1: levelCounts[0], level2: levelCounts[1], level3: levelCounts[2] },
+      checkinStreak,
     }));
   } catch (error) {
     req.log.error({ error, route: "admin.member.details" }, "Could not load member details");
@@ -512,6 +526,7 @@ router.post("/admin/members/:memberId/password-reset", async (req, res): Promise
 router.patch("/admin/members/:memberId/status", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
+  if (!admin.isOwner) { res.status(403).json({ error: "Only the root owner can ban or restore member accounts." }); return; }
   const memberId = req.params.memberId;
   const parsed = UpdateAdminMemberStatusBody.safeParse(req.body);
   if (!/^[0-9a-f-]{36}$/i.test(memberId) || !parsed.success) {
@@ -557,6 +572,7 @@ router.patch("/admin/members/:memberId/status", async (req, res): Promise<void> 
 router.post("/admin/members/:memberId/wallet-adjustments", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
+  if (!admin.isOwner) { res.status(403).json({ error: "Only the root owner can credit or debit member wallets." }); return; }
   const memberId = req.params.memberId;
   const parsed = CreateAdminWalletAdjustmentBody.safeParse(req.body);
   if (!/^[0-9a-f-]{36}$/i.test(memberId) || !parsed.success) {
