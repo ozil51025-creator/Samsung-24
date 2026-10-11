@@ -1593,6 +1593,21 @@ button.account-menu-row {
 .admin-member-list article > div { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; }
 .admin-member-list strong { color: #27364b; font-weight: 600; overflow-wrap: anywhere; text-align: right; }
 .admin-member-list span { color: #7b8491; }
+.admin-member-search { display: grid; gap: 7px; max-width: 520px; margin: 13px 0; color: #677284; font-size: 11px; font-weight: 600; }
+.admin-member-search input { min-height: 40px; padding: 0 12px; border: 1px solid #dce2e9; border-radius: 9px; background: #fff; color: #243249; }
+.admin-member-details { padding-top: 8px; border-top: 1px solid #e8ebf0; color: #5e6a7a; font-size: 11px; }
+.admin-member-details summary { cursor: pointer; color: #294675; font-weight: 700; }
+.admin-member-details > div:not(.admin-member-recent) { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid #eef0f3; }
+.admin-member-recent p { margin: 6px 0; padding: 7px 0; border-bottom: 1px solid #eef0f3; }
+.admin-recent-transactions { margin-top: 16px; overflow: hidden; border: 1px solid #e3e7ed; border-radius: 12px; background: #fff; }
+.admin-recent-transactions h3 { margin: 0; padding: 13px 15px; border-bottom: 1px solid #e9edf1; color: #233249; font-size: 15px; }
+.admin-recent-transactions > p { padding: 0 15px; color: #778394; font-size: 12px; }
+.admin-recent-transaction-list article { display: grid; grid-template-columns: minmax(110px, .8fr) minmax(140px, 1.2fr) auto; align-items: center; gap: 10px; min-height: 48px; padding: 8px 14px; border-bottom: 1px solid #edf0f3; color: #697587; font-size: 11px; }
+.admin-recent-transaction-list article:last-child { border-bottom: 0; }
+.admin-recent-transaction-list strong { color: #2b374b; font-size: 11px; }
+.admin-recent-transaction-list small { display: block; margin-top: 3px; color: #8792a0; font-size: 9px; font-weight: 400; }
+.admin-recent-transaction-list b { white-space: nowrap; color: #238360; font-size: 11px; }
+.admin-recent-transaction-list b.is-debit { color: #a33c47; }
 .admin-add-form { display: grid; gap: 8px; margin-bottom: 12px; }
 .admin-add-form > label { color: #526277; font-size: 11px; font-weight: 600; }
 .admin-add-form > div { display: flex; gap: 8px; }
