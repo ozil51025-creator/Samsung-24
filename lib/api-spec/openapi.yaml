@@ -1293,16 +1293,17 @@ components:
     AdminMembers:
       type: object
       additionalProperties: false
-      required: [members]
+      required: [members, ownerActionsAllowed]
       properties:
         members:
           type: array
           items:
             $ref: "#/components/schemas/AdminMember"
+        ownerActionsAllowed: { type: boolean }
     AdminMemberDetails:
       type: object
       additionalProperties: false
-      required: [member, invitedByPhone, referrals, productOrders, activity]
+      required: [member, invitedByPhone, referrals, productOrders, activity, referralCountsByLevel, checkinStreak]
       properties:
         member:
           $ref: "#/components/schemas/AdminMember"
@@ -1341,6 +1342,15 @@ components:
               amountUgx: { type: integer }
               status: { type: string }
               createdAt: { type: string, format: date-time }
+        referralCountsByLevel:
+          type: object
+          additionalProperties: false
+          required: [level1, level2, level3]
+          properties:
+            level1: { type: integer, minimum: 0 }
+            level2: { type: integer, minimum: 0 }
+            level3: { type: integer, minimum: 0 }
+        checkinStreak: { type: integer, minimum: 0 }
     AdminMemberProductGrant:
       type: object
       additionalProperties: false
