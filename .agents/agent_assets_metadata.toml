@@ -112,3 +112,17 @@ mtime_ms = 1791732853469
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/3ba0d41b-5ab6-4f17-a24e-2a8ad48f442e/b0d54796-f0a8-478e-9d58-e7d6473f2015"
 storage_version_token = "1791733215679691"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "JK3u9K-bj9BhW3LdxDuLP"
+uri = "file://attached_assets/generated_images/investment-chat-concept.png"
+type = "image"
+title = "Investment chat concept"
+description = "A polished mobile investment-chat interface concept mockup."
+logical_id = "4cfcd965-1217-48ad-b5b7-d7f0316845d0"
+content_hash = "sha256:5a48d6658a13a25bf5a025052ad2d9f114234cafa352bbad7f44e1646d303ead"
+size = 1047430
+mtime_ms = 1791733593798
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/4cfcd965-1217-48ad-b5b7-d7f0316845d0/1391c9ae-3e60-4f1a-aa7e-f8e987ca5412"
+storage_version_token = "1791733599131649"
+content_type = "image/png"
