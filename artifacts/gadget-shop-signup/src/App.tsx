@@ -1575,7 +1575,7 @@ function AdminTaskCenterPage() {
               {memberDetailMessage && <p role="status">{memberDetailMessage}</p>}
               <h4>Product account history</h4>
               {memberDetail.productOrders.length === 0 ? <p>No product orders recorded.</p> : <div className="admin-profile-list">{memberDetail.productOrders.map((order) => <article key={order.id}><span>{order.productName} · UGX {money.format(order.priceUgx)}</span><strong>{order.status} · {new Date(order.createdAt).toLocaleString('en-UG')}</strong></article>)}</div>}
-              <h4>Complete account activity</h4>
+              <h4>Recorded account activity</h4>
               {memberDetail.activity.length === 0 ? <p>No account activity recorded.</p> : <div className="admin-profile-list">{memberDetail.activity.map((entry) => <article key={`${entry.id}-${entry.type}`}><span>{entry.type}</span><strong className={entry.amountUgx < 0 ? 'is-debit' : 'is-credit'}>{entry.amountUgx < 0 ? '−' : '+'}UGX {money.format(Math.abs(entry.amountUgx))} · {entry.status} · {new Date(entry.createdAt).toLocaleString('en-UG')}</strong></article>)}</div>}
             </>}
           </section>;
