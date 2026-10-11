@@ -1670,7 +1670,7 @@ function AdminTaskCenterPage() {
         <h2>Overview</h2>
         <p className="admin-section-subtitle">A current view of the Samsung member platform.</p>
         {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
-        {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>{directoryMessage || 'Could not load admin data.'}</p>{directoryRequiresSignIn && <Link href="/sign-in">Sign in</Link>}<button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
+        {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>{directoryMessage || 'Could not load admin data.'}</p>{directoryRequiresSignIn && <Link href="/admin/sign-in">Admin sign in</Link>}<button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
          {overview && <div className="admin-overview-grid">
            <article><span>Total users</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
            <article><span>Joined via referral</span><strong>{overview.referredUsers.toLocaleString()}</strong></article>
@@ -2491,6 +2491,84 @@ function SignInPage() {
   return <PhoneAuthPage mode="sign-in" />;
 }
 
+function AdminSignInPage() {
+  const [, setLocation] = useLocation();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error ?? 'Could not sign in.');
+      setLocation('/admin');
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not sign in. Try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return <AuthFrame mode="sign-in">
+    <div className="auth-register-brand"><Brand inverse /></div>
+    <section className="auth-card" aria-label="Administrator sign in" data-testid="panel-admin-sign-in">
+      <h1 className="auth-page-title">Admin sign in</h1>
+      <p className="auth-field-hint">Use your administrator username and password.</p>
+      <form className="auth-form" onSubmit={handleSubmit} data-testid="form-admin-sign-in">
+        <div>
+          <label htmlFor="admin-username" className="auth-label">Username</label>
+          <input
+            id="admin-username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            minLength={4}
+            maxLength={64}
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            className="auth-input"
+            data-testid="input-admin-username"
+          />
+        </div>
+        <div>
+          <label htmlFor="admin-password" className="auth-label">Password</label>
+          <input
+            id="admin-password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            minLength={12}
+            maxLength={128}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="auth-input"
+            data-testid="input-admin-password"
+          />
+        </div>
+        {error && <p className="auth-error" role="alert" data-testid="status-admin-auth-error">{error}</p>}
+        <button type="submit" disabled={submitting} className="auth-submit" data-testid="button-submit-admin-auth">
+          {submitting ? 'Please wait…' : 'Sign in'} {!submitting && <ArrowRight aria-hidden="true" />}
+        </button>
+      </form>
+      <Link href="/sign-in" className="auth-mode-switch-link">Member sign in <span aria-hidden="true">›</span></Link>
+    </section>
+  </AuthFrame>;
+}
+
 function SignUpPage() {
   return <PhoneAuthPage mode="sign-up" />;
 }
@@ -2506,6 +2584,7 @@ function AppRoutes() {
         <Route path="/presence" component={PresencePage} />
         <Route path="/tasks" component={TaskCenterPage} />
         <Route path="/admin" component={AdminTaskCenterPage} />
+        <Route path="/admin/sign-in" component={AdminSignInPage} />
         <Route path="/gadget-shop-signup/admin"><Redirect to="/admin" /></Route>
         <Route path="/withdrawal" component={WithdrawalPage} />
         <Route path="/withdrawal-history" component={WithdrawalHistoryPage} />

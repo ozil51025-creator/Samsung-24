@@ -1,4 +1,4 @@
-import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
+import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { and, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sum, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
@@ -215,6 +215,94 @@ function cookieName() {
   return process.env.NODE_ENV === "production" ? "__Host-rewards_session" : "rewards_session";
 }
 
+function adminCookieName() {
+  return process.env.NODE_ENV === "production" ? "__Host-samsung_admin" : "samsung_admin";
+}
+
+const ADMIN_SESSION_LIFETIME_MS = 12 * 60 * 60 * 1000;
+const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const ADMIN_LOGIN_MAX_ATTEMPTS = 5;
+const adminLoginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+router.post("/admin/login", async (req, res): Promise<void> => {
+  const configuredPhone = typeof process.env.ADMIN_PHONE === "string" ? normalizePhone(process.env.ADMIN_PHONE) : null;
+  const configuredUsername = process.env.ADMIN_USERNAME?.trim().toLowerCase();
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+  if (!configuredPhone || !configuredUsername || !configuredPassword || configuredPassword.length < 12) {
+    res.status(503).json({ error: "Admin sign-in is not configured. Set the admin credentials in project settings." });
+    return;
+  }
+  const { username, password } = req.body ?? {};
+  if (typeof username !== "string" || username.length > 64 || typeof password !== "string" || password.length > 128) {
+    res.status(400).json({ error: "Enter your admin username and password." });
+    return;
+  }
+
+  const rateKey = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  const now = Date.now();
+  const attempt = adminLoginAttempts.get(rateKey);
+  if (attempt && attempt.resetAt > now && attempt.count >= ADMIN_LOGIN_MAX_ATTEMPTS) {
+    res.status(429).json({ error: "Too many sign-in attempts. Wait 15 minutes and try again." });
+    return;
+  }
+  if (!attempt || attempt.resetAt <= now) adminLoginAttempts.set(rateKey, { count: 0, resetAt: now + ADMIN_LOGIN_WINDOW_MS });
+
+  const expectedHash = createHash("sha256").update(configuredPassword).digest();
+  const submittedHash = createHash("sha256").update(password).digest();
+  const passwordMatches = timingSafeEqual(expectedHash, submittedHash);
+  const usernameMatches = username.trim().toLowerCase() === configuredUsername;
+  if (!usernameMatches || !passwordMatches) {
+    const current = adminLoginAttempts.get(rateKey);
+    adminLoginAttempts.set(rateKey, { count: (current?.count ?? 0) + 1, resetAt: current?.resetAt ?? now + ADMIN_LOGIN_WINDOW_MS });
+    res.status(401).json({ error: "Invalid admin username or password." });
+    return;
+  }
+
+  try {
+    const [owner] = await db.select({ id: phoneAccountsTable.id, isActive: phoneAccountsTable.isActive })
+      .from(phoneAccountsTable)
+      .where(eq(phoneAccountsTable.phoneNumber, configuredPhone))
+      .limit(1);
+    if (!owner?.isActive) {
+      res.status(503).json({ error: "The root admin member account must be active before admin sign-in." });
+      return;
+    }
+    adminLoginAttempts.delete(rateKey);
+    const token = randomBytes(32).toString("hex");
+    await db.insert(phoneSessionsTable).values({
+      tokenHash: createHash("sha256").update(token).digest("hex"),
+      accountId: owner.id,
+      expiresAt: new Date(now + ADMIN_SESSION_LIFETIME_MS),
+    });
+    res.cookie(adminCookieName(), token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: ADMIN_SESSION_LIFETIME_MS,
+    });
+    res.json({ success: true });
+  } catch (error) {
+    req.log.error({ error, route: "admin.login" }, "Admin sign-in failed");
+    res.status(500).json({ error: "Could not sign in. Try again." });
+  }
+});
+
+router.post("/admin/logout", async (req, res): Promise<void> => {
+  const token = req.cookies?.[adminCookieName()];
+  if (typeof token === "string" && /^[a-f0-9]{64}$/i.test(token)) {
+    await db.delete(phoneSessionsTable).where(eq(phoneSessionsTable.tokenHash, createHash("sha256").update(token).digest("hex")));
+  }
+  const { maxAge: _maxAge, ...clearOptions } = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: ADMIN_SESSION_LIFETIME_MS,
+  };
+  res.clearCookie(adminCookieName(), clearOptions).status(204).end();
+});
+
 function normalizePhone(value: string): string | null {
   const compact = value.trim().replace(/[\s().-]/g, "");
   if (!/^\+?\d+$/.test(compact)) return null;
@@ -244,6 +332,21 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string; 
     return null;
   }
 
+  const adminToken = req.cookies?.[adminCookieName()];
+  if (typeof adminToken === "string" && /^[a-f0-9]{64}$/i.test(adminToken)) {
+    const [ownerSession] = await db
+      .select({ id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber, isActive: phoneAccountsTable.isActive })
+      .from(phoneSessionsTable)
+      .innerJoin(phoneAccountsTable, eq(phoneSessionsTable.accountId, phoneAccountsTable.id))
+      .where(and(
+        eq(phoneSessionsTable.tokenHash, createHash("sha256").update(adminToken).digest("hex")),
+        gt(phoneSessionsTable.expiresAt, new Date()),
+        eq(phoneAccountsTable.isActive, true),
+      ))
+      .limit(1);
+    if (ownerSession?.phoneNumber === configuredPhone) return { id: ownerSession.id, isOwner: true };
+  }
+
   const token = req.cookies?.[cookieName()];
   if (typeof token !== "string" || !/^[a-f0-9]{64}$/i.test(token)) {
     res.status(401).json({ error: "Sign in with the configured admin account." });
@@ -266,18 +369,20 @@ async function requireAdmin(req: Request, res: Response): Promise<{ id: string; 
     res.status(401).json({ error: "Sign in with the configured admin account." });
     return null;
   }
-  const [membership] = account.phoneNumber === configuredPhone
-    ? [null]
-    : await db
-      .select({ accountId: adminAccountsTable.accountId })
-      .from(adminAccountsTable)
-      .where(eq(adminAccountsTable.accountId, account.id))
-      .limit(1);
-  if (account.phoneNumber !== configuredPhone && !membership) {
+  if (account.phoneNumber === configuredPhone) {
+    res.status(401).json({ error: "Sign in with the admin username and password." });
+    return null;
+  }
+  const [membership] = await db
+    .select({ accountId: adminAccountsTable.accountId })
+    .from(adminAccountsTable)
+    .where(eq(adminAccountsTable.accountId, account.id))
+    .limit(1);
+  if (!membership) {
     res.status(403).json({ error: "This account is not authorized to use the admin panel." });
     return null;
   }
-  return { id: account.id, isOwner: account.phoneNumber === configuredPhone };
+  return { id: account.id, isOwner: false };
 }
 
 async function ensureProductCatalog() {
