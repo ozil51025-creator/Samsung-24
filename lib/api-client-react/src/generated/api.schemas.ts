@@ -421,7 +421,27 @@ export interface AdminOverview {
   totalUsers: number;
   /** @minimum 0 */
   referredUsers: number;
-  /** False until a verified payment provider and ledger exist */
+  /** @minimum 0 */
+  activeUsers: number;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+  /** @minimum 0 */
+  totalDepositedUgx: number;
+  /** @minimum 0 */
+  totalProductPurchases: number;
+  /** @minimum 0 */
+  productPurchaseTotalUgx: number;
+  /** @minimum 0 */
+  paidWithdrawalsUgx: number;
+  /** @minimum 0 */
+  pendingWithdrawalsCount: number;
+  /** @minimum 0 */
+  pendingWithdrawalsUgx: number;
+  /** @minimum 0 */
+  referralCommissionsUgx: number;
+  /** @minimum 0 */
+  checkinRewardsUgx: number;
+  /** True when recorded financial totals are available from the platform database */
   financialRecordsAvailable: boolean;
 }
 
@@ -435,6 +455,18 @@ export interface AdminMember {
   /** @nullable */
   referredByAccountId: string | null;
   isActive: boolean;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+  /** @minimum 0 */
+  depositBalanceUgx: number;
+  /** @minimum 0 */
+  totalDepositedUgx: number;
+  /** @nullable */
+  payoutProvider: string | null;
+  /** @nullable */
+  payoutHolderName: string | null;
+  /** @nullable */
+  payoutPhone: string | null;
 }
 
 export interface AdminMembers {

@@ -1,5 +1,5 @@
 import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
-import { and, count, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNotNull, isNull, sum, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
@@ -10,9 +10,11 @@ import {
   phoneAccountsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
+  payoutAccountsTable,
   presenceClaimsTable,
   productCatalogTable,
   productOrdersTable,
+  referralCommissionsTable,
   rechargeRequestsTable,
   teamDepositMilestoneClaimsTable,
   taskCenterSettingsTable,
@@ -314,15 +316,35 @@ router.get("/admin/overview", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
   try {
-    const [users] = await db.select({ value: count() }).from(phoneAccountsTable);
-    const [referred] = await db
-      .select({ value: count() })
-      .from(phoneReferralCodesTable)
-      .where(isNotNull(phoneReferralCodesTable.referredByAccountId));
+    const [
+      [users], [referred], [active], [wallets], [deposited], [purchases],
+      [paidWithdrawals], [pendingWithdrawals], [commissions], [checkins],
+    ] = await Promise.all([
+      db.select({ value: count() }).from(phoneAccountsTable),
+      db.select({ value: count() }).from(phoneReferralCodesTable).where(isNotNull(phoneReferralCodesTable.referredByAccountId)),
+      db.select({ value: count() }).from(phoneAccountsTable).where(eq(phoneAccountsTable.isActive, true)),
+      db.select({ value: sum(sql<number>`(${phoneAccountsTable.walletBalanceUgx} + ${phoneAccountsTable.depositBalanceUgx})`) }).from(phoneAccountsTable),
+      db.select({ value: sum(phoneAccountsTable.totalDepositedUgx) }).from(phoneAccountsTable),
+      db.select({ count: count(), total: sum(productOrdersTable.priceUgx) }).from(productOrdersTable),
+      db.select({ value: sum(withdrawalRequestsTable.amountUgx) }).from(withdrawalRequestsTable).where(eq(withdrawalRequestsTable.status, "paid")),
+      db.select({ count: count(), total: sum(withdrawalRequestsTable.amountUgx) }).from(withdrawalRequestsTable).where(eq(withdrawalRequestsTable.status, "pending")),
+      db.select({ value: sum(referralCommissionsTable.amountUgx) }).from(referralCommissionsTable),
+      db.select({ value: sum(presenceClaimsTable.rewardUgx) }).from(presenceClaimsTable),
+    ]);
     res.json(GetAdminOverviewResponse.parse({
       totalUsers: users.value,
       referredUsers: referred.value,
-      financialRecordsAvailable: false,
+      activeUsers: active.value,
+      walletBalanceUgx: Number(wallets.value ?? 0),
+      totalDepositedUgx: Number(deposited.value ?? 0),
+      totalProductPurchases: purchases.count,
+      productPurchaseTotalUgx: Number(purchases.total ?? 0),
+      paidWithdrawalsUgx: Number(paidWithdrawals.value ?? 0),
+      pendingWithdrawalsCount: pendingWithdrawals.count,
+      pendingWithdrawalsUgx: Number(pendingWithdrawals.total ?? 0),
+      referralCommissionsUgx: Number(commissions.value ?? 0),
+      checkinRewardsUgx: Number(checkins.value ?? 0),
+      financialRecordsAvailable: true,
     }));
   } catch (error) {
     req.log.error({ error, route: "admin.overview" }, "Could not load admin overview");
@@ -342,9 +364,16 @@ router.get("/admin/members", async (req, res): Promise<void> => {
         referralCode: phoneReferralCodesTable.referralCode,
         referredByAccountId: phoneReferralCodesTable.referredByAccountId,
         isActive: phoneAccountsTable.isActive,
+        walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+        depositBalanceUgx: phoneAccountsTable.depositBalanceUgx,
+        totalDepositedUgx: phoneAccountsTable.totalDepositedUgx,
+        payoutProvider: payoutAccountsTable.provider,
+        payoutHolderName: payoutAccountsTable.holderName,
+        payoutPhone: payoutAccountsTable.phoneNumber,
       })
       .from(phoneAccountsTable)
       .leftJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+      .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, phoneAccountsTable.id))
       .orderBy(desc(phoneAccountsTable.createdAt))
       .limit(250);
     res.json(GetAdminMembersResponse.parse({ members: rows }));

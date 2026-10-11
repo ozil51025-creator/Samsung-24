@@ -16,4 +16,16 @@ export interface AdminMember {
   /** @nullable */
   referredByAccountId: string | null;
   isActive: boolean;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+  /** @minimum 0 */
+  depositBalanceUgx: number;
+  /** @minimum 0 */
+  totalDepositedUgx: number;
+  /** @nullable */
+  payoutProvider: string | null;
+  /** @nullable */
+  payoutHolderName: string | null;
+  /** @nullable */
+  payoutPhone: string | null;
 }

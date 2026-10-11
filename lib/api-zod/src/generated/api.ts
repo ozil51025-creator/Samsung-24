@@ -237,12 +237,42 @@ export const getAdminOverviewResponseTotalUsersMin = 0;
 
 export const getAdminOverviewResponseReferredUsersMin = 0;
 
+export const getAdminOverviewResponseActiveUsersMin = 0;
+
+export const getAdminOverviewResponseWalletBalanceUgxMin = 0;
+
+export const getAdminOverviewResponseTotalDepositedUgxMin = 0;
+
+export const getAdminOverviewResponseTotalProductPurchasesMin = 0;
+
+export const getAdminOverviewResponseProductPurchaseTotalUgxMin = 0;
+
+export const getAdminOverviewResponsePaidWithdrawalsUgxMin = 0;
+
+export const getAdminOverviewResponsePendingWithdrawalsCountMin = 0;
+
+export const getAdminOverviewResponsePendingWithdrawalsUgxMin = 0;
+
+export const getAdminOverviewResponseReferralCommissionsUgxMin = 0;
+
+export const getAdminOverviewResponseCheckinRewardsUgxMin = 0;
+
 
 
 export const GetAdminOverviewResponse = zod.object({
   "totalUsers": zod.number().int().min(getAdminOverviewResponseTotalUsersMin),
   "referredUsers": zod.number().int().min(getAdminOverviewResponseReferredUsersMin),
-  "financialRecordsAvailable": zod.boolean().describe('False until a verified payment provider and ledger exist')
+  "activeUsers": zod.number().int().min(getAdminOverviewResponseActiveUsersMin),
+  "walletBalanceUgx": zod.number().int().min(getAdminOverviewResponseWalletBalanceUgxMin),
+  "totalDepositedUgx": zod.number().int().min(getAdminOverviewResponseTotalDepositedUgxMin),
+  "totalProductPurchases": zod.number().int().min(getAdminOverviewResponseTotalProductPurchasesMin),
+  "productPurchaseTotalUgx": zod.number().int().min(getAdminOverviewResponseProductPurchaseTotalUgxMin),
+  "paidWithdrawalsUgx": zod.number().int().min(getAdminOverviewResponsePaidWithdrawalsUgxMin),
+  "pendingWithdrawalsCount": zod.number().int().min(getAdminOverviewResponsePendingWithdrawalsCountMin),
+  "pendingWithdrawalsUgx": zod.number().int().min(getAdminOverviewResponsePendingWithdrawalsUgxMin),
+  "referralCommissionsUgx": zod.number().int().min(getAdminOverviewResponseReferralCommissionsUgxMin),
+  "checkinRewardsUgx": zod.number().int().min(getAdminOverviewResponseCheckinRewardsUgxMin),
+  "financialRecordsAvailable": zod.boolean().describe('True when recorded financial totals are available from the platform database')
 })
 
 
@@ -250,6 +280,12 @@ export const GetAdminOverviewResponse = zod.object({
  * @summary List member accounts for administrators
  */
 export const getAdminMembersResponseMembersItemPhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
+export const getAdminMembersResponseMembersItemWalletBalanceUgxMin = 0;
+
+export const getAdminMembersResponseMembersItemDepositBalanceUgxMin = 0;
+
+export const getAdminMembersResponseMembersItemTotalDepositedUgxMin = 0;
+
 
 
 export const GetAdminMembersResponse = zod.object({
@@ -259,7 +295,13 @@ export const GetAdminMembersResponse = zod.object({
   "createdAt": zod.coerce.date(),
   "referralCode": zod.string().nullable(),
   "referredByAccountId": zod.string().nullable(),
-  "isActive": zod.boolean()
+  "isActive": zod.boolean(),
+  "walletBalanceUgx": zod.number().int().min(getAdminMembersResponseMembersItemWalletBalanceUgxMin),
+  "depositBalanceUgx": zod.number().int().min(getAdminMembersResponseMembersItemDepositBalanceUgxMin),
+  "totalDepositedUgx": zod.number().int().min(getAdminMembersResponseMembersItemTotalDepositedUgxMin),
+  "payoutProvider": zod.string().nullable(),
+  "payoutHolderName": zod.string().nullable(),
+  "payoutPhone": zod.string().nullable()
 }))
 })
 
