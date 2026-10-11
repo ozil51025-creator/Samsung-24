@@ -15,6 +15,8 @@ export type AdminMemberDetailsReferralsItem = {
   phoneNumber: string;
   /** @nullable */
   referralCode: string | null;
+  /** @nullable */
+  referredByPhone: string | null;
   createdAt: Date;
   isActive: boolean;
 };

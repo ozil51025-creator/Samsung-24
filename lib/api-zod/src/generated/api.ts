@@ -344,6 +344,7 @@ export const GetAdminMemberDetailsResponse = zod.object({
   "level": zod.number().int().min(1).max(getAdminMemberDetailsResponseReferralsItemLevelMax),
   "phoneNumber": zod.string(),
   "referralCode": zod.string().nullable(),
+  "referredByPhone": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "isActive": zod.boolean()
 })),

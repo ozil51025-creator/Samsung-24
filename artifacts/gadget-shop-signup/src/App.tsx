@@ -1152,7 +1152,7 @@ function AdminTaskCenterPage() {
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [giftProductId, setGiftProductId] = useState('');
-  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; createdAt: string; isActive: boolean }>; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
+  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
   const [memberDetailStatus, setMemberDetailStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [memberDetailMessage, setMemberDetailMessage] = useState('');
   const [adminProducts, setAdminProducts] = useState<AdminCatalogItem[]>([]);
@@ -1568,7 +1568,7 @@ function AdminTaskCenterPage() {
                 <div><span>Referral team members</span><strong>{memberDetail.referrals.length}</strong></div>
               </div>
               <h4>Referral team</h4>
-              {memberDetail.referrals.length === 0 ? <p>No referrals recorded for this member.</p> : <div className="admin-profile-list">{memberDetail.referrals.map((referral, index) => <article key={`${referral.level}-${referral.phoneNumber}-${index}`}><span>Level {referral.level} · {referral.phoneNumber}</span><strong>{referral.referralCode ?? 'No code'} · Joined {new Date(referral.createdAt).toLocaleDateString('en-UG')} · {referral.isActive ? 'Active' : 'Disabled'}</strong></article>)}</div>}
+              {memberDetail.referrals.length === 0 ? <p>No referrals recorded for this member.</p> : <div className="admin-profile-list">{memberDetail.referrals.map((referral, index) => <article key={`${referral.level}-${referral.phoneNumber}-${index}`}><span>Level {referral.level} · {referral.phoneNumber}<small>Referred by {referral.referredByPhone ?? 'Unknown'}</small></span><strong>{referral.referralCode ?? 'No code'} · Joined {new Date(referral.createdAt).toLocaleDateString('en-UG')} · {referral.isActive ? 'Active' : 'Disabled'}</strong></article>)}</div>}
               <h4>Give a product</h4>
               <div className="admin-gift-product"><select value={giftProductId} onChange={(event) => setGiftProductId(event.target.value)} aria-label="Select product to give"><option value="">Choose a product</option>{adminProducts.filter((item) => item.isActive).map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}</select><button type="button" disabled={!giftProductId} onClick={() => void grantProductToMember(selected.id, giftProductId)}>Record free gift</button></div>
               <p className="admin-task-note">Free admin gifts are recorded in the activity history and audit log. They do not debit the wallet or count as a paid purchase.</p>

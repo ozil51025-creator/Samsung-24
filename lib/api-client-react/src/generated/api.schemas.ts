@@ -482,6 +482,8 @@ export type AdminMemberDetailsReferralsItem = {
   phoneNumber: string;
   /** @nullable */
   referralCode: string | null;
+  /** @nullable */
+  referredByPhone: string | null;
   createdAt: string;
   isActive: boolean;
 };
