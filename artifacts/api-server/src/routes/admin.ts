@@ -1,4 +1,4 @@
-import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
+import { createHash, scrypt as scryptCallback } from "node:crypto";
 import { and, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sum, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
@@ -6,6 +6,7 @@ import {
   adminAccountsTable,
   adminAuditLogsTable,
   giftCodesTable,
+  giftCodeRedemptionsTable,
   adminSiteSettingsTable,
   phoneAccountsTable,
   phoneReferralCodesTable,
@@ -82,13 +83,24 @@ router.get("/admin/gift-codes", async (req, res): Promise<void> => {
       id: giftCodesTable.id,
       code: giftCodesTable.code,
       amountUgx: giftCodesTable.amountUgx,
+      maxRedemptions: giftCodesTable.maxRedemptions,
+      redeemedCount: giftCodesTable.redeemedCount,
+      expiresAt: giftCodesTable.expiresAt,
+      disabledAt: giftCodesTable.disabledAt,
       createdAt: giftCodesTable.createdAt,
       redeemedAt: giftCodesTable.redeemedAt,
       redeemedByPhone: phoneAccountsTable.phoneNumber,
     }).from(giftCodesTable)
       .leftJoin(phoneAccountsTable, eq(giftCodesTable.redeemedByAccountId, phoneAccountsTable.id))
       .orderBy(desc(giftCodesTable.createdAt)).limit(500);
-    res.json(GetAdminGiftCodesResponse.parse({ codes: rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString(), redeemedAt: row.redeemedAt?.toISOString() ?? null })) }));
+    res.json(GetAdminGiftCodesResponse.parse({ codes: rows.map((row) => ({
+      ...row,
+      redeemedCount: Math.max(row.redeemedCount, row.redeemedAt ? 1 : 0),
+      createdAt: row.createdAt.toISOString(),
+      expiresAt: row.expiresAt?.toISOString() ?? null,
+      disabledAt: row.disabledAt?.toISOString() ?? null,
+      redeemedAt: row.redeemedAt?.toISOString() ?? null,
+    })) }));
   } catch (error) {
     req.log.error({ error, route: "admin.gift-codes.get" }, "Could not load gift codes");
     res.status(500).json({ error: "Could not load gift codes." });
@@ -100,26 +112,37 @@ router.post("/admin/gift-codes", async (req, res): Promise<void> => {
   if (!admin) return;
   const parsed = CreateAdminGiftCodeBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: "Enter a valid gift-code amount." });
+    res.status(400).json({ error: "Enter a valid code, amount, redemption limit, and optional expiry." });
     return;
   }
   try {
-    const code = randomBytes(10).toString("hex").toUpperCase();
+    const code = parsed.data.code.trim().toUpperCase();
+    const [existing] = await db.select({ id: giftCodesTable.id }).from(giftCodesTable).where(eq(giftCodesTable.code, code)).limit(1);
+    if (existing) {
+      res.status(409).json({ error: "That gift code already exists. Choose another code." });
+      return;
+    }
     const [created] = await db.insert(giftCodesTable).values({
       code,
       amountUgx: parsed.data.amountUgx,
+      maxRedemptions: parsed.data.maxRedemptions,
+      expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null,
       createdByAdminAccountId: admin.id,
     }).returning();
     await db.insert(adminAuditLogsTable).values({
       adminAccountId: admin.id,
       action: "gift_code.created",
       amountUgx: created.amountUgx,
-      details: "Issued a single-use wallet credit code.",
+      details: `Created wallet credit code ${code}; up to ${created.maxRedemptions} redemptions.`,
     });
     res.status(201).json(CreateAdminGiftCodeResponse.parse({
       id: created.id,
       code: created.code,
       amountUgx: created.amountUgx,
+      maxRedemptions: created.maxRedemptions,
+      redeemedCount: 0,
+      expiresAt: created.expiresAt?.toISOString() ?? null,
+      disabledAt: null,
       createdAt: created.createdAt.toISOString(),
       redeemedAt: null,
       redeemedByPhone: null,
@@ -127,6 +150,36 @@ router.post("/admin/gift-codes", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.gift-codes.create" }, "Could not create gift code");
     res.status(500).json({ error: "Could not create gift code." });
+  }
+});
+router.post("/admin/gift-codes/:giftCodeId/disable", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const giftCodeId = req.params.giftCodeId;
+  if (typeof giftCodeId !== "string" || !/^[0-9a-f-]{36}$/i.test(giftCodeId)) {
+    res.status(400).json({ error: "Invalid gift code." });
+    return;
+  }
+  try {
+    const now = new Date();
+    const [disabled] = await db.update(giftCodesTable)
+      .set({ disabledAt: now })
+      .where(and(eq(giftCodesTable.id, giftCodeId), isNull(giftCodesTable.disabledAt)))
+      .returning({ code: giftCodesTable.code, amountUgx: giftCodesTable.amountUgx });
+    if (!disabled) {
+      const [exists] = await db.select({ id: giftCodesTable.id }).from(giftCodesTable).where(eq(giftCodesTable.id, giftCodeId)).limit(1);
+      if (!exists) { res.status(404).json({ error: "Gift code not found." }); return; }
+      res.status(409).json({ error: "This gift code is already disabled." });
+      return;
+    }
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id, action: "gift_code.disabled", amountUgx: disabled.amountUgx,
+      details: `Disabled wallet credit code ${disabled.code}.`,
+    });
+    res.json({ disabledAt: now.toISOString() });
+  } catch (error) {
+    req.log.error({ error, route: "admin.gift-codes.disable" }, "Could not disable gift code");
+    res.status(500).json({ error: "Could not disable gift code." });
   }
 });
 const defaultTaskDefinitions = [
