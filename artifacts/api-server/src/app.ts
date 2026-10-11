@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import pesajetWebhookRouter from "./routes/pesajet-webhook";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -27,6 +28,7 @@ app.use(
     },
   }),
 );
+app.use("/api/webhooks/pesajet", express.raw({ type: "application/json", limit: "32kb" }), pesajetWebhookRouter);
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
