@@ -410,14 +410,12 @@ function HomePage() {
     let active = true;
     const loadSuccessfulWithdrawals = async () => {
       try {
-        const response = await fetch('/api/withdrawals', { credentials: 'include' });
+        const response = await fetch('/api/withdrawals/summary', { credentials: 'include' });
         const data = await response.json() as {
-          withdrawals?: Array<{ status: string; amountUgx: number }>;
+          successfulWithdrawalsUgx?: number;
         };
-        if (!response.ok || !Array.isArray(data.withdrawals)) throw new Error('Could not load withdrawals.');
-        const total = data.withdrawals.reduce((sum, withdrawal) =>
-          withdrawal.status === 'paid' ? sum + withdrawal.amountUgx : sum, 0);
-        if (active) setSuccessfulWithdrawalUgx(total);
+        if (!response.ok || !Number.isSafeInteger(data.successfulWithdrawalsUgx)) throw new Error('Could not load withdrawals.');
+        if (active) setSuccessfulWithdrawalUgx(data.successfulWithdrawalsUgx!);
       } catch {
         if (active) setSuccessfulWithdrawalUgx(null);
       }

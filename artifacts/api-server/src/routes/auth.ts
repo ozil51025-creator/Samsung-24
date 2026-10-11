@@ -21,6 +21,7 @@ import {
 import {
   CreateWithdrawalBody,
   CreateWithdrawalResponse,
+  GetMyWithdrawalSummaryResponse,
   GetMyWithdrawalsResponse,
   GetMyPayoutAccountResponse,
   SaveMyPayoutAccountBody,
@@ -1204,6 +1205,26 @@ router.put("/payout-account", requireSameOrigin, async (req, res): Promise<void>
   } catch (error) {
     req.log.error({ error, route: "payout-account.save" }, "Could not save payout destination");
     res.status(500).json({ error: "Could not save payout destination." });
+  }
+});
+
+router.get("/withdrawals/summary", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const [result] = await db.select({
+      total: sum(withdrawalRequestsTable.amountUgx),
+    }).from(withdrawalRequestsTable)
+      .where(and(
+        eq(withdrawalRequestsTable.accountId, accountId),
+        eq(withdrawalRequestsTable.status, "paid"),
+      ));
+    res.json(GetMyWithdrawalSummaryResponse.parse({
+      successfulWithdrawalsUgx: Number(result?.total ?? 0),
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "withdrawals.summary" }, "Could not load successful withdrawal total");
+    res.status(500).json({ error: "Could not load successful withdrawals." });
   }
 });
 
