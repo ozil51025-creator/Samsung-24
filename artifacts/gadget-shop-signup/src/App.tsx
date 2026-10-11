@@ -1475,6 +1475,7 @@ function AdminTaskCenterPage() {
            <article><span>Check-in rewards</span><strong>UGX {money.format(overview.checkinRewardsUgx)}</strong></article>
            <article><span>Disabled users</span><strong>{Math.max(0, overview.totalUsers - overview.activeUsers).toLocaleString()}</strong></article>
          </div>}
+         <p className="admin-overview-source-note">Totals come from recorded platform data. Product purchase value is member spending, not shop revenue; wallet totals are not an audited cash reconciliation.</p>
          <div className="admin-recent-transactions">
            <h3>Recent transactions</h3>
            {adminTransactions.length === 0
