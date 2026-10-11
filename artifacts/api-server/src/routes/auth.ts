@@ -731,10 +731,19 @@ router.get("/referral/details", async (req, res): Promise<void> => {
         accountId: phoneReferralCodesTable.accountId,
         referredByAccountId: phoneReferralCodesTable.referredByAccountId,
       }).from(phoneReferralCodesTable);
-    const downlineLevels = new Map(referralLinks.flatMap(({ accountId: memberId }) => {
-      const level = getReferralAncestorsThroughLevelThree(memberId, referralLinks).indexOf(accountId) + 1;
-      return level > 0 && level <= 3 ? [[memberId, level] as const] : [];
-    }));
+    const downlineLevels = new Map<string, number>();
+    const seen = new Set<string>([accountId]);
+    let frontier = new Set<string>([accountId]);
+    for (let level = 1; level <= 3; level += 1) {
+      const next = new Set(referralLinks
+        .filter((link) => link.referredByAccountId && frontier.has(link.referredByAccountId) && !seen.has(link.accountId))
+        .map((link) => link.accountId));
+      next.forEach((memberId) => {
+        seen.add(memberId);
+        downlineLevels.set(memberId, level);
+      });
+      frontier = next;
+    }
     const [accounts, rewardRows] = await Promise.all([
       downlineLevels.size
         ? db.select({
@@ -759,6 +768,7 @@ router.get("/referral/details", async (req, res): Promise<void> => {
       level: downlineLevels.get(member.id) ?? 0,
       joinedAt: member.joinedAt.toISOString(),
     }));
+    req.log.info({ downlineLinkCount: downlineLevels.size, returnedMemberCount: members.length }, "Loaded referral member details");
     res.json(GetReferralDetailsResponse.parse({
       members,
       rewards: rewardRows.map((reward) => ({ ...reward, createdAt: reward.createdAt.toISOString() })),
