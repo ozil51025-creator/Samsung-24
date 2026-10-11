@@ -5,6 +5,7 @@ import {
   db,
   phoneAccountsTable,
   giftCodesTable,
+  giftCodeRedemptionsTable,
   phoneReferralCodesTable,
   phoneSessionsTable,
   presenceClaimsTable,
@@ -679,7 +680,12 @@ router.post("/gift-codes/redeem", requireSameOrigin, async (req, res): Promise<v
   try {
     const result = await db.transaction(async (tx) => {
       const [gift] = await tx.select().from(giftCodesTable).where(eq(giftCodesTable.code, code)).for("update").limit(1);
-      if (!gift || gift.redeemedAt) return null;
+      const alreadyRedeemed = gift ? await tx.select({ id: giftCodeRedemptionsTable.id })
+        .from(giftCodeRedemptionsTable)
+        .where(and(eq(giftCodeRedemptionsTable.giftCodeId, gift.id), eq(giftCodeRedemptionsTable.accountId, accountId)))
+        .limit(1) : [];
+      const redeemedCount = gift ? Math.max(gift.redeemedCount, gift.redeemedAt ? 1 : 0) : 0;
+      if (!gift || gift.disabledAt || (gift.expiresAt && gift.expiresAt <= new Date()) || redeemedCount >= gift.maxRedemptions || (gift.redeemedByAccountId === accountId) || alreadyRedeemed.length) return null;
       const [member] = await tx.update(phoneAccountsTable)
         .set({
           walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${gift.amountUgx}`,
@@ -687,7 +693,13 @@ router.post("/gift-codes/redeem", requireSameOrigin, async (req, res): Promise<v
         }).where(eq(phoneAccountsTable.id, accountId))
         .returning({ walletBalanceUgx: phoneAccountsTable.walletBalanceUgx });
       if (!member) return null;
-      await tx.update(giftCodesTable).set({ redeemedByAccountId: accountId, redeemedAt: new Date() }).where(eq(giftCodesTable.id, gift.id));
+      const redeemedAt = new Date();
+      await tx.insert(giftCodeRedemptionsTable).values({ giftCodeId: gift.id, accountId, redeemedAt });
+      await tx.update(giftCodesTable).set({
+        redeemedCount: redeemedCount + 1,
+        redeemedByAccountId: gift.redeemedByAccountId ?? accountId,
+        redeemedAt: gift.redeemedAt ?? redeemedAt,
+      }).where(eq(giftCodesTable.id, gift.id));
       return { amountUgx: gift.amountUgx, walletBalanceUgx: member.walletBalanceUgx };
     });
     if (!result) {
