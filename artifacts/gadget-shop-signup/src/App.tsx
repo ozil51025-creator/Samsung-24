@@ -1660,7 +1660,9 @@ function AdminTaskCenterPage() {
       <span className="admin-live-badge"><i />Live</span>
        <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminTransactions(); loadAdminProducts(); loadRechargeRequests(); loadWithdrawalRequests(); loadTasks(); }}><Bell /></button>
        <button type="button" className="admin-exit-button" aria-label="Sign out of admin panel" title="Sign out" onClick={() => {
-         void fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }).finally(() => navigate('/admin/sign-in'));
+         void fetch('/api/admin/logout', { method: 'POST', credentials: 'include' })
+           .catch(() => undefined)
+           .finally(() => navigate('/admin/sign-in'));
        }}><ArrowRight /></button>
     </header>
     <div className="admin-task-body">
