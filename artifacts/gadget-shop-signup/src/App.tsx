@@ -1201,7 +1201,7 @@ function AdminTransactionsSection() {
 function AdminTaskCenterPage() {
   const [activeSection, setActiveSection] = useState<AdminSectionId>('dashboard');
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
-  const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
+  const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; provider: 'mtn' | 'airtel' | null; status: string; createdAt: string; memberPhone: string }>>([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState<Array<{ id: string; amountUgx: number; feeUgx: number; receivedUgx: number; payoutPhone: string; payoutProvider: 'airtel' | 'mtn' | 'registered'; payoutHolderName: string | null; status: 'pending' | 'paid' | 'failed'; createdAt: string; processedAt: string | null; resolutionNote: string | null; memberPhone: string }>>([]);
   const [withdrawalStatus, setWithdrawalStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; activeUsers: number; walletBalanceUgx: number; totalDepositedUgx: number; totalProductPurchases: number; productPurchaseTotalUgx: number; paidWithdrawalsUgx: number; pendingWithdrawalsCount: number; pendingWithdrawalsUgx: number; referralCommissionsUgx: number; checkinRewardsUgx: number; financialRecordsAvailable: boolean } | null>(null);
@@ -1735,13 +1735,14 @@ function AdminTaskCenterPage() {
       </section>
       <section id="admin-recharges" className="admin-recharge-review admin-panel-section" hidden={activeSection !== 'payments'}>
         <h2>Payments</h2>
-        <p className="admin-section-subtitle">Manual recharge requests pending verification.</p>
-        <p className="admin-task-note">Verify the Airtel transfer before changing its status. Verification credits the member’s deposited wallet balance.</p>
+        <p className="admin-section-subtitle">Mobile-money collection requests awaiting confirmation.</p>
+        <p className="admin-task-note">Check the matching PesaJet reference and confirm the money was received before verifying. Verification credits the member’s deposit balance.</p>
         {rechargeStatus === 'loading' && <p>Loading requests…</p>}
         {rechargeStatus === 'error' && <button type="button" onClick={loadRechargeRequests}>Retry loading requests</button>}
         {rechargeStatus === 'ready' && rechargeRequests.length === 0 && <p>No recharge requests.</p>}
         {rechargeRequests.map((request) => <article className="admin-recharge-review-item" key={request.id}>
-          <p><strong>UGX {money.format(request.amountUgx)}</strong> · {request.status}</p>
+          <p><strong>UGX {money.format(request.amountUgx)}</strong> · {request.provider?.toUpperCase() ?? 'Manual'} · {request.status}</p>
+          {request.provider && <p>PesaJet reference: {request.id}</p>}
           <p>Member: {request.memberPhone} · Sender: {request.payerPhone}</p>
           {request.status === 'pending' && <button type="button" onClick={() => void verifyRecharge(request.id)}>Verify transfer</button>}
         </article>)}
