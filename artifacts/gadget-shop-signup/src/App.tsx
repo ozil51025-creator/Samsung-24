@@ -401,6 +401,36 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
 
 function HomePage() {
   const { user } = useAuth();
+  const [successfulWithdrawalUgx, setSuccessfulWithdrawalUgx] = useState<number | null>(null);
+  useEffect(() => {
+    if (!user) {
+      setSuccessfulWithdrawalUgx(null);
+      return;
+    }
+    let active = true;
+    const loadSuccessfulWithdrawals = async () => {
+      try {
+        const response = await fetch('/api/withdrawals', { credentials: 'include' });
+        const data = await response.json() as {
+          withdrawals?: Array<{ status: string; amountUgx: number }>;
+        };
+        if (!response.ok || !Array.isArray(data.withdrawals)) throw new Error('Could not load withdrawals.');
+        const total = data.withdrawals.reduce((sum, withdrawal) =>
+          withdrawal.status === 'paid' ? sum + withdrawal.amountUgx : sum, 0);
+        if (active) setSuccessfulWithdrawalUgx(total);
+      } catch {
+        if (active) setSuccessfulWithdrawalUgx(null);
+      }
+    };
+    void loadSuccessfulWithdrawals();
+    const intervalId = window.setInterval(() => void loadSuccessfulWithdrawals(), 30_000);
+    window.addEventListener('focus', loadSuccessfulWithdrawals);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', loadSuccessfulWithdrawals);
+    };
+  }, [user?.phoneNumber]);
   const homeActions = [
     { label: 'Recharge', icon: Download, href: '/recharge' },
     { label: 'Withdrawal', icon: CreditCard, href: '/withdrawal' },
@@ -422,7 +452,7 @@ function HomePage() {
     },
     {
       label: 'Withdrawal',
-      value: 'UGX —',
+      value: successfulWithdrawalUgx === null ? 'UGX —' : `UGX ${money.format(successfulWithdrawalUgx)}`,
       image: `${basePath}/samsung-s26-ultra-banner.jpeg`,
       className: '',
     },
