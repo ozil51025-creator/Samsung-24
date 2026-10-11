@@ -56,3 +56,17 @@ mtime_ms = 1791703793781
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/59487388-95e2-499a-8e06-04edd92e20f5/0aa7ffd4-352e-47fa-9876-06d0e955f7b9"
 storage_version_token = "1791703800823707"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "HnvHO_R7cC8KbkBKQpHXI"
+uri = "file://generated-artifacts/rewards-program-platform-source-20261011-v3.zip"
+type = "unspecified"
+title = "Updated platform source code"
+description = "Latest full source backup, including product-gated withdrawals and PesaJet disbursement processing. No credentials, dependencies, build output, or chat attachments included."
+logical_id = "23113efb-e6de-471b-9dd1-2fe902bf2f9e"
+content_hash = "sha256:cd711d01433b12627408f300ff7fa2d75ffdcc6b9e9bb30ff63d7d5dbfb81af9"
+size = 1468567
+mtime_ms = 1791704376030
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/23113efb-e6de-471b-9dd1-2fe902bf2f9e/10230c9c-ff39-435e-92c6-822d00324a2d"
+storage_version_token = "1791704391387476"
+content_type = "application/octet-stream"
