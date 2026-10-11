@@ -41,6 +41,7 @@ import type {
   AdminWithdrawalListResponse,
   AdminWithdrawalRecord,
   ErrorResponse,
+  GetAdminMembersParams,
   GetAdminTransactions200,
   GiftCodeRedemptionResult,
   GrantAdminMemberProduct201,
@@ -652,20 +653,27 @@ export function useGetAdminOverview<TData = Awaited<ReturnType<typeof getAdminOv
 
 
 
-export const getGetAdminMembersUrl = () => {
+export const getGetAdminMembersUrl = (params?: GetAdminMembersParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/admin/members`
+  return stringifiedParams.length > 0 ? `/api/admin/members?${stringifiedParams}` : `/api/admin/members`
 }
 
 /**
- * @summary List member accounts for administrators
+ * @summary List or search member accounts for administrators
  */
-export const getAdminMembers = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminMembers> => {
+export const getAdminMembers = async (params?: GetAdminMembersParams, options?: Parameters<typeof customFetch>[1]): Promise<AdminMembers> => {
 
-  return customFetch<AdminMembers>(getGetAdminMembersUrl(),
+  return customFetch<AdminMembers>(getGetAdminMembersUrl(params),
   {
     ...options,
     method: 'GET'
@@ -678,23 +686,23 @@ export const getAdminMembers = async ( options?: Parameters<typeof customFetch>[
 
 
 
-export const getGetAdminMembersQueryKey = () => {
+export const getGetAdminMembersQueryKey = (params?: GetAdminMembersParams,) => {
     return [
-    `/api/admin/members`
+    `/api/admin/members`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetAdminMembersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminMembers>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMembers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminMembersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminMembers>>, TError = ErrorType<ErrorResponse>>(params?: GetAdminMembersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMembers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminMembersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminMembersQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminMembers>>> = ({ signal }) => getAdminMembers({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminMembers>>> = ({ signal }) => getAdminMembers(params, { signal, ...requestOptions });
 
 
 
@@ -708,15 +716,15 @@ export type GetAdminMembersQueryError = ErrorType<ErrorResponse>
 
 
 /**
- * @summary List member accounts for administrators
+ * @summary List or search member accounts for administrators
  */
 
 export function useGetAdminMembers<TData = Awaited<ReturnType<typeof getAdminMembers>>, TError = ErrorType<ErrorResponse>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMembers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetAdminMembersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMembers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetAdminMembersQueryOptions(options)
+  const queryOptions = getGetAdminMembersQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

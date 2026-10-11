@@ -35,6 +35,7 @@ export * from './adminWalletAdjustmentInputDirection';
 export * from './adminWithdrawalListResponse';
 export * from './adminWithdrawalRecord';
 export * from './errorResponse';
+export * from './getAdminMembersParams';
 export * from './getAdminTransactions200';
 export * from './getAdminTransactions200TransactionsItem';
 export * from './giftCodeRedemptionResult';

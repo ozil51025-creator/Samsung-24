@@ -1,5 +1,5 @@
 import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
-import { and, count, desc, eq, gt, inArray, isNotNull, isNull, sum, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sum, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {
   db,
@@ -359,7 +359,9 @@ router.get("/admin/members", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
   try {
-    const rows = await db
+    const search = typeof req.query.search === "string" ? req.query.search.trim().slice(0, 100) : "";
+    const normalizedPhone = search ? normalizePhone(search) : null;
+    const query = db
       .select({
         id: phoneAccountsTable.id,
         phoneNumber: phoneAccountsTable.phoneNumber,
@@ -376,9 +378,15 @@ router.get("/admin/members", async (req, res): Promise<void> => {
       })
       .from(phoneAccountsTable)
       .leftJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
-      .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, phoneAccountsTable.id))
-      .orderBy(desc(phoneAccountsTable.createdAt))
-      .limit(250);
+      .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, phoneAccountsTable.id));
+    if (search) {
+      query.where(or(
+        ilike(phoneAccountsTable.phoneNumber, `%${search}%`),
+        ilike(phoneReferralCodesTable.referralCode, `%${search}%`),
+        ...(normalizedPhone ? [eq(phoneAccountsTable.phoneNumber, normalizedPhone)] : []),
+      ));
+    }
+    const rows = await query.orderBy(desc(phoneAccountsTable.createdAt)).limit(250);
     res.json(GetAdminMembersResponse.parse({ members: rows, ownerActionsAllowed: admin.isOwner }));
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");

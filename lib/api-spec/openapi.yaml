@@ -174,7 +174,15 @@ paths:
     get:
       operationId: getAdminMembers
       tags: [admin]
-      summary: List member accounts for administrators
+      summary: List or search member accounts for administrators
+      parameters:
+        - in: query
+          name: search
+          required: false
+          description: Search all member phone numbers and referral codes, including locally formatted Ugandan phone numbers.
+          schema:
+            type: string
+            maxLength: 100
       responses:
         "200":
           description: Most recent member accounts

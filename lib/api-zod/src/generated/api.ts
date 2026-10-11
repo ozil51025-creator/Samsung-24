@@ -277,8 +277,16 @@ export const GetAdminOverviewResponse = zod.object({
 
 
 /**
- * @summary List member accounts for administrators
+ * @summary List or search member accounts for administrators
  */
+export const getAdminMembersQuerySearchMax = 100;
+
+
+
+export const GetAdminMembersQueryParams = zod.object({
+  "search": zod.coerce.string().max(getAdminMembersQuerySearchMax).optional().describe('Search all member phone numbers and referral codes, including locally formatted Ugandan phone numbers.')
+})
+
 export const getAdminMembersResponseMembersItemPhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
 export const getAdminMembersResponseMembersItemWalletBalanceUgxMin = 0;
 

@@ -764,6 +764,14 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type GetAdminMembersParams = {
+/**
+ * Search all member phone numbers and referral codes, including locally formatted Ugandan phone numbers.
+ * @maxLength 100
+ */
+search?: string;
+};
+
 export type GrantAdminMemberProduct201 = {
   message: string;
 };

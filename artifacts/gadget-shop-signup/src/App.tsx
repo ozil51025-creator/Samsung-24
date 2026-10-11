@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { AuthProvider, getAuthErrorMessage, useAuth } from '@/auth/auth-context';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -1219,6 +1219,9 @@ function AdminTaskCenterPage() {
   const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
   const [adminTransactions, setAdminTransactions] = useState<Array<{ id: string; member: string; amountUgx: number; type: string; status: string; createdAt: string }>>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [memberSearchStatus, setMemberSearchStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [memberSearchMessage, setMemberSearchMessage] = useState('');
+  const memberSearchInitialized = useRef(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [giftProductId, setGiftProductId] = useState('');
   const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; referralCountsByLevel: { level1: number; level2: number; level3: number }; checkinStreak: number; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
@@ -1294,7 +1297,7 @@ function AdminTaskCenterPage() {
     setDirectoryRequiresSignIn(false);
     Promise.all([
       fetch('/api/admin/overview', { credentials: 'include' }),
-      fetch('/api/admin/members', { credentials: 'include' }),
+      fetch(`/api/admin/members${memberSearch.trim() ? `?search=${encodeURIComponent(memberSearch.trim())}` : ''}`, { credentials: 'include' }),
       fetch('/api/admin/admins', { credentials: 'include' }),
       fetch('/api/admin/audit-logs', { credentials: 'include' }),
     ])
@@ -1332,6 +1335,38 @@ function AdminTaskCenterPage() {
       });
   };
   useEffect(() => { loadAdminDirectory(); }, []);
+  useEffect(() => {
+    if (directoryStatus !== 'ready') return;
+    if (!memberSearchInitialized.current) {
+      memberSearchInitialized.current = true;
+      setMemberSearchStatus('ready');
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setMemberSearchStatus('loading');
+      setMemberSearchMessage('');
+      const params = new URLSearchParams();
+      const search = memberSearch.trim();
+      if (search) params.set('search', search);
+      try {
+        const response = await fetch(`/api/admin/members?${params.toString()}`, { credentials: 'include', signal: controller.signal });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not search members.');
+        setMembers(data.members);
+        setOwnerActionsAllowed(data.ownerActionsAllowed === true);
+        setMemberSearchStatus('ready');
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setMemberSearchMessage(error instanceof Error ? error.message : 'Could not search members.');
+        setMemberSearchStatus('error');
+      }
+    }, memberSearch.trim() ? 250 : 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [memberSearch, directoryStatus]);
   const loadAdminTransactions = () => {
     fetch('/api/admin/transactions', { credentials: 'include' }).then(async (response) => {
       const data = await response.json();
@@ -1612,10 +1647,12 @@ function AdminTaskCenterPage() {
       </section>
       <section id="admin-members" className="admin-panel-section" hidden={activeSection !== 'users'}>
         <h2>Members</h2>
-        <label className="admin-member-search">Search phone or referral code<input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="+256… or referral code" data-testid="input-admin-member-search" /></label>
-        {directoryStatus === 'ready' && members.length === 0 && <p>No member accounts yet.</p>}
+        <label className="admin-member-search">Search by phone number or referral code<input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="0754… or referral code" data-testid="input-admin-member-search" /></label>
+        {memberSearchStatus === 'loading' && <p role="status">Searching members…</p>}
+        {memberSearchStatus === 'error' && <p role="alert">{memberSearchMessage}</p>}
+        {directoryStatus === 'ready' && memberSearchStatus === 'ready' && members.length === 0 && <p>{memberSearch.trim() ? 'No members match that phone number or referral code.' : 'No member accounts yet.'}</p>}
         {members.length > 0 && <div className="admin-member-list">
-           {members.filter((member) => `${member.phoneNumber} ${member.referralCode ?? ''}`.toLowerCase().includes(memberSearch.trim().toLowerCase())).map((member) => <article key={member.id}>
+           {members.map((member) => <article key={member.id}>
             <div><button type="button" className="admin-member-open" onClick={() => void loadMemberDetails(member.id)} data-testid={`button-open-member-${member.id}`}>{member.phoneNumber}</button><span>Joined {new Date(member.createdAt).toLocaleString('en-UG')}</span></div>
             <div><span>Referral code</span><strong>{member.referralCode ?? '—'}</strong></div>
             <div><span>Invited by</span><strong>{member.referredByAccountId ? 'Referred member' : 'Direct signup'}</strong></div>
