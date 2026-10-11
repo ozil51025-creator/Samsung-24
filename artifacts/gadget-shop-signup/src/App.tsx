@@ -1151,6 +1151,7 @@ function AdminTaskCenterPage() {
   const [adminTransactions, setAdminTransactions] = useState<Array<{ id: string; member: string; amountUgx: number; type: string; status: string; createdAt: string }>>([]);
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [giftProductId, setGiftProductId] = useState('');
   const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; createdAt: string; isActive: boolean }>; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
   const [memberDetailStatus, setMemberDetailStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [memberDetailMessage, setMemberDetailMessage] = useState('');
@@ -1295,8 +1296,8 @@ function AdminTaskCenterPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Could not give the product.');
-      setMemberDetailMessage(data.message);
       await loadMemberDetails(memberId);
+      setMemberDetailMessage(data.message);
       loadAdminTransactions();
     } catch (error) {
       setMemberDetailMessage(error instanceof Error ? error.message : 'Could not give the product.');
@@ -1537,7 +1538,7 @@ function AdminTaskCenterPage() {
         {directoryStatus === 'ready' && members.length === 0 && <p>No member accounts yet.</p>}
         {members.length > 0 && <div className="admin-member-list">
            {members.filter((member) => `${member.phoneNumber} ${member.referralCode ?? ''}`.toLowerCase().includes(memberSearch.trim().toLowerCase())).map((member) => <article key={member.id}>
-            <div><strong>{member.phoneNumber}</strong><span>Joined {new Date(member.createdAt).toLocaleDateString()}</span></div>
+            <div><button type="button" className="admin-member-open" onClick={() => void loadMemberDetails(member.id)} data-testid={`button-open-member-${member.id}`}>{member.phoneNumber}</button><span>Joined {new Date(member.createdAt).toLocaleString('en-UG')}</span></div>
             <div><span>Referral code</span><strong>{member.referralCode ?? '—'}</strong></div>
             <div><span>Invited by</span><strong>{member.referredByAccountId ? 'Referred member' : 'Direct signup'}</strong></div>
             <div><span>Account status</span><strong>{member.isActive ? 'Active' : 'Disabled'}</strong></div>
@@ -1547,16 +1548,38 @@ function AdminTaskCenterPage() {
               <button type="button" onClick={() => void adjustMemberWallet(member, 'credit')}>Credit wallet</button>
               <button type="button" onClick={() => void adjustMemberWallet(member, 'debit')}>Debit wallet</button>
             </div>
-             <details className="admin-member-details">
-               <summary>Balances, payout account and recent transactions</summary>
-               <div><span>Available wallet</span><strong>UGX {money.format(member.walletBalanceUgx)}</strong></div>
-               <div><span>Product funds</span><strong>UGX {money.format(member.depositBalanceUgx)}</strong></div>
-               <div><span>Total deposited</span><strong>UGX {money.format(member.totalDepositedUgx)}</strong></div>
-               <div><span>Saved payout account</span><strong>{member.payoutProvider ? `${member.payoutProvider.toUpperCase()} · ${member.payoutHolderName ?? 'Member'} · ${member.payoutPhone ?? '—'}` : 'None saved'}</strong></div>
-               <div className="admin-member-recent">{adminTransactions.filter((transaction) => transaction.member === member.phoneNumber).slice(0, 5).map((transaction) => <p key={transaction.id}>{new Date(transaction.createdAt).toLocaleString('en-UG')} · {transaction.type} · {transaction.amountUgx < 0 ? '−' : '+'}UGX {money.format(Math.abs(transaction.amountUgx))}</p>)}</div>
-             </details>
           </article>)}
         </div>}
+        {selectedMemberId && (() => {
+          const selected = members.find((item) => item.id === selectedMemberId);
+          if (!selected) return null;
+          return <section className="admin-member-profile" aria-label={`Member profile ${selected.phoneNumber}`} data-testid="panel-admin-member-profile">
+            <div className="admin-member-profile-heading"><div><h3>{selected.phoneNumber}</h3><p>Joined {new Date(selected.createdAt).toLocaleString('en-UG')} · {selected.isActive ? 'Active account' : 'Disabled account'}</p></div><button type="button" onClick={() => { setSelectedMemberId(null); setMemberDetail(null); }} aria-label="Close member profile">Close</button></div>
+            {memberDetailStatus === 'loading' && <p role="status">Loading full member profile…</p>}
+            {memberDetailStatus === 'error' && <p role="alert">{memberDetailMessage}<button type="button" onClick={() => void loadMemberDetails(selected.id)}>Try again</button></p>}
+            {memberDetail && <>
+              <div className="admin-member-profile-grid">
+                <div><span>Referral code</span><strong>{selected.referralCode ?? '—'}</strong></div>
+                <div><span>Invited by</span><strong>{memberDetail.invitedByPhone ?? 'Direct signup'}</strong></div>
+                <div><span>Wallet balance</span><strong>UGX {money.format(selected.walletBalanceUgx)}</strong></div>
+                <div><span>Product funds</span><strong>UGX {money.format(selected.depositBalanceUgx)}</strong></div>
+                <div><span>Total deposited</span><strong>UGX {money.format(selected.totalDepositedUgx)}</strong></div>
+                <div><span>Saved payout account</span><strong>{selected.payoutProvider ? `${selected.payoutProvider.toUpperCase()} · ${selected.payoutHolderName ?? 'Member'} · ${selected.payoutPhone ?? '—'}` : 'None saved'}</strong></div>
+                <div><span>Referral team members</span><strong>{memberDetail.referrals.length}</strong></div>
+              </div>
+              <h4>Referral team</h4>
+              {memberDetail.referrals.length === 0 ? <p>No referrals recorded for this member.</p> : <div className="admin-profile-list">{memberDetail.referrals.map((referral, index) => <article key={`${referral.level}-${referral.phoneNumber}-${index}`}><span>Level {referral.level} · {referral.phoneNumber}</span><strong>{referral.referralCode ?? 'No code'} · Joined {new Date(referral.createdAt).toLocaleDateString('en-UG')} · {referral.isActive ? 'Active' : 'Disabled'}</strong></article>)}</div>}
+              <h4>Give a product</h4>
+              <div className="admin-gift-product"><select value={giftProductId} onChange={(event) => setGiftProductId(event.target.value)} aria-label="Select product to give"><option value="">Choose a product</option>{adminProducts.filter((item) => item.isActive).map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}</select><button type="button" disabled={!giftProductId} onClick={() => void grantProductToMember(selected.id, giftProductId)}>Record free gift</button></div>
+              <p className="admin-task-note">Free admin gifts are recorded in the activity history and audit log. They do not debit the wallet or count as a paid purchase.</p>
+              {memberDetailMessage && <p role="status">{memberDetailMessage}</p>}
+              <h4>Product account history</h4>
+              {memberDetail.productOrders.length === 0 ? <p>No product orders recorded.</p> : <div className="admin-profile-list">{memberDetail.productOrders.map((order) => <article key={order.id}><span>{order.productName} · UGX {money.format(order.priceUgx)}</span><strong>{order.status} · {new Date(order.createdAt).toLocaleString('en-UG')}</strong></article>)}</div>}
+              <h4>Complete account activity</h4>
+              {memberDetail.activity.length === 0 ? <p>No account activity recorded.</p> : <div className="admin-profile-list">{memberDetail.activity.map((entry) => <article key={`${entry.id}-${entry.type}`}><span>{entry.type}</span><strong className={entry.amountUgx < 0 ? 'is-debit' : 'is-credit'}>{entry.amountUgx < 0 ? '−' : '+'}UGX {money.format(Math.abs(entry.amountUgx))} · {entry.status} · {new Date(entry.createdAt).toLocaleString('en-UG')}</strong></article>)}</div>}
+            </>}
+          </section>;
+        })()}
         <p className="admin-task-note">Password resets issue a temporary password once and sign out existing sessions. Wallet changes require a reason, affect the available wallet only, and do not rewrite earnings or deposit totals.</p>
       </section>
       <section id="admin-access" className="admin-panel-section" hidden={activeSection !== 'admins'}>
