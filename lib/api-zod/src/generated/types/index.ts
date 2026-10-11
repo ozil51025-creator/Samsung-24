@@ -79,3 +79,4 @@ export * from './withdrawalRecord';
 export * from './withdrawalRecordPayoutProvider';
 export * from './withdrawalRecordStatus';
 export * from './withdrawalRequestInput';
+export * from './withdrawalSummaryResponse';

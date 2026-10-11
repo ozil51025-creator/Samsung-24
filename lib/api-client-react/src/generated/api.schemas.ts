@@ -303,6 +303,11 @@ export interface WithdrawalHistoryResponse {
   withdrawals: WithdrawalRecord[];
 }
 
+export interface WithdrawalSummaryResponse {
+  /** @minimum 0 */
+  successfulWithdrawalsUgx: number;
+}
+
 export type AdminWithdrawalRecord = WithdrawalRecord & {
   memberPhone: string;
 };

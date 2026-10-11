@@ -846,6 +846,18 @@ export const GetMyProductOrdersResponse = zod.object({
 
 
 /**
+ * @summary Get the total value of the signed-in member's successful withdrawals
+ */
+export const getMyWithdrawalSummaryResponseSuccessfulWithdrawalsUgxMin = 0;
+
+
+
+export const GetMyWithdrawalSummaryResponse = zod.object({
+  "successfulWithdrawalsUgx": zod.number().int().min(getMyWithdrawalSummaryResponseSuccessfulWithdrawalsUgxMin)
+})
+
+
+/**
  * @summary Get the signed-in member's withdrawal requests
  */
 export const GetMyWithdrawalsResponse = zod.object({

@@ -65,7 +65,8 @@ import type {
   TaskRewardClaim,
   TeamDepositMilestones,
   WithdrawalHistoryResponse,
-  WithdrawalRequestInput
+  WithdrawalRequestInput,
+  WithdrawalSummaryResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -2238,6 +2239,83 @@ export function useGetMyProductOrders<TData = Awaited<ReturnType<typeof getMyPro
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMyProductOrdersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMyWithdrawalSummaryUrl = () => {
+
+
+
+
+  return `/api/withdrawals/summary`
+}
+
+/**
+ * @summary Get the total value of the signed-in member's successful withdrawals
+ */
+export const getMyWithdrawalSummary = async ( options?: Parameters<typeof customFetch>[1]): Promise<WithdrawalSummaryResponse> => {
+
+  return customFetch<WithdrawalSummaryResponse>(getGetMyWithdrawalSummaryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyWithdrawalSummaryQueryKey = () => {
+    return [
+    `/api/withdrawals/summary`
+    ] as const;
+    }
+
+
+export const getGetMyWithdrawalSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getMyWithdrawalSummary>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyWithdrawalSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyWithdrawalSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyWithdrawalSummary>>> = ({ signal }) => getMyWithdrawalSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyWithdrawalSummary>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyWithdrawalSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getMyWithdrawalSummary>>>
+export type GetMyWithdrawalSummaryQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the total value of the signed-in member's successful withdrawals
+ */
+
+export function useGetMyWithdrawalSummary<TData = Awaited<ReturnType<typeof getMyWithdrawalSummary>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyWithdrawalSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyWithdrawalSummaryQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
