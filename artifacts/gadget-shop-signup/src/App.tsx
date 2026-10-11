@@ -1150,6 +1150,10 @@ function AdminTaskCenterPage() {
   const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
   const [adminTransactions, setAdminTransactions] = useState<Array<{ id: string; member: string; amountUgx: number; type: string; status: string; createdAt: string }>>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; createdAt: string; isActive: boolean }>; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
+  const [memberDetailStatus, setMemberDetailStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [memberDetailMessage, setMemberDetailMessage] = useState('');
   const [adminProducts, setAdminProducts] = useState<AdminCatalogItem[]>([]);
   const [productStatus, setProductStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [savingProducts, setSavingProducts] = useState(false);
@@ -1264,6 +1268,40 @@ function AdminTaskCenterPage() {
     }).catch(() => setAdminTransactions([]));
   };
   useEffect(() => { loadAdminTransactions(); }, []);
+  const loadMemberDetails = async (memberId: string) => {
+    setSelectedMemberId(memberId);
+    setMemberDetail(null);
+    setMemberDetailStatus('loading');
+    setMemberDetailMessage('');
+    try {
+      const response = await fetch(`/api/admin/members/${encodeURIComponent(memberId)}/details`, { credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load this member.');
+      setMemberDetail(data);
+      setMemberDetailStatus('ready');
+    } catch (error) {
+      setMemberDetailMessage(error instanceof Error ? error.message : 'Could not load this member.');
+      setMemberDetailStatus('error');
+    }
+  };
+  const grantProductToMember = async (memberId: string, productId: string) => {
+    if (!productId) return;
+    const product = adminProducts.find((item) => item.id === productId);
+    if (!product || !window.confirm(`Record ${product.name} as a free admin gift? The member’s wallet will not change.`)) return;
+    try {
+      const response = await fetch(`/api/admin/members/${encodeURIComponent(memberId)}/product-grants`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not give the product.');
+      setMemberDetailMessage(data.message);
+      await loadMemberDetails(memberId);
+      loadAdminTransactions();
+    } catch (error) {
+      setMemberDetailMessage(error instanceof Error ? error.message : 'Could not give the product.');
+    }
+  };
   const loadAdminProducts = () => {
     setProductStatus('loading');
     fetch('/api/admin/products', { credentials: 'include' }).then(async (response) => {
