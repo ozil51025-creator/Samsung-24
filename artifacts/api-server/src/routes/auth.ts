@@ -1127,7 +1127,7 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       status: "pending",
       providerMessage,
       providerStatus,
-      message: `Check the ${provider.toUpperCase()} number for a PesaJet payment prompt. Enter your PIN only in the official mobile-money prompt, never on this site. Your wallet is credited after an administrator confirms receipt.`,
+      message: `Check the ${provider.toUpperCase()} number for a PesaJet payment prompt. Enter your PIN only in the official mobile-money prompt, never on this site. Once PesaJet confirms successful payment, your wallet is credited automatically.`,
     });
   } catch (error) {
     req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");

@@ -942,7 +942,7 @@ function RechargePage() {
           <li>The minimum top-up amount is 2,000 UGX; amounts below this threshold cannot be credited to your account.</li>
           <li>Choose the mobile-money network and number that should receive the PesaJet payment prompt.</li>
           <li>Approve only the amount shown on this page in your mobile-money prompt.</li>
-          <li>Your deposit balance is credited only after an administrator confirms that the payment was received.</li>
+          <li>After PesaJet confirms successful payment, your deposit and wallet balances are credited automatically.</li>
         </ol>
       </section>
     </main>;
@@ -972,7 +972,7 @@ function RechargePaymentPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Could not create recharge request.');
       setRequestId(data.requestId as string);
-      setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Check your phone for the mobile-money payment prompt. Enter your PIN only on that official prompt, never on this site. Your wallet is credited after an administrator confirms receipt.');
+      setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Check your phone for the mobile-money payment prompt. Enter your PIN only on that official prompt, never on this site. Once PesaJet confirms successful payment, your wallet is credited automatically.');
       setProviderReply([data.providerStatus, data.providerMessage].filter((value) => typeof value === 'string' && value.length > 0).join(' · '));
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : 'Could not create recharge request.');
@@ -1027,7 +1027,7 @@ function RechargePaymentPage() {
         {providerReply && <p>PesaJet response: {providerReply}</p>}
         <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
         <p>Reference: <strong>{requestId}</strong></p>
-        <p>Your wallet is not credited until an administrator confirms the payment.</p>
+        <p>Your wallet is credited automatically after PesaJet confirms successful payment.</p>
       </section>}
     </section>
   </main>;
