@@ -70,3 +70,17 @@ mtime_ms = 1791704376030
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/23113efb-e6de-471b-9dd1-2fe902bf2f9e/10230c9c-ff39-435e-92c6-822d00324a2d"
 storage_version_token = "1791704391387476"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "G6MLBrIuPXhI-xSP6DTuo"
+uri = "file://generated-artifacts/rewards-program-platform-source-20261011-v4.zip"
+type = "unspecified"
+title = "Updated platform source code"
+description = "Latest source backup includes the PesaJet payout button for older withdrawals with unambiguous Ugandan carrier prefixes. No credentials, dependencies, build output, or chat attachments included."
+logical_id = "672804eb-5695-4187-a9e4-267d43e0df99"
+content_hash = "sha256:be00d41e4efbdcedd8b92ac3922a769525bda462b9c9011d6f2375f06b23d8ef"
+size = 1468840
+mtime_ms = 1791704602514
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/672804eb-5695-4187-a9e4-267d43e0df99/1c6b30fb-6b5c-4e94-bd7e-ca1ff4ce6fd5"
+storage_version_token = "1791704607695964"
+content_type = "application/octet-stream"
