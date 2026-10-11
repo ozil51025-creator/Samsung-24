@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
-import { and, count, eq, gt, sql, sum } from "drizzle-orm";
+import { and, count, eq, gt, inArray, sql, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
@@ -727,16 +727,22 @@ router.get("/referral/details", async (req, res): Promise<void> => {
   if (!accountId) return;
   res.setHeader("Cache-Control", "no-store");
   try {
-    const [accounts, referralLinks, rewardRows] = await Promise.all([
-      db.select({
-        id: phoneAccountsTable.id,
-        phoneNumber: phoneAccountsTable.phoneNumber,
-        joinedAt: phoneAccountsTable.createdAt,
-      }).from(phoneAccountsTable),
-      db.select({
+    const referralLinks = await db.select({
         accountId: phoneReferralCodesTable.accountId,
         referredByAccountId: phoneReferralCodesTable.referredByAccountId,
-      }).from(phoneReferralCodesTable),
+      }).from(phoneReferralCodesTable);
+    const downlineLevels = new Map(referralLinks.flatMap(({ accountId: memberId }) => {
+      const level = getReferralAncestorsThroughLevelThree(memberId, referralLinks).indexOf(accountId) + 1;
+      return level > 0 && level <= 3 ? [[memberId, level] as const] : [];
+    }));
+    const [accounts, rewardRows] = await Promise.all([
+      downlineLevels.size
+        ? db.select({
+            id: phoneAccountsTable.id,
+            phoneNumber: phoneAccountsTable.phoneNumber,
+            joinedAt: phoneAccountsTable.createdAt,
+          }).from(phoneAccountsTable).where(inArray(phoneAccountsTable.id, [...downlineLevels.keys()]))
+        : Promise.resolve([]),
       db.select({
         id: referralCommissionsTable.id,
         memberPhoneNumber: phoneAccountsTable.phoneNumber,
@@ -747,13 +753,12 @@ router.get("/referral/details", async (req, res): Promise<void> => {
         .innerJoin(phoneAccountsTable, eq(phoneAccountsTable.id, referralCommissionsTable.purchaserAccountId))
         .where(eq(referralCommissionsTable.recipientAccountId, accountId)),
     ]);
-    const members = accounts.flatMap((member) => {
-      const ancestors = getReferralAncestorsThroughLevelThree(member.id, referralLinks);
-      const level = ancestors.indexOf(accountId) + 1;
-      return level > 0 && level <= 3
-        ? [{ id: member.id, phoneNumber: member.phoneNumber, level, joinedAt: member.joinedAt.toISOString() }]
-        : [];
-    });
+    const members = accounts.map((member) => ({
+      id: member.id,
+      phoneNumber: member.phoneNumber,
+      level: downlineLevels.get(member.id) ?? 0,
+      joinedAt: member.joinedAt.toISOString(),
+    }));
     res.json(GetReferralDetailsResponse.parse({
       members,
       rewards: rewardRows.map((reward) => ({ ...reward, createdAt: reward.createdAt.toISOString() })),
