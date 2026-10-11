@@ -951,8 +951,9 @@ function RechargePage() {
 function RechargePaymentPage() {
   const { user, status } = useAuth();
   const [phone, setPhone] = useState('');
-  const [depositDetails, setDepositDetails] = useState({ mtnMobileMoneyNumber: '', airtelMobileMoneyNumber: '', payeeName: '', telegramUrl: '' });
+  const [provider, setProvider] = useState<'mtn' | 'airtel' | ''>('');
   const [requestId, setRequestId] = useState('');
+  const [requestStatusMessage, setRequestStatusMessage] = useState('');
   const [requestError, setRequestError] = useState('');
   const [creatingRequest, setCreatingRequest] = useState(false);
   const amount = Number(new URLSearchParams(window.location.search).get('amount'));
@@ -965,11 +966,12 @@ function RechargePaymentPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, phone }),
+        body: JSON.stringify({ amount, phone, provider }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Could not create recharge request.');
       setRequestId(data.requestId as string);
+      setRequestStatusMessage(typeof data.message === 'string' ? data.message : 'Approve the payment prompt on your phone. Your wallet will be credited after an administrator confirms receipt.');
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : 'Could not create recharge request.');
     } finally {
@@ -982,20 +984,6 @@ function RechargePaymentPage() {
     document.title = 'Payment — samsung';
     return () => { document.title = previousTitle; };
   }, []);
-  useEffect(() => {
-    fetch('/api/site-settings').then(async (response) => {
-      if (response.ok) {
-        const settings = await response.json();
-        setDepositDetails({
-          mtnMobileMoneyNumber: settings.mtnMobileMoneyNumber ?? '',
-          airtelMobileMoneyNumber: settings.airtelMobileMoneyNumber ?? '',
-          payeeName: settings.payeeName ?? '',
-          telegramUrl: settings.telegramUrl ?? '',
-        });
-      }
-    }).catch(() => {});
-  }, []);
-
   if (status === 'loading') return <main className="recharge-shell" role="status">Checking your account…</main>;
   if (status === 'error') return <main className="recharge-shell"><p>We couldn’t check your account right now.</p><Link href="/sign-in">Try signing in</Link></main>;
   if (!user) return <Redirect to="/sign-in" />;
@@ -1011,7 +999,13 @@ function RechargePaymentPage() {
       <strong>UGX {money.format(amount)}</strong>
     </section>
     <section className="recharge-payment-form">
-      <label htmlFor="recharge-mobile-number">Mobile money number (MTN or Airtel)</label>
+      <label htmlFor="recharge-provider">Mobile money network</label>
+      <select id="recharge-provider" value={provider} onChange={(event) => setProvider(event.target.value as 'mtn' | 'airtel' | '')} required data-testid="select-recharge-provider">
+        <option value="">Select network</option>
+        <option value="mtn">MTN</option>
+        <option value="airtel">Airtel</option>
+      </select>
+      <label htmlFor="recharge-mobile-number">Mobile money number</label>
       <input
         id="recharge-mobile-number"
         type="tel"
@@ -1023,18 +1017,14 @@ function RechargePaymentPage() {
         data-testid="input-recharge-mobile-number"
       />
       <p className="recharge-payment-warning">Check the mobile money number before continuing.</p>
-      <button type="button" disabled={!validPhone || creatingRequest || Boolean(requestId)} onClick={createRechargeRequest} data-testid="button-recharge-payment-continue">{creatingRequest ? 'Please wait…' : 'Continue'}</button>
+      <button type="button" disabled={!validPhone || !provider || creatingRequest || Boolean(requestId)} onClick={createRechargeRequest} data-testid="button-recharge-payment-continue">{creatingRequest ? 'Please wait…' : 'Continue'}</button>
       {requestError && <p role="alert">{requestError}</p>}
       {requestId && <section className="recharge-manual-instructions" aria-live="polite" data-testid="recharge-manual-instructions">
-        <h2>Manual mobile money transfer</h2>
-        <p>Recharge request pending verification.</p>
+        <h2>PesaJet payment request</h2>
+        <p>{requestStatusMessage}</p>
         <p>Amount: <strong>UGX {money.format(amount)}</strong></p>
-        {depositDetails.airtelMobileMoneyNumber && <p>Airtel Money: <strong>{depositDetails.airtelMobileMoneyNumber}</strong></p>}
-        {depositDetails.mtnMobileMoneyNumber && <p>MTN Mobile Money: <strong>{depositDetails.mtnMobileMoneyNumber}</strong></p>}
-        <p>Account name: <strong>{depositDetails.payeeName || 'Not configured'}</strong></p>
         <p>Reference: <strong>{requestId.slice(0, 8).toUpperCase()}</strong></p>
-        <p>After sending, contact customer service for verification. This page does not confirm payment or add funds automatically.</p>
-        {depositDetails.telegramUrl && <a href={depositDetails.telegramUrl} target="_blank" rel="noopener noreferrer">Contact support</a>}
+        <p>Your wallet is not credited until an administrator confirms the payment.</p>
       </section>}
     </section>
   </main>;
