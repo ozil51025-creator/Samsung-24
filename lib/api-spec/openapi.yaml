@@ -188,6 +188,71 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/details:
+    get:
+      operationId: getAdminMemberDetails
+      tags: [admin]
+      summary: Get a member profile, referral tree, products, and account history
+      parameters:
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Member profile and history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMemberDetails"
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/product-grants:
+    post:
+      operationId: grantAdminMemberProduct
+      tags: [admin]
+      summary: Give a product to a member as a free admin gift
+      parameters:
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [productId]
+              properties:
+                productId: { type: string, minLength: 1, maxLength: 80 }
+      responses:
+        "201":
+          description: Free grant recorded in the admin audit trail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message: { type: string }
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "403":
           description: Account is not an administrator
           content:
@@ -1238,6 +1303,47 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminMember"
+    AdminMemberDetails:
+      type: object
+      additionalProperties: false
+      required: [member, invitedByPhone, referrals, productOrders, activity]
+      properties:
+        member:
+          $ref: "#/components/schemas/AdminMember"
+        invitedByPhone: { type: ["string", "null"] }
+        referrals:
+          type: array
+          items:
+            type: object
+            required: [level, phoneNumber, referralCode, createdAt, isActive]
+            properties:
+              level: { type: integer, minimum: 1, maximum: 3 }
+              phoneNumber: { type: string }
+              referralCode: { type: ["string", "null"] }
+              createdAt: { type: string, format: date-time }
+              isActive: { type: boolean }
+        productOrders:
+          type: array
+          items:
+            type: object
+            required: [id, productName, priceUgx, status, createdAt]
+            properties:
+              id: { type: string }
+              productName: { type: string }
+              priceUgx: { type: integer }
+              status: { type: string }
+              createdAt: { type: string, format: date-time }
+        activity:
+          type: array
+          items:
+            type: object
+            required: [id, type, amountUgx, status, createdAt]
+            properties:
+              id: { type: string }
+              type: { type: string }
+              amountUgx: { type: integer }
+              status: { type: string }
+              createdAt: { type: string, format: date-time }
     AdminAccount:
       type: object
       additionalProperties: false

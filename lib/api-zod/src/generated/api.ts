@@ -307,6 +307,84 @@ export const GetAdminMembersResponse = zod.object({
 
 
 /**
+ * @summary Get a member profile, referral tree, products, and account history
+ */
+export const GetAdminMemberDetailsParams = zod.object({
+  "memberId": zod.coerce.string().uuid()
+})
+
+export const getAdminMemberDetailsResponseMemberPhoneNumberRegExp = new RegExp('^\\+2567[0-9]{8}$');
+export const getAdminMemberDetailsResponseMemberWalletBalanceUgxMin = 0;
+
+export const getAdminMemberDetailsResponseMemberDepositBalanceUgxMin = 0;
+
+export const getAdminMemberDetailsResponseMemberTotalDepositedUgxMin = 0;
+
+export const getAdminMemberDetailsResponseReferralsItemLevelMax = 3;
+
+
+
+export const GetAdminMemberDetailsResponse = zod.object({
+  "member": zod.object({
+  "id": zod.string().uuid(),
+  "phoneNumber": zod.string().regex(getAdminMemberDetailsResponseMemberPhoneNumberRegExp),
+  "createdAt": zod.coerce.date(),
+  "referralCode": zod.string().nullable(),
+  "referredByAccountId": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "walletBalanceUgx": zod.number().int().min(getAdminMemberDetailsResponseMemberWalletBalanceUgxMin),
+  "depositBalanceUgx": zod.number().int().min(getAdminMemberDetailsResponseMemberDepositBalanceUgxMin),
+  "totalDepositedUgx": zod.number().int().min(getAdminMemberDetailsResponseMemberTotalDepositedUgxMin),
+  "payoutProvider": zod.string().nullable(),
+  "payoutHolderName": zod.string().nullable(),
+  "payoutPhone": zod.string().nullable()
+}),
+  "invitedByPhone": zod.string().nullable(),
+  "referrals": zod.array(zod.object({
+  "level": zod.number().int().min(1).max(getAdminMemberDetailsResponseReferralsItemLevelMax),
+  "phoneNumber": zod.string(),
+  "referralCode": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "isActive": zod.boolean()
+})),
+  "productOrders": zod.array(zod.object({
+  "id": zod.string(),
+  "productName": zod.string(),
+  "priceUgx": zod.number().int(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "activity": zod.array(zod.object({
+  "id": zod.string(),
+  "type": zod.string(),
+  "amountUgx": zod.number().int(),
+  "status": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Give a product to a member as a free admin gift
+ */
+export const GrantAdminMemberProductParams = zod.object({
+  "memberId": zod.coerce.string().uuid()
+})
+
+export const grantAdminMemberProductBodyProductIdMax = 80;
+
+
+
+export const GrantAdminMemberProductBody = zod.object({
+  "productId": zod.string().min(1).max(grantAdminMemberProductBodyProductIdMax)
+})
+
+export const GrantAdminMemberProductResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
  * @summary Set a one-time temporary password for a member
  */
 export const ResetAdminMemberPasswordParams = zod.object({

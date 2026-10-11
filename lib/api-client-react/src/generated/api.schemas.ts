@@ -473,6 +473,44 @@ export interface AdminMembers {
   members: AdminMember[];
 }
 
+export type AdminMemberDetailsReferralsItem = {
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  level: number;
+  phoneNumber: string;
+  /** @nullable */
+  referralCode: string | null;
+  createdAt: string;
+  isActive: boolean;
+};
+
+export type AdminMemberDetailsProductOrdersItem = {
+  id: string;
+  productName: string;
+  priceUgx: number;
+  status: string;
+  createdAt: string;
+};
+
+export type AdminMemberDetailsActivityItem = {
+  id: string;
+  type: string;
+  amountUgx: number;
+  status: string;
+  createdAt: string;
+};
+
+export interface AdminMemberDetails {
+  member: AdminMember;
+  /** @nullable */
+  invitedByPhone: string | null;
+  referrals: AdminMemberDetailsReferralsItem[];
+  productOrders: AdminMemberDetailsProductOrdersItem[];
+  activity: AdminMemberDetailsActivityItem[];
+}
+
 export interface AdminAccount {
   id: string;
   /** @pattern ^\+2567[0-9]{8}$ */
@@ -658,6 +696,18 @@ export interface TaskCenterSettingsInput {
 export interface ErrorResponse {
   error: string;
 }
+
+export type GrantAdminMemberProductBody = {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  productId: string;
+};
+
+export type GrantAdminMemberProduct201 = {
+  message: string;
+};
 
 export type GetAdminTransactions200TransactionsItem = {
   id: string;
