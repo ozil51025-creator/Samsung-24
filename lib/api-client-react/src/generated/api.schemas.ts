@@ -511,6 +511,14 @@ export interface AdminMemberDetails {
   activity: AdminMemberDetailsActivityItem[];
 }
 
+export interface AdminMemberProductGrant {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  productId: string;
+}
+
 export interface AdminAccount {
   id: string;
   /** @pattern ^\+2567[0-9]{8}$ */
@@ -696,14 +704,6 @@ export interface TaskCenterSettingsInput {
 export interface ErrorResponse {
   error: string;
 }
-
-export type GrantAdminMemberProductBody = {
-  /**
-     * @minLength 1
-     * @maxLength 80
-     */
-  productId: string;
-};
 
 export type GrantAdminMemberProduct201 = {
   message: string;

@@ -28,6 +28,7 @@ import type {
   AdminGiftCodeInput,
   AdminGiftCodes,
   AdminMemberDetails,
+  AdminMemberProductGrant,
   AdminMemberStatus,
   AdminMemberStatusInput,
   AdminMembers,
@@ -43,7 +44,6 @@ import type {
   GetAdminTransactions200,
   GiftCodeRedemptionResult,
   GrantAdminMemberProduct201,
-  GrantAdminMemberProductBody,
   HealthStatus,
   PayoutAccountInput,
   PayoutAccountResponse,
@@ -815,7 +815,7 @@ export const getGrantAdminMemberProductUrl = (memberId: string,) => {
  * @summary Give a product to a member as a free admin gift
  */
 export const grantAdminMemberProduct = async (memberId: string,
-    grantAdminMemberProductBody: GrantAdminMemberProductBody, options?: Parameters<typeof customFetch>[1]): Promise<GrantAdminMemberProduct201> => {
+    adminMemberProductGrant: AdminMemberProductGrant, options?: Parameters<typeof customFetch>[1]): Promise<GrantAdminMemberProduct201> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -836,7 +836,7 @@ return customFetch<GrantAdminMemberProduct201>(getGrantAdminMemberProductUrl(mem
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(grantAdminMemberProductBody)
+    body: JSON.stringify(adminMemberProductGrant)
   }
 );}
 
@@ -874,9 +874,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type GrantAdminMemberProductMutationResult = NonNullable<Awaited<ReturnType<typeof grantAdminMemberProduct>>>
-    export type GrantAdminMemberProductMutationBody = BodyType<GrantAdminMemberProductBody>
+    export type GrantAdminMemberProductMutationBody = BodyType<AdminMemberProductGrant>
     export type GrantAdminMemberProductMutationError = ErrorType<ErrorResponse>
-    export type GrantAdminMemberProductMutationVariables = {memberId: string;data: BodyType<GrantAdminMemberProductBody>}
+    export type GrantAdminMemberProductMutationVariables = {memberId: string;data: BodyType<AdminMemberProductGrant>}
 
     /**
  * @summary Give a product to a member as a free admin gift

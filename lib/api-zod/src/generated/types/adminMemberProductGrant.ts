@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GrantAdminMemberProductBody = {
+export interface AdminMemberProductGrant {
   /**
      * @minLength 1
      * @maxLength 80
      */
   productId: string;
-};
+}
