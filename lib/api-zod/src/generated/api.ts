@@ -1116,18 +1116,28 @@ export const UpdateAdminProductsResponse = zod.object({
 /**
  * @summary List issued gift codes and their redemption status
  */
-export const getAdminGiftCodesResponseCodesItemCodeMin = 12;
+export const getAdminGiftCodesResponseCodesItemCodeMin = 4;
 export const getAdminGiftCodesResponseCodesItemCodeMax = 32;
 
+
+export const getAdminGiftCodesResponseCodesItemCodeRegExp = new RegExp('^[A-Z0-9-]+$');
 export const getAdminGiftCodesResponseCodesItemAmountUgxMax = 100000000;
+
+export const getAdminGiftCodesResponseCodesItemMaxRedemptionsMax = 1000000;
+
+export const getAdminGiftCodesResponseCodesItemRedeemedCountMin = 0;
 
 
 
 export const GetAdminGiftCodesResponse = zod.object({
   "codes": zod.array(zod.object({
   "id": zod.string().uuid(),
-  "code": zod.string().min(getAdminGiftCodesResponseCodesItemCodeMin).max(getAdminGiftCodesResponseCodesItemCodeMax),
+  "code": zod.string().min(getAdminGiftCodesResponseCodesItemCodeMin).max(getAdminGiftCodesResponseCodesItemCodeMax).regex(getAdminGiftCodesResponseCodesItemCodeRegExp),
   "amountUgx": zod.number().int().min(1).max(getAdminGiftCodesResponseCodesItemAmountUgxMax),
+  "maxRedemptions": zod.number().int().min(1).max(getAdminGiftCodesResponseCodesItemMaxRedemptionsMax),
+  "redeemedCount": zod.number().int().min(getAdminGiftCodesResponseCodesItemRedeemedCountMin),
+  "expiresAt": zod.coerce.date().nullable(),
+  "disabledAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date(),
   "redeemedAt": zod.coerce.date().nullable(),
   "redeemedByPhone": zod.string().nullable()
@@ -1136,30 +1146,62 @@ export const GetAdminGiftCodesResponse = zod.object({
 
 
 /**
- * @summary Issue a single-use gift code
+ * @summary Create a manually named wallet-credit gift code
  */
+export const createAdminGiftCodeBodyCodeMin = 4;
+export const createAdminGiftCodeBodyCodeMax = 32;
+
+
+export const createAdminGiftCodeBodyCodeRegExp = new RegExp('^[A-Za-z0-9-]+$');
 export const createAdminGiftCodeBodyAmountUgxMax = 100000000;
+
+export const createAdminGiftCodeBodyMaxRedemptionsMax = 1000000;
 
 
 
 export const CreateAdminGiftCodeBody = zod.object({
-  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeBodyAmountUgxMax)
+  "code": zod.string().min(createAdminGiftCodeBodyCodeMin).max(createAdminGiftCodeBodyCodeMax).regex(createAdminGiftCodeBodyCodeRegExp),
+  "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeBodyAmountUgxMax),
+  "maxRedemptions": zod.number().int().min(1).max(createAdminGiftCodeBodyMaxRedemptionsMax),
+  "expiresAt": zod.coerce.date().nullable()
 })
 
-export const createAdminGiftCodeResponseCodeMin = 12;
+export const createAdminGiftCodeResponseCodeMin = 4;
 export const createAdminGiftCodeResponseCodeMax = 32;
 
+
+export const createAdminGiftCodeResponseCodeRegExp = new RegExp('^[A-Z0-9-]+$');
 export const createAdminGiftCodeResponseAmountUgxMax = 100000000;
+
+export const createAdminGiftCodeResponseMaxRedemptionsMax = 1000000;
+
+export const createAdminGiftCodeResponseRedeemedCountMin = 0;
 
 
 
 export const CreateAdminGiftCodeResponse = zod.object({
   "id": zod.string().uuid(),
-  "code": zod.string().min(createAdminGiftCodeResponseCodeMin).max(createAdminGiftCodeResponseCodeMax),
+  "code": zod.string().min(createAdminGiftCodeResponseCodeMin).max(createAdminGiftCodeResponseCodeMax).regex(createAdminGiftCodeResponseCodeRegExp),
   "amountUgx": zod.number().int().min(1).max(createAdminGiftCodeResponseAmountUgxMax),
+  "maxRedemptions": zod.number().int().min(1).max(createAdminGiftCodeResponseMaxRedemptionsMax),
+  "redeemedCount": zod.number().int().min(createAdminGiftCodeResponseRedeemedCountMin),
+  "expiresAt": zod.coerce.date().nullable(),
+  "disabledAt": zod.coerce.date().nullable(),
   "createdAt": zod.coerce.date(),
   "redeemedAt": zod.coerce.date().nullable(),
   "redeemedByPhone": zod.string().nullable()
+})
+
+
+/**
+ * @summary Disable a gift code so it cannot be redeemed further
+ */
+export const DisableAdminGiftCodeParams = zod.object({
+  "giftCodeId": zod.coerce.string().uuid()
+})
+
+export const DisableAdminGiftCodeResponse = zod.object({
+  "disabledAt": zod.coerce.date()
 })
 
 
@@ -1444,13 +1486,15 @@ export const UpdateAdminSiteSettingsResponse = zod.object({
 /**
  * @summary Redeem a single-use gift code into the signed-in member wallet
  */
-export const redeemGiftCodeBodyCodeMin = 12;
+export const redeemGiftCodeBodyCodeMin = 4;
 export const redeemGiftCodeBodyCodeMax = 32;
 
 
+export const redeemGiftCodeBodyCodeRegExp = new RegExp('^[A-Za-z0-9-]+$');
+
 
 export const RedeemGiftCodeBody = zod.object({
-  "code": zod.string().min(redeemGiftCodeBodyCodeMin).max(redeemGiftCodeBodyCodeMax)
+  "code": zod.string().min(redeemGiftCodeBodyCodeMin).max(redeemGiftCodeBodyCodeMax).regex(redeemGiftCodeBodyCodeRegExp)
 })
 
 

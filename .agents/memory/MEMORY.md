@@ -1,3 +1,5 @@
 - [Rewards site scope](store-identity.md) — Use the user's own branding for a site where rewards come from confirmed product sales.
 - [Admin dashboard reference](admin-panel-reference.md) — Keep overview metrics, recent wallet activity, and member-level balances/payout details accessible to admins.
 - [Uganda mobile-money prefixes](mobile-money-prefixes.md) — MTN: 076/077/078/079; Airtel: 070/074/075.
+- [Gift-code issuance](gift-codes.md) — Admins manually choose each code, wallet value, redemption limit, and optional expiry.
+- [Minimum deposit](deposit-minimum.md) — Keep the rewards portal’s minimum deposit at UGX 30,000.

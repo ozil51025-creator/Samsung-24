@@ -9,8 +9,9 @@
 export interface AdminGiftCode {
   id: string;
   /**
-     * @minLength 12
+     * @minLength 4
      * @maxLength 32
+     * @pattern ^[A-Z0-9-]+$
      */
   code: string;
   /**
@@ -18,6 +19,17 @@ export interface AdminGiftCode {
      * @maximum 100000000
      */
   amountUgx: number;
+  /**
+     * @minimum 1
+     * @maximum 1000000
+     */
+  maxRedemptions: number;
+  /** @minimum 0 */
+  redeemedCount: number;
+  /** @nullable */
+  expiresAt: Date | null;
+  /** @nullable */
+  disabledAt: Date | null;
   createdAt: Date;
   /** @nullable */
   redeemedAt: Date | null;

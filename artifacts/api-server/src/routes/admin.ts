@@ -1,4 +1,4 @@
-import { createHash, scrypt as scryptCallback } from "node:crypto";
+import { createHash, randomBytes, scrypt as scryptCallback } from "node:crypto";
 import { and, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sum, sql } from "drizzle-orm";
 import { Router, type IRouter, type Request, type Response } from "express";
 import {

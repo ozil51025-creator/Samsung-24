@@ -12,6 +12,7 @@ export * from './adminAccounts';
 export * from './adminAuditLog';
 export * from './adminAuditLogs';
 export * from './adminGiftCode';
+export * from './adminGiftCodeDisableResult';
 export * from './adminGiftCodeInput';
 export * from './adminGiftCodes';
 export * from './adminMember';

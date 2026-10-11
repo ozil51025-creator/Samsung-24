@@ -25,6 +25,7 @@ import type {
   AdminAccounts,
   AdminAuditLogs,
   AdminGiftCode,
+  AdminGiftCodeDisableResult,
   AdminGiftCodeInput,
   AdminGiftCodes,
   AdminMemberDetails,
@@ -3147,7 +3148,7 @@ export const getCreateAdminGiftCodeUrl = () => {
 }
 
 /**
- * @summary Issue a single-use gift code
+ * @summary Create a manually named wallet-credit gift code
  */
 export const createAdminGiftCode = async (adminGiftCodeInput: AdminGiftCodeInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminGiftCode> => {
 
@@ -3213,7 +3214,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CreateAdminGiftCodeMutationVariables = {data: BodyType<AdminGiftCodeInput>}
 
     /**
- * @summary Issue a single-use gift code
+ * @summary Create a manually named wallet-credit gift code
  */
 export const useCreateAdminGiftCode = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminGiftCode>>, TError,CreateAdminGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -3224,6 +3225,80 @@ export const useCreateAdminGiftCode = <TError = ErrorType<ErrorResponse | void>,
         TContext
       > => {
       return useMutation(getCreateAdminGiftCodeMutationOptions(options));
+    }
+
+export const getDisableAdminGiftCodeUrl = (giftCodeId: string,) => {
+
+
+
+
+  return `/api/admin/gift-codes/${giftCodeId}/disable`
+}
+
+/**
+ * @summary Disable a gift code so it cannot be redeemed further
+ */
+export const disableAdminGiftCode = async (giftCodeId: string, options?: Parameters<typeof customFetch>[1]): Promise<AdminGiftCodeDisableResult> => {
+
+  return customFetch<AdminGiftCodeDisableResult>(getDisableAdminGiftCodeUrl(giftCodeId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getDisableAdminGiftCodeMutationKey = () => ['disableAdminGiftCode'] as const;
+
+export const getDisableAdminGiftCodeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disableAdminGiftCode>>, TError,DisableAdminGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof disableAdminGiftCode>>, TError,DisableAdminGiftCodeMutationVariables, TContext> => {
+
+const mutationKey = getDisableAdminGiftCodeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof disableAdminGiftCode>>, DisableAdminGiftCodeMutationVariables> = (props) => {
+          const {giftCodeId} = props ?? {};
+
+          return  disableAdminGiftCode(giftCodeId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DisableAdminGiftCodeMutationResult = NonNullable<Awaited<ReturnType<typeof disableAdminGiftCode>>>
+
+    export type DisableAdminGiftCodeMutationError = ErrorType<void>
+    export type DisableAdminGiftCodeMutationVariables = {giftCodeId: string}
+
+    /**
+ * @summary Disable a gift code so it cannot be redeemed further
+ */
+export const useDisableAdminGiftCode = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disableAdminGiftCode>>, TError,DisableAdminGiftCodeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof disableAdminGiftCode>>,
+        TError,
+        DisableAdminGiftCodeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDisableAdminGiftCodeMutationOptions(options));
     }
 
 export const getGetAdminSiteSettingsUrl = () => {

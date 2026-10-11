@@ -99,8 +99,9 @@ export interface AdminSiteSettings {
 export interface AdminGiftCode {
   id: string;
   /**
-     * @minLength 12
+     * @minLength 4
      * @maxLength 32
+     * @pattern ^[A-Z0-9-]+$
      */
   code: string;
   /**
@@ -108,11 +109,26 @@ export interface AdminGiftCode {
      * @maximum 100000000
      */
   amountUgx: number;
+  /**
+     * @minimum 1
+     * @maximum 1000000
+     */
+  maxRedemptions: number;
+  /** @minimum 0 */
+  redeemedCount: number;
+  /** @nullable */
+  expiresAt: string | null;
+  /** @nullable */
+  disabledAt: string | null;
   createdAt: string;
   /** @nullable */
   redeemedAt: string | null;
   /** @nullable */
   redeemedByPhone: string | null;
+}
+
+export interface AdminGiftCodeDisableResult {
+  disabledAt: string;
 }
 
 export interface AdminGiftCodes {
@@ -121,16 +137,30 @@ export interface AdminGiftCodes {
 
 export interface AdminGiftCodeInput {
   /**
+     * @minLength 4
+     * @maxLength 32
+     * @pattern ^[A-Za-z0-9-]+$
+     */
+  code: string;
+  /**
      * @minimum 1
      * @maximum 100000000
      */
   amountUgx: number;
+  /**
+     * @minimum 1
+     * @maximum 1000000
+     */
+  maxRedemptions: number;
+  /** @nullable */
+  expiresAt: string | null;
 }
 
 export interface RedeemGiftCodeInput {
   /**
-     * @minLength 12
+     * @minLength 4
      * @maxLength 32
+     * @pattern ^[A-Za-z0-9-]+$
      */
   code: string;
 }

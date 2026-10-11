@@ -1058,6 +1058,10 @@ type AdminGiftCodeRecord = {
   id: string;
   code: string;
   amountUgx: number;
+  maxRedemptions: number;
+  redeemedCount: number;
+  expiresAt: string | null;
+  disabledAt: string | null;
   createdAt: string;
   redeemedAt: string | null;
   redeemedByPhone: string | null;
@@ -1065,7 +1069,10 @@ type AdminGiftCodeRecord = {
 
 function AdminGiftCodesSection() {
   const [codes, setCodes] = useState<AdminGiftCodeRecord[]>([]);
+  const [codeValue, setCodeValue] = useState('');
   const [amountUgx, setAmountUgx] = useState('');
+  const [maxRedemptions, setMaxRedemptions] = useState('1');
+  const [expiresAt, setExpiresAt] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -1090,12 +1097,20 @@ function AdminGiftCodesSection() {
     try {
       const response = await fetch('/api/admin/gift-codes', {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amountUgx: Number(amountUgx) }),
+        body: JSON.stringify({
+          code: codeValue.trim().toUpperCase(),
+          amountUgx: Number(amountUgx),
+          maxRedemptions: Number(maxRedemptions),
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+        }),
       });
       const code = await response.json();
       if (!response.ok) throw new Error(code.error ?? 'Could not create gift code.');
-      setMessage(`New code: ${code.code} · UGX ${money.format(code.amountUgx)}`);
+      setMessage(`Gift code ${code.code} created.`);
+      setCodeValue('');
       setAmountUgx('');
+      setMaxRedemptions('1');
+      setExpiresAt('');
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not create gift code.');
@@ -1103,11 +1118,32 @@ function AdminGiftCodesSection() {
       setSaving(false);
     }
   };
+  const disableCode = async (giftCodeId: string) => {
+    if (!window.confirm('Disable this gift code? Members will not be able to redeem it again.')) return;
+    setError(''); setMessage('');
+    try {
+      const response = await fetch(`/api/admin/gift-codes/${encodeURIComponent(giftCodeId)}/disable`, { method: 'POST', credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not disable gift code.');
+      setMessage('Gift code disabled.');
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not disable gift code.');
+    }
+  };
   return <div className="mt-4 space-y-5">
-    <p className="admin-section-subtitle">Issue single-use codes that credit the member’s wallet when redeemed.</p>
-    <form className="admin-add-form" onSubmit={createCode}>
-      <label htmlFor="gift-code-amount">Wallet credit amount (UGX)</label>
-      <div><input id="gift-code-amount" required type="number" min="1" max="100000000" step="1" value={amountUgx} onChange={(event) => setAmountUgx(event.target.value)} /><button type="submit" disabled={saving}>{saving ? 'Creating…' : 'Create gift code'}</button></div>
+    <p className="admin-section-subtitle">Create gift codes manually. Each redemption credits the member’s wallet.</p>
+    <form className="admin-gift-form" onSubmit={createCode}>
+      <h3>New code</h3>
+      <label htmlFor="gift-code-value">Code</label>
+      <input id="gift-code-value" required minLength={4} maxLength={32} pattern="[A-Za-z0-9-]+" placeholder="CROWN-2026" value={codeValue} onChange={(event) => setCodeValue(event.target.value.toUpperCase())} />
+      <label htmlFor="gift-code-amount">Amount (UGX)</label>
+      <input id="gift-code-amount" required type="number" min="1" max="100000000" step="1" value={amountUgx} onChange={(event) => setAmountUgx(event.target.value)} />
+      <label htmlFor="gift-code-max-redemptions">Max redemptions</label>
+      <input id="gift-code-max-redemptions" required type="number" min="1" max="1000000" step="1" value={maxRedemptions} onChange={(event) => setMaxRedemptions(event.target.value)} />
+      <label htmlFor="gift-code-expires">Expires (optional)</label>
+      <input id="gift-code-expires" type="datetime-local" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} />
+      <button type="submit" disabled={saving}>{saving ? 'Creating…' : '＋ Create gift code'}</button>
       {message && <p role="status">{message}</p>}
       {error && <p role="alert">{error}</p>}
     </form>
@@ -1117,8 +1153,12 @@ function AdminGiftCodesSection() {
       {!loading && !codes.length && !error && <p>No gift codes have been issued yet.</p>}
       {codes.map((code) => <article key={code.id} className="admin-recharge-review-item">
         <strong className="font-mono">{code.code}</strong>
-        <span>UGX {money.format(code.amountUgx)} · {code.redeemedAt ? `Redeemed by ${code.redeemedByPhone ?? 'member'}` : 'Unused'}</span>
+        <span>UGX {money.format(code.amountUgx)} · {code.redeemedCount}/{code.maxRedemptions} redeemed · {code.expiresAt ? new Date(code.expiresAt).toLocaleString('en-UG') : 'No expiry'}</span>
         <small>Created {new Date(code.createdAt).toLocaleString('en-UG')}</small>
+        <div className="gift-code-actions">
+          <strong>{code.disabledAt ? 'DISABLED' : code.expiresAt && new Date(code.expiresAt) <= new Date() ? 'EXPIRED' : code.redeemedCount >= code.maxRedemptions ? 'USED' : 'ACTIVE'}</strong>
+          {!code.disabledAt && <button type="button" onClick={() => void disableCode(code.id)}>Disable</button>}
+        </div>
       </article>)}
     </div>
   </div>;
@@ -1150,7 +1190,7 @@ function GiftCodeRedeemPanel() {
   };
   return <form className="mt-3 space-y-2" onSubmit={redeem}>
     <label htmlFor="member-gift-code" className="block text-xs font-semibold">Gift code</label>
-    <input id="member-gift-code" required minLength={12} maxLength={32} value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="w-full rounded-xl border p-3 font-mono uppercase" />
+    <input id="member-gift-code" required minLength={4} maxLength={32} pattern="[A-Za-z0-9-]+" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="w-full rounded-xl border p-3 font-mono uppercase" />
     <button type="submit" disabled={submitting} className="rounded-full bg-[#17392d] px-4 py-2 text-sm font-semibold text-white">{submitting ? 'Redeeming…' : 'Redeem code'}</button>
     {message && <p role="status">{message}</p>}
     {error && <p role="alert">{error}</p>}

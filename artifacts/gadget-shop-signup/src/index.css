@@ -1616,6 +1616,15 @@ button.account-menu-row {
 .admin-add-form button { min-height: 42px; padding: 0 14px; border: 0; border-radius: 8px; background: #1428a0; color: #fff; font-size: 11px; font-weight: 700; }
 .admin-add-form button:disabled { opacity: .65; }
 .admin-add-form > p { color: #526277; font-size: 11px; }
+.admin-gift-form { display: grid; gap: 8px; max-width: 620px; padding: 18px; border: 1px solid #e3e6eb; border-radius: 18px; background: #fff; }
+.admin-gift-form h3 { margin: 0 0 8px; color: #172235; font-family: Georgia, serif; font-size: 23px; }
+.admin-gift-form label { margin-top: 8px; color: #526277; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.admin-gift-form input { width: 100%; min-height: 44px; padding: 0 13px; border: 1px solid #dddcd4; border-radius: 22px; background: #f8f7f2; color: #182233; font-size: 14px; }
+.admin-gift-form button { min-height: 44px; margin-top: 8px; border: 0; border-radius: 24px; background: #14382d; color: #fff; font-weight: 700; }
+.admin-gift-form button:disabled { opacity: .65; }
+.gift-code-actions { display: flex; align-items: center; gap: 12px; }
+.gift-code-actions strong { color: #526277; font-size: 10px; letter-spacing: .08em; }
+.gift-code-actions button { min-height: 36px; padding: 0 14px; border: 1px solid #dce2e9; border-radius: 20px; background: #fff; color: #243249; font-size: 11px; font-weight: 700; }
 .admin-member-actions { display: flex !important; flex-wrap: wrap; justify-content: flex-start !important; gap: 7px !important; }
 .admin-member-actions button { min-height: 34px; padding: 0 10px; border: 1px solid #cbd4e0; border-radius: 7px; background: #fff; color: #24354b; font-size: 10px; font-weight: 700; }
 .admin-member-open { padding: 0; border: 0; background: transparent; color: #1268cb; font-size: 12px; font-weight: 750; text-align: left; text-decoration: underline; }

@@ -8,8 +8,21 @@
 
 export interface AdminGiftCodeInput {
   /**
+     * @minLength 4
+     * @maxLength 32
+     * @pattern ^[A-Za-z0-9-]+$
+     */
+  code: string;
+  /**
      * @minimum 1
      * @maximum 100000000
      */
   amountUgx: number;
+  /**
+     * @minimum 1
+     * @maximum 1000000
+     */
+  maxRedemptions: number;
+  /** @nullable */
+  expiresAt: Date | null;
 }

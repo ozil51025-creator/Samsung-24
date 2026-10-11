@@ -8,8 +8,9 @@
 
 export interface RedeemGiftCodeInput {
   /**
-     * @minLength 12
+     * @minLength 4
      * @maxLength 32
+     * @pattern ^[A-Za-z0-9-]+$
      */
   code: string;
 }
