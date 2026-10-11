@@ -1152,7 +1152,7 @@ function AdminTaskCenterPage() {
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [giftProductId, setGiftProductId] = useState('');
-  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; referralCountsByLevel: { level1: number; level2: number; level3: number }; checkinStreak: number; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null);
+  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; referralCountsByLevel: { level1: number; level2: number; level3: number }; checkinStreak: number; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
   const [ownerActionsAllowed, setOwnerActionsAllowed] = useState(false);
   const [memberDetailStatus, setMemberDetailStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [memberDetailMessage, setMemberDetailMessage] = useState('');
