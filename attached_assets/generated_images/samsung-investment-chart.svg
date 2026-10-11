@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1940" viewBox="0 0 1600 1940">
+  <defs>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#081944"/>
+      <stop offset="0.58" stop-color="#1428a0"/>
+      <stop offset="1" stop-color="#2478d4"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#07163b" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1940" fill="#f3f6fb"/>
+  <rect x="0" y="0" width="1600" height="450" rx="0" fill="url(#hero)"/>
+  <circle cx="1370" cy="72" r="350" fill="url(#shine)"/>
+  <circle cx="1120" cy="378" r="220" fill="#75c7ff" opacity=".08"/>
+  <text x="84" y="98" fill="#ffffff" font-family="Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-2">samsung</text>
+  <text x="86" y="155" fill="#d9e7ff" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="4">GADGET PRICE &amp; EARNINGS GUIDE</text>
+  <text x="84" y="250" fill="#ffffff" font-family="Arial, sans-serif" font-size="60" font-weight="700">Product options</text>
+  <text x="86" y="306" fill="#e5efff" font-family="Arial, sans-serif" font-size="28">Current UGX prices with the platform’s displayed estimates</text>
+  <rect x="86" y="350" width="302" height="54" rx="27" fill="#f5c842"/>
+  <text x="237" y="386" text-anchor="middle" fill="#11245c" font-family="Arial, sans-serif" font-size="22" font-weight="700">12 PRODUCT OPTIONS</text>
+  <!-- Minimal phone and buds illustration -->
+  <g transform="translate(1210 76) rotate(8)">
+    <rect x="0" y="0" width="210" height="328" rx="36" fill="#09142f" stroke="#b9d5ff" stroke-width="5"/>
+    <rect x="15" y="18" width="180" height="290" rx="26" fill="#172b65"/>
+    <rect x="76" y="9" width="58" height="9" rx="5" fill="#aec8fa"/>
+    <circle cx="105" cy="159" r="58" fill="#dae8ff" opacity=".12"/>
+    <path d="M52 208c24-34 48-17 69-44s43-20 66-53" fill="none" stroke="#f5c842" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="187" cy="107" r="9" fill="#f5c842"/>
+  </g>
+  <text x="86" y="435" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" opacity=".86">Independent retailer · Not Samsung’s official store</text>
+
+  <rect x="52" y="490" width="1496" height="82" rx="20" fill="#102878" filter="url(#shadow)"/>
+  <text x="88" y="540" fill="#dce9ff" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="1">PRODUCT</text>
+  <text x="738" y="540" text-anchor="end" fill="#dce9ff" font-family="Arial, sans-serif" font-size="20" font-weight="700">PRICE · UGX</text>
+  <text x="1058" y="540" text-anchor="end" fill="#dce9ff" font-family="Arial, sans-serif" font-size="20" font-weight="700">EST. / HOUR</text>
+  <text x="1484" y="540" text-anchor="end" fill="#dce9ff" font-family="Arial, sans-serif" font-size="20" font-weight="700">EST. / DAY</text>
+
+  <!-- Alternating table rows: amounts reflect the current Samsung platform catalog. -->
+  <g font-family="Arial, sans-serif">
+    <rect x="52" y="586" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="603" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="635" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">01</text>
+    <text x="174" y="638" fill="#18233c" font-size="24" font-weight="700">Samsung USB-C Cable</text><text x="738" y="638" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">30,000</text><text x="1058" y="638" text-anchor="end" fill="#456078" font-size="23">312</text><text x="1484" y="638" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">7,500</text>
+
+    <rect x="52" y="678" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="695" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="727" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">02</text>
+    <text x="174" y="730" fill="#18233c" font-size="24" font-weight="700">Samsung 25W USB-C Adapter</text><text x="738" y="730" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">50,000</text><text x="1058" y="730" text-anchor="end" fill="#456078" font-size="23">520</text><text x="1484" y="730" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">12,500</text>
+
+    <rect x="52" y="770" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="787" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="819" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">03</text>
+    <text x="174" y="822" fill="#18233c" font-size="24" font-weight="700">Samsung USB-C Earphones</text><text x="738" y="822" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">115,000</text><text x="1058" y="822" text-anchor="end" fill="#456078" font-size="23">1,197</text><text x="1484" y="822" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">28,750</text>
+
+    <rect x="52" y="862" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="879" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="911" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">04</text>
+    <text x="174" y="914" fill="#18233c" font-size="24" font-weight="700">Galaxy SmartTag2 Tracker</text><text x="738" y="914" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">250,000</text><text x="1058" y="914" text-anchor="end" fill="#456078" font-size="23">2,604</text><text x="1484" y="914" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">62,500</text>
+
+    <rect x="52" y="954" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="971" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="1003" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">05</text>
+    <text x="174" y="1006" fill="#18233c" font-size="24" font-weight="700">Galaxy Buds Wireless Earbuds</text><text x="738" y="1006" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">370,000</text><text x="1058" y="1006" text-anchor="end" fill="#456078" font-size="23">3,854</text><text x="1484" y="1006" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">92,500</text>
+
+    <rect x="52" y="1046" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="1063" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="1095" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">06</text>
+    <text x="174" y="1098" fill="#18233c" font-size="24" font-weight="700">Galaxy Fit Fitness Band</text><text x="738" y="1098" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">250,000</text><text x="1058" y="1098" text-anchor="end" fill="#456078" font-size="23">2,604</text><text x="1484" y="1098" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">62,500</text>
+
+    <rect x="52" y="1138" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="1155" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="1187" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">07</text>
+    <text x="174" y="1190" fill="#18233c" font-size="24" font-weight="700">Galaxy A Series LTE Phone</text><text x="738" y="1190" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">775,000</text><text x="1058" y="1190" text-anchor="end" fill="#456078" font-size="23">8,072</text><text x="1484" y="1190" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">193,750</text>
+
+    <rect x="52" y="1230" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="1247" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="1279" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">08</text>
+    <text x="174" y="1282" fill="#18233c" font-size="24" font-weight="700">Galaxy A Series 5G Phone</text><text x="738" y="1282" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">1,650,000</text><text x="1058" y="1282" text-anchor="end" fill="#456078" font-size="23">17,187</text><text x="1484" y="1282" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">412,500</text>
+
+    <rect x="52" y="1322" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="1339" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="1371" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">09</text>
+    <text x="174" y="1374" fill="#18233c" font-size="24" font-weight="700">Galaxy Tab A Series Tablet</text><text x="738" y="1374" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">3,000,000</text><text x="1058" y="1374" text-anchor="end" fill="#456078" font-size="23">31,250</text><text x="1484" y="1374" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">750,000</text>
+
+    <rect x="52" y="1414" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="1431" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="1463" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">10</text>
+    <text x="174" y="1466" fill="#18233c" font-size="24" font-weight="700">Galaxy S FE Smartphone</text><text x="738" y="1466" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">5,000,000</text><text x="1058" y="1466" text-anchor="end" fill="#456078" font-size="23">52,083</text><text x="1484" y="1466" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">1,250,000</text>
+
+    <rect x="52" y="1506" width="1496" height="84" rx="13" fill="#ffffff"/>
+    <rect x="73" y="1523" width="74" height="50" rx="25" fill="#e5edff"/><text x="110" y="1555" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">11</text>
+    <text x="174" y="1558" fill="#18233c" font-size="24" font-weight="700">Galaxy S Ultra Smartphone</text><text x="738" y="1558" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">8,000,000</text><text x="1058" y="1558" text-anchor="end" fill="#456078" font-size="23">83,333</text><text x="1484" y="1558" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">2,000,000</text>
+
+    <rect x="52" y="1598" width="1496" height="84" rx="13" fill="#eaf1fb"/>
+    <rect x="73" y="1615" width="74" height="50" rx="25" fill="#d8e5ff"/><text x="110" y="1647" text-anchor="middle" fill="#1839a2" font-size="20" font-weight="700">12</text>
+    <text x="174" y="1650" fill="#18233c" font-size="24" font-weight="700">Galaxy Z Fold Smartphone</text><text x="738" y="1650" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">12,000,000</text><text x="1058" y="1650" text-anchor="end" fill="#456078" font-size="23">125,000</text><text x="1484" y="1650" text-anchor="end" fill="#152a68" font-size="24" font-weight="700">3,000,000</text>
+  </g>
+  <rect x="52" y="1730" width="1496" height="164" rx="22" fill="#fff5d3" stroke="#ead58a" stroke-width="2"/>
+  <text x="88" y="1780" fill="#584a1f" font-family="Arial, sans-serif" font-size="23" font-weight="700">Please note</text>
+  <text x="88" y="1824" fill="#584a1f" font-family="Arial, sans-serif" font-size="21">Hourly and daily figures are estimates displayed in the current platform catalog, not guaranteed returns.</text>
+  <text x="88" y="1862" fill="#584a1f" font-family="Arial, sans-serif" font-size="21">No total earnings or investment duration are shown because those terms are not configured here.</text>
+  <text x="800" y="1922" text-anchor="middle" fill="#71809a" font-family="Arial, sans-serif" font-size="16">Catalog figures may change if an administrator updates product settings.</text>
+</svg>

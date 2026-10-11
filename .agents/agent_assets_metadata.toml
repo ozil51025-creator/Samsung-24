@@ -126,3 +126,17 @@ mtime_ms = 1791733593798
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/4cfcd965-1217-48ad-b5b7-d7f0316845d0/1391c9ae-3e60-4f1a-aa7e-f8e987ca5412"
 storage_version_token = "1791733599131649"
 content_type = "image/png"
+
+[[outputs]]
+id = "U2dsi6IPNIoRQFK70Sz7B"
+uri = "file://attached_assets/generated_images/samsung-investment-chart.png"
+type = "image"
+title = "Samsung product price and earnings chart"
+description = "A poster-style chart based on the Samsung platform’s current UGX product prices and displayed hourly/daily estimates. It labels estimates as unverified and omits unconfigured totals and duration."
+logical_id = "92ebfa7d-be74-4e5a-8f71-e5a4b3b50999"
+content_hash = "sha256:092c2e7d911f4392eb80c1cc65047565a42a1805c557591ece9dbcf850fd40b7"
+size = 1973766
+mtime_ms = 1791733872029
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/92ebfa7d-be74-4e5a-8f71-e5a4b3b50999/3650dcb5-83fb-4bf0-8e35-df91d32bd6e6"
+storage_version_token = "1791733882350859"
+content_type = "image/png"
