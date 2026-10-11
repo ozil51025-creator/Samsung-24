@@ -979,11 +979,12 @@ router.post("/admin/withdrawals/:withdrawalId", async (req, res): Promise<void> 
         accountId: withdrawalRequestsTable.accountId,
         amountUgx: withdrawalRequestsTable.amountUgx,
         status: withdrawalRequestsTable.status,
+        resolutionNote: withdrawalRequestsTable.resolutionNote,
       }).from(withdrawalRequestsTable)
         .where(eq(withdrawalRequestsTable.id, id))
         .for("update")
         .limit(1);
-      if (!current || current.status !== "pending") return null;
+      if (!current || current.status !== "pending" || current.resolutionNote?.startsWith("PesaJet payout ")) return null;
       if (parsed.data.status === "failed") {
         await tx.update(phoneAccountsTable)
           .set({ walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${current.amountUgx}` })
