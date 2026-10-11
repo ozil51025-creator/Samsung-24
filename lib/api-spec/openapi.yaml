@@ -687,6 +687,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /withdrawals/summary:
+    get:
+      operationId: getMyWithdrawalSummary
+      tags: [wallet]
+      summary: Get the total value of the signed-in member's successful withdrawals
+      responses:
+        "200":
+          description: Total amount successfully withdrawn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalSummaryResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /withdrawals:
     get:
       operationId: getMyWithdrawals
@@ -1239,6 +1257,12 @@ components:
         withdrawals:
           type: array
           items: { $ref: "#/components/schemas/WithdrawalRecord" }
+    WithdrawalSummaryResponse:
+      type: object
+      additionalProperties: false
+      required: [successfulWithdrawalsUgx]
+      properties:
+        successfulWithdrawalsUgx: { type: integer, minimum: 0 }
     AdminWithdrawalRecord:
       allOf:
         - $ref: "#/components/schemas/WithdrawalRecord"
