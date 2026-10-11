@@ -2822,6 +2822,80 @@ export const useProcessAdminWithdrawal = <TError = ErrorType<ErrorResponse>,
       return useMutation(getProcessAdminWithdrawalMutationOptions(options));
     }
 
+export const getPayAdminWithdrawalWithPesaJetUrl = (withdrawalId: string,) => {
+
+
+
+
+  return `/api/admin/withdrawals/${withdrawalId}/pesajet`
+}
+
+/**
+ * @summary Send or check a pending withdrawal using the merchant's PesaJet balance
+ */
+export const payAdminWithdrawalWithPesaJet = async (withdrawalId: string, options?: Parameters<typeof customFetch>[1]): Promise<AdminWithdrawalRecord> => {
+
+  return customFetch<AdminWithdrawalRecord>(getPayAdminWithdrawalWithPesaJetUrl(withdrawalId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getPayAdminWithdrawalWithPesaJetMutationKey = () => ['payAdminWithdrawalWithPesaJet'] as const;
+
+export const getPayAdminWithdrawalWithPesaJetMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>, TError,PayAdminWithdrawalWithPesaJetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>, TError,PayAdminWithdrawalWithPesaJetMutationVariables, TContext> => {
+
+const mutationKey = getPayAdminWithdrawalWithPesaJetMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>, PayAdminWithdrawalWithPesaJetMutationVariables> = (props) => {
+          const {withdrawalId} = props ?? {};
+
+          return  payAdminWithdrawalWithPesaJet(withdrawalId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PayAdminWithdrawalWithPesaJetMutationResult = NonNullable<Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>>
+
+    export type PayAdminWithdrawalWithPesaJetMutationError = ErrorType<ErrorResponse>
+    export type PayAdminWithdrawalWithPesaJetMutationVariables = {withdrawalId: string}
+
+    /**
+ * @summary Send or check a pending withdrawal using the merchant's PesaJet balance
+ */
+export const usePayAdminWithdrawalWithPesaJet = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>, TError,PayAdminWithdrawalWithPesaJetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof payAdminWithdrawalWithPesaJet>>,
+        TError,
+        PayAdminWithdrawalWithPesaJetMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPayAdminWithdrawalWithPesaJetMutationOptions(options));
+    }
+
 export const getGetAdminProductsUrl = () => {
 
 

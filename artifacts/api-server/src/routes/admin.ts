@@ -1053,6 +1053,11 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
         .where(eq(withdrawalRequestsTable.id, id)).for("update").limit(1);
       if (!current || current.status !== "pending") return { error: "This withdrawal is already processed." };
       if (!["mtn", "airtel"].includes(current.payoutProvider)) return { error: "PesaJet requires a saved Airtel or MTN payout destination; registered numbers can still be paid manually." };
+      const compactPhone = current.payoutPhone.replace(/[^\d+]/g, "");
+      const nationalPhone = compactPhone.startsWith("+256") ? compactPhone.slice(4)
+        : compactPhone.startsWith("256") ? compactPhone.slice(3)
+          : compactPhone.startsWith("0") ? compactPhone.slice(1) : compactPhone;
+      if (!/^7\d{8}$/.test(nationalPhone)) return { error: "The saved payout number is invalid. Ask the member to update it before using PesaJet." };
       if (current.resolutionNote && !current.resolutionNote.startsWith("PesaJet payout ")) {
         return { error: "This request is assigned to manual processing.", conflict: true };
       }
@@ -1069,7 +1074,7 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
           details: `Withdrawal ${id}; requested a PesaJet disbursement to ${current.payoutProvider} ${current.payoutPhone}.`,
         });
       }
-      return { current: { ...current, resolutionNote: current.resolutionNote ?? "PesaJet payout starting" } };
+      return { current: { ...current, payoutPhoneE164: `+256${nationalPhone}`, resolutionNote: current.resolutionNote ?? "PesaJet payout starting" } };
     });
     if ("error" in row) {
       res.status(row.conflict ? 409 : 400).json({ error: row.error });
@@ -1089,7 +1094,7 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
             type: "DISBURSEMENT",
             amount: current.receivedUgx,
             currency: "UGX",
-            phoneNumber: current.payoutPhone.startsWith("+") ? current.payoutPhone : `+256${current.payoutPhone.replace(/^0/, "")}`,
+            phoneNumber: current.payoutPhoneE164,
             provider: current.payoutProvider,
             reference: current.id,
             idempotencyKey: `withdrawal-${current.id}`,

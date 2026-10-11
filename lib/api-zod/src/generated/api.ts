@@ -1005,6 +1005,30 @@ export const ProcessAdminWithdrawalResponse = zod.object({
 
 
 /**
+ * @summary Send or check a pending withdrawal using the merchant's PesaJet balance
+ */
+export const PayAdminWithdrawalWithPesaJetParams = zod.object({
+  "withdrawalId": zod.coerce.string().uuid()
+})
+
+export const PayAdminWithdrawalWithPesaJetResponse = zod.object({
+  "id": zod.string().uuid(),
+  "amountUgx": zod.number().int(),
+  "feeUgx": zod.number().int(),
+  "receivedUgx": zod.number().int(),
+  "payoutPhone": zod.string(),
+  "payoutProvider": zod.enum(['airtel', 'mtn', 'registered']),
+  "payoutHolderName": zod.string().nullable(),
+  "status": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "processedAt": zod.coerce.date().nullish(),
+  "resolutionNote": zod.string().nullish()
+}).and(zod.object({
+  "memberPhone": zod.string()
+}))
+
+
+/**
  * @summary Get all editable catalog products
  */
 export const getAdminProductsResponseProductsItemIdMax = 60;
