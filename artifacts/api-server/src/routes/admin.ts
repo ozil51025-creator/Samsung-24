@@ -38,7 +38,10 @@ import {
   GetAdminAuditLogsResponse,
   GetAdminTaskCenterSettingsResponse,
   GetAdminMembersResponse,
+  GetAdminMemberDetailsResponse,
   GetAdminOverviewResponse,
+  GrantAdminMemberProductBody,
+  GrantAdminMemberProductResponse,
   ResetAdminMemberPasswordResponse,
   UpdateAdminMemberStatusBody,
   UpdateAdminMemberStatusResponse,
@@ -380,6 +383,95 @@ router.get("/admin/members", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "admin.members" }, "Could not load admin member list");
     res.status(500).json({ error: "Could not load member accounts." });
+  }
+});
+
+router.get("/admin/members/:memberId/details", async (req, res): Promise<void> => {
+  if (!await requireAdmin(req, res)) return;
+  const memberId = req.params.memberId;
+  if (!/^[0-9a-f-]{36}$/i.test(memberId)) {
+    res.status(400).json({ error: "Invalid member account." });
+    return;
+  }
+  try {
+    const [memberRow] = await db.select({
+      id: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber, createdAt: phoneAccountsTable.createdAt,
+      referralCode: phoneReferralCodesTable.referralCode, referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+      isActive: phoneAccountsTable.isActive, walletBalanceUgx: phoneAccountsTable.walletBalanceUgx,
+      depositBalanceUgx: phoneAccountsTable.depositBalanceUgx, totalDepositedUgx: phoneAccountsTable.totalDepositedUgx,
+      payoutProvider: payoutAccountsTable.provider, payoutHolderName: payoutAccountsTable.holderName, payoutPhone: payoutAccountsTable.phoneNumber,
+    }).from(phoneAccountsTable)
+      .leftJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+      .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, phoneAccountsTable.id))
+      .where(eq(phoneAccountsTable.id, memberId)).limit(1);
+    if (!memberRow) { res.status(404).json({ error: "Member account not found." }); return; }
+    const [inviter] = memberRow.referredByAccountId
+      ? await db.select({ phoneNumber: phoneAccountsTable.phoneNumber }).from(phoneAccountsTable).where(eq(phoneAccountsTable.id, memberRow.referredByAccountId)).limit(1)
+      : [];
+    const teamRows = await db.select({
+      accountId: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber, referralCode: phoneReferralCodesTable.referralCode,
+      referredByAccountId: phoneReferralCodesTable.referredByAccountId, createdAt: phoneAccountsTable.createdAt, isActive: phoneAccountsTable.isActive,
+    }).from(phoneAccountsTable).innerJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id));
+    const referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; createdAt: Date; isActive: boolean }> = [];
+    let parentIds = new Set([memberId]);
+    for (let level = 1; level <= 3; level += 1) {
+      const current = teamRows.filter((row) => row.referredByAccountId && parentIds.has(row.referredByAccountId));
+      referrals.push(...current.map((row) => ({ level, phoneNumber: row.phoneNumber, referralCode: row.referralCode, createdAt: row.createdAt, isActive: row.isActive })));
+      parentIds = new Set(current.map((row) => row.accountId));
+      if (parentIds.size === 0) break;
+    }
+    const [productOrders, deposits, checkins, withdrawals, commissions, milestones, gifts, adjustments] = await Promise.all([
+      db.select({ id: productOrdersTable.id, productName: productOrdersTable.productName, priceUgx: productOrdersTable.priceUgx, status: productOrdersTable.status, createdAt: productOrdersTable.createdAt }).from(productOrdersTable).where(eq(productOrdersTable.buyerAccountId, memberId)).orderBy(desc(productOrdersTable.createdAt)),
+      db.select({ id: rechargeRequestsTable.id, amountUgx: rechargeRequestsTable.amountUgx, status: rechargeRequestsTable.status, createdAt: rechargeRequestsTable.createdAt }).from(rechargeRequestsTable).where(and(eq(rechargeRequestsTable.accountId, memberId), eq(rechargeRequestsTable.status, "verified"))),
+      db.select({ id: presenceClaimsTable.id, amountUgx: presenceClaimsTable.rewardUgx, createdAt: presenceClaimsTable.createdAt }).from(presenceClaimsTable).where(eq(presenceClaimsTable.accountId, memberId)),
+      db.select({ id: withdrawalRequestsTable.id, amountUgx: withdrawalRequestsTable.amountUgx, status: withdrawalRequestsTable.status, createdAt: withdrawalRequestsTable.createdAt }).from(withdrawalRequestsTable).where(eq(withdrawalRequestsTable.accountId, memberId)),
+      db.select({ id: referralCommissionsTable.id, amountUgx: referralCommissionsTable.amountUgx, createdAt: referralCommissionsTable.createdAt }).from(referralCommissionsTable).where(eq(referralCommissionsTable.recipientAccountId, memberId)),
+      db.select({ id: teamDepositMilestoneClaimsTable.id, amountUgx: teamDepositMilestoneClaimsTable.rewardUgx, createdAt: teamDepositMilestoneClaimsTable.createdAt }).from(teamDepositMilestoneClaimsTable).where(eq(teamDepositMilestoneClaimsTable.accountId, memberId)),
+      db.select({ id: giftCodesTable.id, amountUgx: giftCodesTable.amountUgx, createdAt: giftCodesTable.redeemedAt }).from(giftCodesTable).where(and(eq(giftCodesTable.redeemedByAccountId, memberId), isNotNull(giftCodesTable.redeemedAt))),
+      db.select({ id: adminAuditLogsTable.id, action: adminAuditLogsTable.action, amountUgx: adminAuditLogsTable.amountUgx, details: adminAuditLogsTable.details, createdAt: adminAuditLogsTable.createdAt }).from(adminAuditLogsTable).where(and(eq(adminAuditLogsTable.targetAccountId, memberId), inArray(adminAuditLogsTable.action, ["wallet.credit", "wallet.debit", "member.product.grant"]))),
+    ]);
+    const activity = [
+      ...productOrders.map((item) => ({ id: item.id, type: `Product purchase · ${item.productName}`, amountUgx: -item.priceUgx, status: item.status, createdAt: item.createdAt })),
+      ...deposits.map((item) => ({ id: item.id, type: "Deposit credit", amountUgx: item.amountUgx, status: item.status, createdAt: item.createdAt })),
+      ...checkins.map((item) => ({ id: item.id, type: "Daily check-in", amountUgx: item.amountUgx, status: "credited", createdAt: item.createdAt })),
+      ...withdrawals.map((item) => ({ id: item.id, type: item.status === "failed" ? "Withdrawal refund" : "Withdrawal", amountUgx: item.status === "failed" ? item.amountUgx : -item.amountUgx, status: item.status, createdAt: item.createdAt })),
+      ...commissions.map((item) => ({ id: item.id, type: "Referral commission", amountUgx: item.amountUgx, status: "credited", createdAt: item.createdAt })),
+      ...milestones.map((item) => ({ id: item.id, type: "Team deposit reward", amountUgx: item.amountUgx, status: "credited", createdAt: item.createdAt })),
+      ...gifts.filter((item) => item.createdAt).map((item) => ({ id: item.id, type: "Gift code credit", amountUgx: item.amountUgx, status: "credited", createdAt: item.createdAt as Date })),
+      ...adjustments.map((item) => ({ id: String(item.id), type: item.action === "member.product.grant" ? item.details ?? "Admin product grant" : item.action === "wallet.debit" ? "Admin debit" : "Admin credit", amountUgx: item.action === "wallet.debit" ? -(item.amountUgx ?? 0) : (item.amountUgx ?? 0), status: item.action === "member.product.grant" ? "granted" : "completed", createdAt: item.createdAt })),
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    res.json(GetAdminMemberDetailsResponse.parse({
+      member: memberRow, invitedByPhone: inviter?.phoneNumber ?? null, referrals, productOrders, activity,
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.member.details" }, "Could not load member details");
+    res.status(500).json({ error: "Could not load member history." });
+  }
+});
+
+router.post("/admin/members/:memberId/product-grants", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const memberId = req.params.memberId;
+  const parsed = GrantAdminMemberProductBody.safeParse(req.body);
+  if (!/^[0-9a-f-]{36}$/i.test(memberId) || !parsed.success) {
+    res.status(400).json({ error: "Choose a valid member and product." });
+    return;
+  }
+  try {
+    const [[member], [product]] = await Promise.all([
+      db.select({ id: phoneAccountsTable.id }).from(phoneAccountsTable).where(eq(phoneAccountsTable.id, memberId)).limit(1),
+      db.select({ id: productCatalogTable.id, name: productCatalogTable.name, isActive: productCatalogTable.isActive }).from(productCatalogTable).where(eq(productCatalogTable.id, parsed.data.productId)).limit(1),
+    ]);
+    if (!member || !product || !product.isActive) { res.status(404).json({ error: "Member or active product not found." }); return; }
+    await db.insert(adminAuditLogsTable).values({
+      adminAccountId: admin.id, action: "member.product.grant", targetAccountId: member.id,
+      details: `Free admin product grant: ${product.name}. Wallet unchanged.`,
+    });
+    res.status(201).json(GrantAdminMemberProductResponse.parse({ message: `${product.name} was recorded as a free admin gift. The wallet was not changed.` }));
+  } catch (error) {
+    req.log.error({ error, route: "admin.member.product-grant" }, "Could not grant member product");
+    res.status(500).json({ error: "Could not grant the product." });
   }
 });
 
