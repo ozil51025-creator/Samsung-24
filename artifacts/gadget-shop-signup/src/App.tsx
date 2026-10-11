@@ -1145,9 +1145,11 @@ function AdminTaskCenterPage() {
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; status: string; createdAt: string; memberPhone: string }>>([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState<Array<{ id: string; amountUgx: number; feeUgx: number; receivedUgx: number; payoutPhone: string; payoutProvider: 'airtel' | 'mtn' | 'registered'; payoutHolderName: string | null; status: 'pending' | 'paid' | 'failed'; createdAt: string; processedAt: string | null; resolutionNote: string | null; memberPhone: string }>>([]);
   const [withdrawalStatus, setWithdrawalStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; financialRecordsAvailable: boolean } | null>(null);
-  const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null; isActive: boolean }>>([]);
+  const [overview, setOverview] = useState<{ totalUsers: number; referredUsers: number; activeUsers: number; walletBalanceUgx: number; totalDepositedUgx: number; totalProductPurchases: number; productPurchaseTotalUgx: number; paidWithdrawalsUgx: number; pendingWithdrawalsCount: number; pendingWithdrawalsUgx: number; referralCommissionsUgx: number; checkinRewardsUgx: number; financialRecordsAvailable: boolean } | null>(null);
+  const [members, setMembers] = useState<Array<{ id: string; phoneNumber: string; createdAt: string; referralCode: string | null; referredByAccountId: string | null; isActive: boolean; walletBalanceUgx: number; depositBalanceUgx: number; totalDepositedUgx: number; payoutProvider: string | null; payoutHolderName: string | null; payoutPhone: string | null }>>([]);
   const [auditLogs, setAuditLogs] = useState<Array<{ id: number; action: string; performedByPhone: string; targetPhone: string | null; amountUgx: number | null; reason: string | null; details: string | null; createdAt: string }>>([]);
+  const [adminTransactions, setAdminTransactions] = useState<Array<{ id: string; member: string; amountUgx: number; type: string; status: string; createdAt: string }>>([]);
+  const [memberSearch, setMemberSearch] = useState('');
   const [adminProducts, setAdminProducts] = useState<AdminCatalogItem[]>([]);
   const [productStatus, setProductStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [savingProducts, setSavingProducts] = useState(false);
@@ -1254,6 +1256,14 @@ function AdminTaskCenterPage() {
       });
   };
   useEffect(() => { loadAdminDirectory(); }, []);
+  const loadAdminTransactions = () => {
+    fetch('/api/admin/transactions', { credentials: 'include' }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not load transactions.');
+      setAdminTransactions(data.transactions);
+    }).catch(() => setAdminTransactions([]));
+  };
+  useEffect(() => { loadAdminTransactions(); }, []);
   const loadAdminProducts = () => {
     setProductStatus('loading');
     fetch('/api/admin/products', { credentials: 'include' }).then(async (response) => {
@@ -1449,15 +1459,30 @@ function AdminTaskCenterPage() {
         <p className="admin-section-subtitle">A current view of the Samsung rewards portal.</p>
         {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
         {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>{directoryMessage || 'Could not load admin data.'}</p>{directoryRequiresSignIn && <Link href="/sign-in">Sign in</Link>}<button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
-        {overview && <div className="admin-overview-grid">
-          <article><span>Total members</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
-          <article><span>Active members</span><strong>{members.filter((member) => member.isActive).length.toLocaleString()}</strong></article>
-          <article><span>Disabled members</span><strong>{members.filter((member) => !member.isActive).length.toLocaleString()}</strong></article>
-          <article><span>Referred members</span><strong>{overview.referredUsers.toLocaleString()}</strong></article>
-          <article><span>Withdrawable balances</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
-          <article><span>Product funds</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
-          <article><span>Verified transactions</span><strong>{overview.financialRecordsAvailable ? 'Available' : 'Not connected'}</strong></article>
-        </div>}
+         {overview && <div className="admin-overview-grid">
+           <article><span>Total users</span><strong>{overview.totalUsers.toLocaleString()}</strong></article>
+           <article><span>Joined via referral</span><strong>{overview.referredUsers.toLocaleString()}</strong></article>
+           <article><span>Active users</span><strong>{overview.activeUsers.toLocaleString()}</strong></article>
+           <article><span>Wallet balances</span><strong>UGX {money.format(overview.walletBalanceUgx)}</strong></article>
+           <article><span>Total deposited</span><strong>UGX {money.format(overview.totalDepositedUgx)}</strong></article>
+           <article><span>Product purchases</span><strong>{overview.totalProductPurchases.toLocaleString()}</strong></article>
+           <article><span>Purchase value · not revenue</span><strong>UGX {money.format(overview.productPurchaseTotalUgx)}</strong></article>
+           <article><span>Paid withdrawals</span><strong>UGX {money.format(overview.paidWithdrawalsUgx)}</strong></article>
+           <article><span>Pending payouts</span><strong>{overview.pendingWithdrawalsCount} · UGX {money.format(overview.pendingWithdrawalsUgx)}</strong></article>
+           <article><span>Referral commissions</span><strong>UGX {money.format(overview.referralCommissionsUgx)}</strong></article>
+           <article><span>Check-in rewards</span><strong>UGX {money.format(overview.checkinRewardsUgx)}</strong></article>
+           <article><span>Disabled users</span><strong>{Math.max(0, overview.totalUsers - overview.activeUsers).toLocaleString()}</strong></article>
+         </div>}
+         <div className="admin-recent-transactions">
+           <h3>Recent transactions</h3>
+           {adminTransactions.length === 0
+             ? <p>No recorded transactions yet.</p>
+             : <div className="admin-recent-transaction-list">{adminTransactions.slice(0, 10).map((transaction) => <article key={transaction.id}>
+               <span>{new Date(transaction.createdAt).toLocaleString('en-UG')}</span>
+               <strong>{transaction.type}<small>{transaction.member} · {transaction.status}</small></strong>
+               <b className={transaction.amountUgx < 0 ? 'is-debit' : 'is-credit'}>{transaction.amountUgx < 0 ? '−' : '+'}UGX {money.format(Math.abs(transaction.amountUgx))}</b>
+             </article>)}</div>}
+         </div>
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'analytics'}>
         <h2>Analytics</h2>
@@ -1467,9 +1492,10 @@ function AdminTaskCenterPage() {
       </section>
       <section id="admin-members" className="admin-panel-section" hidden={activeSection !== 'users'}>
         <h2>Members</h2>
+        <label className="admin-member-search">Search phone or referral code<input value={memberSearch} onChange={(event) => setMemberSearch(event.target.value)} placeholder="+256… or referral code" data-testid="input-admin-member-search" /></label>
         {directoryStatus === 'ready' && members.length === 0 && <p>No member accounts yet.</p>}
         {members.length > 0 && <div className="admin-member-list">
-          {members.map((member) => <article key={member.id}>
+           {members.filter((member) => `${member.phoneNumber} ${member.referralCode ?? ''}`.toLowerCase().includes(memberSearch.trim().toLowerCase())).map((member) => <article key={member.id}>
             <div><strong>{member.phoneNumber}</strong><span>Joined {new Date(member.createdAt).toLocaleDateString()}</span></div>
             <div><span>Referral code</span><strong>{member.referralCode ?? '—'}</strong></div>
             <div><span>Invited by</span><strong>{member.referredByAccountId ? 'Referred member' : 'Direct signup'}</strong></div>
@@ -1480,6 +1506,14 @@ function AdminTaskCenterPage() {
               <button type="button" onClick={() => void adjustMemberWallet(member, 'credit')}>Credit wallet</button>
               <button type="button" onClick={() => void adjustMemberWallet(member, 'debit')}>Debit wallet</button>
             </div>
+             <details className="admin-member-details">
+               <summary>Balances, payout account and recent transactions</summary>
+               <div><span>Available wallet</span><strong>UGX {money.format(member.walletBalanceUgx)}</strong></div>
+               <div><span>Product funds</span><strong>UGX {money.format(member.depositBalanceUgx)}</strong></div>
+               <div><span>Total deposited</span><strong>UGX {money.format(member.totalDepositedUgx)}</strong></div>
+               <div><span>Saved payout account</span><strong>{member.payoutProvider ? `${member.payoutProvider.toUpperCase()} · ${member.payoutHolderName ?? 'Member'} · ${member.payoutPhone ?? '—'}` : 'None saved'}</strong></div>
+               <div className="admin-member-recent">{adminTransactions.filter((transaction) => transaction.member === member.phoneNumber).slice(0, 5).map((transaction) => <p key={transaction.id}>{new Date(transaction.createdAt).toLocaleString('en-UG')} · {transaction.type} · {transaction.amountUgx < 0 ? '−' : '+'}UGX {money.format(Math.abs(transaction.amountUgx))}</p>)}</div>
+             </details>
           </article>)}
         </div>}
         <p className="admin-task-note">Password resets issue a temporary password once and sign out existing sessions. Wallet changes require a reason, affect the available wallet only, and do not rewrite earnings or deposit totals.</p>
