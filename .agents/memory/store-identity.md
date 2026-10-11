@@ -23,6 +23,12 @@ For screenshot-led page work, the user wants the reference followed closely and 
 
 **How to apply:** Reproduce only the provided reference content and visual elements. Do not fill gaps with guesses; clarify direct conflicts such as currency or payment channels before changing them.
 
+For Level 1 Task Center referral milestones, count a downline only after they have both a positive recorded deposit total and at least one recorded product order. Reaching the objective makes the reward claimable; it must not increase the Task Center total or wallet until the member explicitly claims it.
+
+**Why:** The user specified that task progress must exclude referrals who only signed up, and that members must claim milestone rewards.
+
+**How to apply:** Calculate milestone progress from distinct direct referrals meeting both conditions. Keep achieved-but-unclaimed rewards separate from claimed totals and wallet balances.
+
 The user does not want an investment chart displayed in the site.
 
 **Why:** The user asked to remove the investment chart from the site.
