@@ -412,11 +412,12 @@ router.get("/admin/members/:memberId/details", async (req, res): Promise<void> =
       accountId: phoneAccountsTable.id, phoneNumber: phoneAccountsTable.phoneNumber, referralCode: phoneReferralCodesTable.referralCode,
       referredByAccountId: phoneReferralCodesTable.referredByAccountId, createdAt: phoneAccountsTable.createdAt, isActive: phoneAccountsTable.isActive,
     }).from(phoneAccountsTable).innerJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id));
-    const referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; createdAt: Date; isActive: boolean }> = [];
+    const phoneById = new Map(teamRows.map((row) => [row.accountId, row.phoneNumber]));
+    const referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: Date; isActive: boolean }> = [];
     let parentIds = new Set([memberId]);
     for (let level = 1; level <= 3; level += 1) {
       const current = teamRows.filter((row) => row.referredByAccountId && parentIds.has(row.referredByAccountId));
-      referrals.push(...current.map((row) => ({ level, phoneNumber: row.phoneNumber, referralCode: row.referralCode, createdAt: row.createdAt, isActive: row.isActive })));
+      referrals.push(...current.map((row) => ({ level, phoneNumber: row.phoneNumber, referralCode: row.referralCode, referredByPhone: row.referredByAccountId ? phoneById.get(row.referredByAccountId) ?? null : null, createdAt: row.createdAt, isActive: row.isActive })));
       parentIds = new Set(current.map((row) => row.accountId));
       if (parentIds.size === 0) break;
     }

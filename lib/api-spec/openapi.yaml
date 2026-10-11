@@ -1311,11 +1311,12 @@ components:
           type: array
           items:
             type: object
-            required: [level, phoneNumber, referralCode, createdAt, isActive]
+            required: [level, phoneNumber, referralCode, referredByPhone, createdAt, isActive]
             properties:
               level: { type: integer, minimum: 1, maximum: 3 }
               phoneNumber: { type: string }
               referralCode: { type: ["string", "null"] }
+              referredByPhone: { type: ["string", "null"] }
               createdAt: { type: string, format: date-time }
               isActive: { type: boolean }
         productOrders:
