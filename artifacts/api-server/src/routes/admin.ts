@@ -553,7 +553,7 @@ router.patch("/admin/members/:memberId/status", async (req, res): Promise<void> 
       await tx.insert(adminAuditLogsTable).values({
         adminAccountId: admin.id,
         targetAccountId: memberId,
-        action: parsed.data.isActive ? "member.activated" : "member.deactivated",
+        action: parsed.data.isActive ? "member.activated" : parsed.data.reason.startsWith("Soft-archived by owner") ? "member.archived" : "member.deactivated",
         reason: parsed.data.reason,
       });
       return member;
