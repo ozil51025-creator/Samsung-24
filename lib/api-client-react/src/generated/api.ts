@@ -54,6 +54,7 @@ import type {
   ProductOrdersResponse,
   ProductPurchaseResponse,
   RedeemGiftCodeInput,
+  ReferralDetails,
   ReferralSummary,
   RegisterPhoneAccountInput,
   TaskCenterSettings,
@@ -1605,6 +1606,83 @@ export function useGetReferralSummary<TData = Awaited<ReturnType<typeof getRefer
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetReferralSummaryQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetReferralDetailsUrl = () => {
+
+
+
+
+  return `/api/referral/details`
+}
+
+/**
+ * @summary Get the signed-in member's downline and recorded referral rewards
+ */
+export const getReferralDetails = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReferralDetails> => {
+
+  return customFetch<ReferralDetails>(getGetReferralDetailsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferralDetailsQueryKey = () => {
+    return [
+    `/api/referral/details`
+    ] as const;
+    }
+
+
+export const getGetReferralDetailsQueryOptions = <TData = Awaited<ReturnType<typeof getReferralDetails>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralDetails>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralDetailsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralDetails>>> = ({ signal }) => getReferralDetails({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralDetails>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReferralDetailsQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralDetails>>>
+export type GetReferralDetailsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the signed-in member's downline and recorded referral rewards
+ */
+
+export function useGetReferralDetails<TData = Awaited<ReturnType<typeof getReferralDetails>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReferralDetails>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReferralDetailsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

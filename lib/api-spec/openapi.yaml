@@ -496,6 +496,20 @@ paths:
                 $ref: "#/components/schemas/ReferralSummary"
         "401":
           description: Member sign in required
+  /referral/details:
+    get:
+      operationId: getReferralDetails
+      tags: [auth]
+      summary: Get the signed-in member's downline and recorded referral rewards
+      responses:
+        "200":
+          description: Downline members and recorded referral commissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralDetails"
+        "401":
+          description: Member sign in required
   /admin/task-center:
     get:
       operationId: getAdminTaskCenterSettings
@@ -1501,6 +1515,34 @@ components:
         levels:
           type: array
           items: { $ref: "#/components/schemas/ReferralLevelSummary" }
+    ReferralDetails:
+      type: object
+      additionalProperties: false
+      required: [members, rewards]
+      properties:
+        members:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, phoneNumber, level, joinedAt]
+            properties:
+              id: { type: string, format: uuid }
+              phoneNumber: { type: string }
+              level: { type: integer, minimum: 1, maximum: 3 }
+              joinedAt: { type: string, format: date-time }
+        rewards:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, memberPhoneNumber, level, amountUgx, createdAt]
+            properties:
+              id: { type: string, format: uuid }
+              memberPhoneNumber: { type: string }
+              level: { type: integer, minimum: 1, maximum: 3 }
+              amountUgx: { type: integer, minimum: 0 }
+              createdAt: { type: string, format: date-time }
     TaskCenterSettingsInput:
       type: object
       additionalProperties: false

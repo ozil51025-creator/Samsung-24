@@ -2048,6 +2048,19 @@ button.account-menu-row {
 .referral-team-summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .referral-team-summary > div { display: flex; min-width: 80px; flex-direction: column; gap: 3px; color: #fff; }
 .referral-team-summary > div:last-child { align-items: flex-end; text-align: right; }
+.referral-summary-link { display: flex; min-width: 0; flex-direction: column; gap: 3px; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+.referral-summary-link:last-child { align-items: flex-end; text-align: right; }
+.referral-summary-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 4px; }
+.referral-summary-link > span { display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,.88); font-size: 10px; font-weight: 600; }
+.referral-summary-link > span > span { font-size: 18px; line-height: 10px; }
+.referral-summary-link strong { color: #fff; font-size: 18px; font-weight: 700; }
+.referral-details-panel { overflow: hidden; padding: 15px; border: 1px solid #e6e0d6; border-radius: 16px; background: #fff; }
+.referral-details-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.referral-details-heading h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.referral-details-heading button { padding: 6px 10px; border: 1px solid #d9d4c9; border-radius: 999px; background: #f8f6f1; }
+.referral-details-panel article { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-top: 1px solid #eee9df; }
+.referral-details-panel article strong { font-size: 14px; }
+.referral-details-panel article span,.referral-details-panel small { color: #66736c; font-size: 12px; }
 .referral-team-summary span { color: rgba(255,255,255,.88); font-size: 10px; font-weight: 600; }
 .referral-team-summary strong { color: white; font-size: 18px; font-weight: 700; }
 .referral-hero-art { display: flex; flex: 1 1 auto; min-height: 190px; flex-direction: column; align-items: center; justify-content: center; gap: 0; overflow: hidden; }

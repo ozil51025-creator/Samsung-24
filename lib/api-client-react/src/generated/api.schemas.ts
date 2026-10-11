@@ -713,6 +713,35 @@ export interface ReferralSummary {
   levels: ReferralLevelSummary[];
 }
 
+export type ReferralDetailsMembersItem = {
+  id: string;
+  phoneNumber: string;
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  level: number;
+  joinedAt: string;
+};
+
+export type ReferralDetailsRewardsItem = {
+  id: string;
+  memberPhoneNumber: string;
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  level: number;
+  /** @minimum 0 */
+  amountUgx: number;
+  createdAt: string;
+};
+
+export interface ReferralDetails {
+  members: ReferralDetailsMembersItem[];
+  rewards: ReferralDetailsRewardsItem[];
+}
+
 export interface TaskCenterSettingsInput {
   /** @maxItems 30 */
   tasks: TaskCenterTask[];

@@ -1892,6 +1892,12 @@ function ReferralPage() {
   const [referralNotice, setReferralNotice] = useState('');
   const [summary, setSummary] = useState<{ totalMembers: number; totalRewardsUgx: number; levels: Array<{ level: number; commissionPercent: number; memberCount: number; rewardsUgx: number; estimatedRewardsUgx: number }> } | null>(null);
   const [summaryError, setSummaryError] = useState('');
+  const [detailsView, setDetailsView] = useState<'members' | 'rewards' | null>(null);
+  const [referralDetails, setReferralDetails] = useState<{
+    members: { id: string; phoneNumber: string; level: number; joinedAt: string }[];
+    rewards: { id: string; memberPhoneNumber: string; level: number; amountUgx: number; createdAt: string }[];
+  } | null>(null);
+  const [detailsError, setDetailsError] = useState('');
   useEffect(() => {
     let active = true;
     let pending = false;
@@ -1923,6 +1929,22 @@ function ReferralPage() {
       document.removeEventListener('visibilitychange', loadSummary);
     };
   }, []);
+  useEffect(() => {
+    if (!detailsView || !user) return;
+    let active = true;
+    setReferralDetails(null);
+    setDetailsError('');
+    fetch('/api/referral/details', { credentials: 'include', cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? 'Could not load referral details.');
+        if (active) setReferralDetails(data);
+      })
+      .catch((error) => {
+        if (active) setDetailsError(error instanceof Error ? error.message : 'Could not load referral details.');
+      });
+    return () => { active = false; };
+  }, [detailsView, user]);
   const referralLevels = [
     { level: 1, tone: 'referral-level-one' },
     { level: 2, tone: 'referral-level-two' },
@@ -1959,8 +1981,14 @@ function ReferralPage() {
 
       <section className="referral-invite-card" aria-label="Referral invitation">
         <div className="referral-team-summary">
-          <div><span>Total rewards</span><strong>{summary ? `${summary.levels.some((item) => item.estimatedRewardsUgx > 0) ? '≈ ' : ''}UGX ${money.format(summary.totalRewardsUgx)}` : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
-          <div><span>Total members</span><strong>{summary ? money.format(summary.totalMembers) : summaryError ? 'Unavailable' : 'Loading…'}</strong></div>
+          <button type="button" className="referral-summary-link" onClick={() => setDetailsView('rewards')} aria-label="View referral rewards history">
+            <span>Total rewards <span aria-hidden="true">›</span></span>
+            <strong>{summary ? `${summary.levels.some((item) => item.estimatedRewardsUgx > 0) ? '≈ ' : ''}UGX ${money.format(summary.totalRewardsUgx)}` : summaryError ? 'Unavailable' : 'Loading…'}</strong>
+          </button>
+          <button type="button" className="referral-summary-link" onClick={() => setDetailsView('members')} aria-label="View referred members">
+            <span>Total members <span aria-hidden="true">›</span></span>
+            <strong>{summary ? money.format(summary.totalMembers) : summaryError ? 'Unavailable' : 'Loading…'}</strong>
+          </button>
         </div>
         <div className="referral-hero-art">
           <img src={`${basePath}/samsung-referral-banner.jpg`} alt="Samsung Galaxy smartphones including foldable devices" />
@@ -1983,6 +2011,28 @@ function ReferralPage() {
         </div>
         <p className="referral-copy-status" role="status" aria-live="polite">{referralNotice}</p>
       </section>
+
+      {detailsView && <section className="referral-details-panel" aria-live="polite">
+        <div className="referral-details-heading">
+          <h2>{detailsView === 'members' ? 'Referred members' : 'Referral rewards history'}</h2>
+          <button type="button" onClick={() => setDetailsView(null)}>Close</button>
+        </div>
+        {detailsError && <p role="alert">{detailsError}</p>}
+        {!detailsError && !referralDetails && <p>Loading details…</p>}
+        {referralDetails && detailsView === 'members' && (referralDetails.members.length
+          ? referralDetails.members.map((member) => <article key={member.id}>
+              <strong>{member.phoneNumber}</strong>
+              <span>Level {member.level} · Joined {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(member.joinedAt))}</span>
+            </article>)
+          : <p>No referred members yet.</p>)}
+        {referralDetails && detailsView === 'rewards' && (referralDetails.rewards.length
+          ? referralDetails.rewards.map((reward) => <article key={reward.id}>
+              <strong>+UGX {money.format(reward.amountUgx)}</strong>
+              <span>Level {reward.level} · From {reward.memberPhoneNumber} · {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(reward.createdAt))}</span>
+            </article>)
+          : <p>No recorded referral commissions yet.</p>)}
+        {detailsView === 'rewards' && summary?.levels.some((item) => item.estimatedRewardsUgx > 0) && <small>Some rewards in the total above are historical estimates and do not have individual transaction records.</small>}
+      </section>}
 
       <section className="referral-levels" aria-label="Referral commission levels">
         {referralLevels.map(({ level, tone }) => {

@@ -617,6 +617,34 @@ export const GetReferralSummaryResponse = zod.object({
 
 
 /**
+ * @summary Get the signed-in member's downline and recorded referral rewards
+ */
+export const getReferralDetailsResponseMembersItemLevelMax = 3;
+
+export const getReferralDetailsResponseRewardsItemLevelMax = 3;
+
+export const getReferralDetailsResponseRewardsItemAmountUgxMin = 0;
+
+
+
+export const GetReferralDetailsResponse = zod.object({
+  "members": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "phoneNumber": zod.string(),
+  "level": zod.number().int().min(1).max(getReferralDetailsResponseMembersItemLevelMax),
+  "joinedAt": zod.coerce.date()
+})),
+  "rewards": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "memberPhoneNumber": zod.string(),
+  "level": zod.number().int().min(1).max(getReferralDetailsResponseRewardsItemLevelMax),
+  "amountUgx": zod.number().int().min(getReferralDetailsResponseRewardsItemAmountUgxMin),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
  * @summary Get task definitions for administrators
  */
 export const getAdminTaskCenterSettingsResponseTasksItemIdMax = 64;

@@ -34,6 +34,7 @@ import {
   PurchaseProductResponse,
   GetAdminSiteSettingsResponse,
   GetReferralSummaryResponse,
+  GetReferralDetailsResponse,
   RedeemGiftCodeBody,
   RedeemGiftCodeResponse,
 } from "@workspace/api-zod";
@@ -718,6 +719,48 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "referral.summary" }, "Could not load referral summary");
     res.status(500).json({ error: "Could not load referral statistics." });
+  }
+});
+
+router.get("/referral/details", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  res.setHeader("Cache-Control", "no-store");
+  try {
+    const [accounts, referralLinks, rewardRows] = await Promise.all([
+      db.select({
+        id: phoneAccountsTable.id,
+        phoneNumber: phoneAccountsTable.phoneNumber,
+        joinedAt: phoneAccountsTable.createdAt,
+      }).from(phoneAccountsTable),
+      db.select({
+        accountId: phoneReferralCodesTable.accountId,
+        referredByAccountId: phoneReferralCodesTable.referredByAccountId,
+      }).from(phoneReferralCodesTable),
+      db.select({
+        id: referralCommissionsTable.id,
+        memberPhoneNumber: phoneAccountsTable.phoneNumber,
+        level: referralCommissionsTable.level,
+        amountUgx: referralCommissionsTable.amountUgx,
+        createdAt: referralCommissionsTable.createdAt,
+      }).from(referralCommissionsTable)
+        .innerJoin(phoneAccountsTable, eq(phoneAccountsTable.id, referralCommissionsTable.purchaserAccountId))
+        .where(eq(referralCommissionsTable.recipientAccountId, accountId)),
+    ]);
+    const members = accounts.flatMap((member) => {
+      const ancestors = getReferralAncestorsThroughLevelThree(member.id, referralLinks);
+      const level = ancestors.indexOf(accountId) + 1;
+      return level > 0 && level <= 3
+        ? [{ id: member.id, phoneNumber: member.phoneNumber, level, joinedAt: member.joinedAt.toISOString() }]
+        : [];
+    });
+    res.json(GetReferralDetailsResponse.parse({
+      members,
+      rewards: rewardRows.map((reward) => ({ ...reward, createdAt: reward.createdAt.toISOString() })),
+    }));
+  } catch (error) {
+    req.log.error({ error, route: "referral.details" }, "Could not load referral details");
+    res.status(500).json({ error: "Could not load referral details." });
   }
 });
 
