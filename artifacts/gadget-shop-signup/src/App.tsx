@@ -2260,9 +2260,12 @@ function AccountPage() {
         </article>
         <article>
           <strong>UGX {user?.totalAccumulatedUgx.toLocaleString('en-UG') ?? '—'}</strong>
-          <span>Total accumulated</span>
+          <span>Rewards earned</span>
         </article>
       </section>
+      <p className="text-xs leading-5 text-[#667078]">
+        Rewards earned exclude deposits. Withdrawals use your available wallet balance, which can include both rewards and deposited funds. Pending withdrawals are reserved until paid or refunded.
+      </p>
 
       <section className="account-wallet-actions" aria-label="Wallet actions">
         <Link href="/recharge" data-testid="button-account-deposit" aria-label="Deposit">
