@@ -1739,7 +1739,7 @@ function AdminTaskCenterPage() {
       <section id="admin-recharges" className="admin-recharge-review admin-panel-section" hidden={activeSection !== 'payments'}>
         <h2>Payments</h2>
         <p className="admin-section-subtitle">Mobile-money collection requests awaiting confirmation.</p>
-        <p className="admin-task-note">Check the matching PesaJet reference and confirm the money was received before verifying. Verification credits the member’s deposit balance.</p>
+        <p className="admin-task-note">A signed PesaJet success notification credits deposits automatically. Use manual verification only after confirming the payment in PesaJet if its notification was missed.</p>
         {rechargeStatus === 'loading' && <p>Loading requests…</p>}
         {rechargeStatus === 'error' && <button type="button" onClick={loadRechargeRequests}>Retry loading requests</button>}
         {rechargeStatus === 'ready' && rechargeRequests.length === 0 && <p>No recharge requests.</p>}
