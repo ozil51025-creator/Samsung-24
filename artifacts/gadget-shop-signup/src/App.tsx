@@ -1152,7 +1152,8 @@ function AdminTaskCenterPage() {
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [giftProductId, setGiftProductId] = useState('');
-  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null>(null);
+  const [memberDetail, setMemberDetail] = useState<{ invitedByPhone: string | null; referrals: Array<{ level: number; phoneNumber: string; referralCode: string | null; referredByPhone: string | null; createdAt: string; isActive: boolean }>; referralCountsByLevel: { level1: number; level2: number; level3: number }; checkinStreak: number; productOrders: Array<{ id: string; productName: string; priceUgx: number; status: string; createdAt: string }>; activity: Array<{ id: string; type: string; amountUgx: number; status: string; createdAt: string }> } | null);
+  const [ownerActionsAllowed, setOwnerActionsAllowed] = useState(false);
   const [memberDetailStatus, setMemberDetailStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [memberDetailMessage, setMemberDetailMessage] = useState('');
   const [adminProducts, setAdminProducts] = useState<AdminCatalogItem[]>([]);
@@ -1251,6 +1252,7 @@ function AdminTaskCenterPage() {
         }
         setOverview(overviewData);
         setMembers(membersData.members);
+        setOwnerActionsAllowed(membersData.ownerActionsAllowed === true);
         setAdmins(adminsData.admins);
         setAuditLogs(auditData.logs);
         setDirectoryStatus('ready');
@@ -1388,17 +1390,21 @@ function AdminTaskCenterPage() {
       setAddingAdmin(false);
     }
   };
-  const manageMember = async (member: (typeof members)[number], action: 'password' | 'status') => {
+  const manageMember = async (member: (typeof members)[number], action: 'password' | 'status' | 'archive') => {
     if (action === 'password') {
       if (!window.confirm(`Reset the password for ${member.phoneNumber}? Existing sessions will be signed out.`)) return;
       const response = await fetch(`/api/admin/members/${member.id}/password-reset`, { method: 'POST', credentials: 'include' });
       const data = await response.json();
       if (!response.ok) { window.alert(data.error ?? 'Could not reset password.'); return; }
       window.alert(`Temporary password for ${member.phoneNumber} (shown once):\n\n${data.temporaryPassword}\n\nShare it with the member securely.`);
-    } else if (action === 'status') {
-      const isActive = !member.isActive;
-      if (isActive === false && !window.confirm(`Deactivate ${member.phoneNumber}? They will be signed out and unable to log in.`)) return;
-      const reason = window.prompt(`Reason for ${isActive ? 'activating' : 'deactivating'} ${member.phoneNumber}:`);
+    } else if (action === 'status' || action === 'archive') {
+      const isActive = action === 'archive' ? false : !member.isActive;
+      if (!isActive && !window.confirm(action === 'archive'
+        ? `Archive ${member.phoneNumber}? This reversible action disables sign-in and keeps the member's wallet, referrals, products, and history.`
+        : `Deactivate ${member.phoneNumber}? They will be signed out and unable to log in.`)) return;
+      const reason = action === 'archive'
+        ? 'Soft-archived by owner; member data retained'
+        : window.prompt(`Reason for ${isActive ? 'activating' : 'deactivating'} ${member.phoneNumber}:`);
       if (!reason?.trim()) return;
       const response = await fetch(`/api/admin/members/${member.id}/status`, {
         method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
@@ -1544,9 +1550,10 @@ function AdminTaskCenterPage() {
             <div><span>Account status</span><strong>{member.isActive ? 'Active' : 'Disabled'}</strong></div>
             <div className="admin-member-actions">
               <button type="button" onClick={() => void manageMember(member, 'password')}>Reset password</button>
-              <button type="button" onClick={() => void manageMember(member, 'status')}>{member.isActive ? 'Disable account' : 'Enable account'}</button>
-              <button type="button" onClick={() => void adjustMemberWallet(member, 'credit')}>Credit wallet</button>
-              <button type="button" onClick={() => void adjustMemberWallet(member, 'debit')}>Debit wallet</button>
+               {ownerActionsAllowed && <button type="button" onClick={() => void manageMember(member, 'status')}>{member.isActive ? 'Ban / disable' : 'Restore account'}</button>}
+               {ownerActionsAllowed && <button type="button" onClick={() => void adjustMemberWallet(member, 'credit')}>Credit wallet</button>}
+               {ownerActionsAllowed && <button type="button" onClick={() => void adjustMemberWallet(member, 'debit')}>Debit wallet</button>}
+               {ownerActionsAllowed && member.isActive && <button type="button" onClick={() => void manageMember(member, 'archive')}>Delete / archive</button>}
             </div>
           </article>)}
         </div>}
@@ -1565,8 +1572,14 @@ function AdminTaskCenterPage() {
                 <div><span>Product funds</span><strong>UGX {money.format(selected.depositBalanceUgx)}</strong></div>
                 <div><span>Total deposited</span><strong>UGX {money.format(selected.totalDepositedUgx)}</strong></div>
                 <div><span>Saved payout account</span><strong>{selected.payoutProvider ? `${selected.payoutProvider.toUpperCase()} · ${selected.payoutHolderName ?? 'Member'} · ${selected.payoutPhone ?? '—'}` : 'None saved'}</strong></div>
-                <div><span>Referral team members</span><strong>{memberDetail.referrals.length}</strong></div>
+                 <div><span>Referral team members</span><strong>{memberDetail.referrals.length}</strong></div>
+                 <div><span>Check-in streak</span><strong>{memberDetail.checkinStreak} day{memberDetail.checkinStreak === 1 ? '' : 's'}</strong></div>
               </div>
+               <div className="admin-member-profile-grid admin-referral-level-counts">
+                 <div><span>Level 1 referrals</span><strong>{memberDetail.referralCountsByLevel.level1}</strong></div>
+                 <div><span>Level 2 referrals</span><strong>{memberDetail.referralCountsByLevel.level2}</strong></div>
+                 <div><span>Level 3 referrals</span><strong>{memberDetail.referralCountsByLevel.level3}</strong></div>
+               </div>
               <h4>Referral team</h4>
               {memberDetail.referrals.length === 0 ? <p>No referrals recorded for this member.</p> : <div className="admin-profile-list">{memberDetail.referrals.map((referral, index) => <article key={`${referral.level}-${referral.phoneNumber}-${index}`}><span>Level {referral.level} · {referral.phoneNumber}<small>Referred by {referral.referredByPhone ?? 'Unknown'}</small></span><strong>{referral.referralCode ?? 'No code'} · Joined {new Date(referral.createdAt).toLocaleDateString('en-UG')} · {referral.isActive ? 'Active' : 'Disabled'}</strong></article>)}</div>}
               <h4>Give a product</h4>
