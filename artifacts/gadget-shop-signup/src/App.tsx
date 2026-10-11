@@ -1471,6 +1471,21 @@ function AdminTaskCenterPage() {
       window.alert(error instanceof Error ? error.message : 'Could not process withdrawal.');
     }
   };
+  const payWithdrawalWithPesaJet = async (request: (typeof withdrawalRequests)[number]) => {
+    const checking = request.resolutionNote?.startsWith('PesaJet payout ');
+    if (!checking && !window.confirm(`Send UGX ${money.format(request.receivedUgx)} from your PesaJet balance to ${request.payoutProvider.toUpperCase()} ${request.payoutPhone}? PesaJet may charge additional merchant fees.`)) return;
+    try {
+      const response = await fetch(`/api/admin/withdrawals/${encodeURIComponent(request.id)}/pesajet`, { method: 'POST', credentials: 'include' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Could not process the PesaJet payout.');
+      loadWithdrawalRequests();
+      loadAdminDirectory();
+      loadAdminTransactions();
+      if (response.status === 202) window.alert('PesaJet has not confirmed the final status yet. Do not send this payout manually; use Check PesaJet status to refresh it.');
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Could not process the PesaJet payout.');
+    }
+  };
   const verifyRecharge = async (id: string) => {
     const response = await fetch(`/api/admin/recharge-requests/${encodeURIComponent(id)}/verify`, {
       method: 'POST',
@@ -1775,7 +1790,7 @@ function AdminTaskCenterPage() {
       </section>
       <section className="admin-panel-section" hidden={activeSection !== 'withdrawals'}>
         <h2>Withdrawals</h2>
-        <p className="admin-task-note">Pay members manually outside the site, then mark the request paid. Marking a request failed returns the reserved gross amount to the member’s wallet.</p>
+        <p className="admin-task-note">Pay manually or send the member’s net amount from your PesaJet balance. A PesaJet payout is not marked paid until PesaJet confirms it. Failing a request refunds the reserved gross amount.</p>
         {withdrawalStatus === 'loading' && <p role="status">Loading withdrawal requests…</p>}
         {withdrawalStatus === 'error' && <div className="admin-task-error" role="alert"><p>Could not load withdrawal requests.</p><button type="button" onClick={loadWithdrawalRequests}>Try again</button></div>}
         {withdrawalStatus === 'ready' && withdrawalRequests.length === 0 && <p>No withdrawal requests.</p>}
@@ -1788,8 +1803,14 @@ function AdminTaskCenterPage() {
           <p>Requested: {new Date(request.createdAt).toLocaleString()}</p>
           {request.resolutionNote && <p>Admin note: {request.resolutionNote}</p>}
           {request.status === 'pending' && <div className="admin-member-actions">
-            <button type="button" onClick={() => void processWithdrawal(request, 'paid')}>Mark paid</button>
-            <button type="button" onClick={() => void processWithdrawal(request, 'failed')}>Fail and refund</button>
+            {request.resolutionNote?.startsWith('PesaJet payout ') ? <>
+              <button type="button" onClick={() => void payWithdrawalWithPesaJet(request)}>Check PesaJet status</button>
+              <p role="status">PesaJet payout is awaiting a confirmed status. Do not pay it manually while it is pending.</p>
+            </> : <>
+              {request.payoutProvider !== 'registered' && <button type="button" onClick={() => void payWithdrawalWithPesaJet(request)}>Pay with PesaJet</button>}
+              <button type="button" onClick={() => void processWithdrawal(request, 'paid')}>Mark paid manually</button>
+              <button type="button" onClick={() => void processWithdrawal(request, 'failed')}>Fail and refund</button>
+            </>}
           </div>}
         </article>)}
       </section>
