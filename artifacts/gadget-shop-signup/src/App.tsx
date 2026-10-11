@@ -125,7 +125,7 @@ function Home() {
           <div className="rise-in max-w-[640px]">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#d8d1bd] bg-[#faf7ed] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#536e59]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#d27e52]" />
-              Product sales rewards
+              Samsung member site
             </div>
             <h1 className="font-[Syne] text-[clamp(2.8rem,7vw,5.9rem)] font-bold leading-[.98] tracking-[-.075em] text-[#243b31]">
               Samsung gadget ideas.
@@ -150,19 +150,19 @@ function Home() {
             <div className="absolute -right-12 -top-16 h-56 w-56 rounded-full border border-white/10" />
             <div className="absolute -right-5 -top-9 h-40 w-40 rounded-full border border-white/10" />
             <div className="relative">
-              <div className="text-[10px] font-bold uppercase tracking-[.18em] text-[#b9cdb4]">Program status</div>
+              <div className="text-[10px] font-bold uppercase tracking-[.18em] text-[#b9cdb4]">Member access</div>
               <div className="mt-5 flex items-start gap-4">
                 <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e4a16f] text-[#253b30]"><ArrowDownRight className="h-5 w-5" aria-hidden="true" /></span>
                 <div>
-                  <h2 className="font-[Syne] text-[24px] font-semibold leading-tight tracking-[-.04em] sm:text-[28px]">Rewards are not active yet.</h2>
-                  <p className="mt-3 max-w-[390px] text-[13px] leading-6 text-[#d6dfd0]">Reward amounts and payout rules are not active or configured yet. Signing up does not create a reward balance or guarantee a payment.</p>
+                  <h2 className="font-[Syne] text-[24px] font-semibold leading-tight tracking-[-.04em] sm:text-[28px]">Your Samsung account starts here.</h2>
+                  <p className="mt-3 max-w-[390px] text-[13px] leading-6 text-[#d6dfd0]">Sign in or create an account to access the member site.</p>
                 </div>
               </div>
               <div className="mt-7 border-t border-white/15 pt-5">
                 <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[.12em] text-[#b9cdb4]">
                   <span>What you can do now</span><span className="font-mono text-[#e5b28e]">01 / 02</span>
                 </div>
-                <p className="mt-2 text-[14px] font-medium text-[#fff9eb]">Review product sale price tiers and create an account.</p>
+                <p className="mt-2 text-[14px] font-medium text-[#fff9eb]">Browse Samsung gadgets and create an account.</p>
               </div>
             </div>
           </aside>
@@ -199,13 +199,13 @@ function Home() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[.17em] text-[#9a6749]">A transparent start</p>
             <p className="mt-1 font-[Syne] text-[19px] font-semibold tracking-[-.035em] text-[#3b4638]">Join now to create your account.</p>
-            <p className="mt-1 text-[12px] leading-5 text-[#746d5f]">Rewards will remain inactive until their amounts and payout rules are configured.</p>
+            <p className="mt-1 text-[12px] leading-5 text-[#746d5f]">Sign in to access your Samsung member account.</p>
           </div>
           <Link href="/sign-up" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#315f49] px-5 text-[13px] font-bold text-white hover:bg-[#244b38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315f49]" data-testid="link-footer-signup">Create account <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         </section>
         <footer className="mt-8 flex flex-col gap-3 border-t border-[#d8d4c7] pt-5 text-[11px] leading-5 text-[#758078] sm:flex-row sm:items-center sm:justify-between">
           <span>samsung · Independent retailer</span>
-          <span>Not affiliated with Samsung. Reward amounts and payout rules are not active or configured yet.</span>
+          <span>Not affiliated with Samsung. Independent retailer.</span>
         </footer>
       </div>
     </main>
@@ -283,7 +283,7 @@ function MemberFrame({ active, children }: { active: string; children: ReactNode
     const previousOgDescription = ogDescriptionTag?.content;
     const pageTitle = `${activePage?.label ?? 'Member portal'} — samsung`;
     document.title = pageTitle;
-    const description = 'Member account portal for samsung, an independent retailer. Product sale prices are shown in UGX; checkout, rewards, and referral tracking are not active.';
+    const description = 'Samsung member account and gadget catalog in UGX, operated by an independent retailer.';
     if (descriptionTag) descriptionTag.content = description;
     if (ogTitleTag) ogTitleTag.content = pageTitle;
     if (ogDescriptionTag) ogDescriptionTag.content = description;
@@ -1668,7 +1668,7 @@ function AdminTaskCenterPage() {
       </nav>
       <section id="admin-overview" className="admin-panel-section" hidden={activeSection !== 'dashboard'}>
         <h2>Overview</h2>
-        <p className="admin-section-subtitle">A current view of the Samsung rewards portal.</p>
+        <p className="admin-section-subtitle">A current view of the Samsung member platform.</p>
         {directoryStatus === 'loading' && <p role="status">Loading overview…</p>}
         {directoryStatus === 'error' && <div className="admin-task-error" role="alert"><p>{directoryMessage || 'Could not load admin data.'}</p>{directoryRequiresSignIn && <Link href="/sign-in">Sign in</Link>}<button type="button" onClick={loadAdminDirectory}>Try again</button></div>}
          {overview && <div className="admin-overview-grid">
