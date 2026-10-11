@@ -28,3 +28,17 @@ mtime_ms = 1791700985815
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/c5139991-d067-40da-91fe-287c465a476a/2c68bef5-e657-4060-a6a9-d0c7b9d91884"
 storage_version_token = "1791700994987062"
 content_type = "image/jpeg"
+
+[[outputs]]
+id = "qaVbClMWaWlTWvSMvbxH2"
+uri = "file://generated-artifacts/rewards-program-platform-source-20261011.zip"
+type = "unspecified"
+title = "Rewards Program Platform source code"
+description = "ZIP backup of the app source and project configuration. Excludes credentials, dependencies, caches, deployment build output, Replit memory, and chat attachments."
+logical_id = "9bc49a60-10ec-4a4e-9295-63e4beb3363a"
+content_hash = "sha256:3c659ea28b283fad87e52dd5fcc990da41dc7521c74246a843df0b4b10475744"
+size = 1465898
+mtime_ms = 1791703244073
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/9bc49a60-10ec-4a4e-9295-63e4beb3363a/0444c443-9e23-4e6f-b771-b1b84be9d72a"
+storage_version_token = "1791703249109377"
+content_type = "application/octet-stream"
