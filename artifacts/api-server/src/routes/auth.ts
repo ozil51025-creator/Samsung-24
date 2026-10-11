@@ -711,7 +711,7 @@ router.get("/referral/summary", async (req, res): Promise<void> => {
     }));
     res.json(GetReferralSummaryResponse.parse({
       totalMembers: memberCounts.reduce((total, count) => total + count, 0),
-      taskQualifiedLevelOneMembers: taskQualifiedLevelOneRows.length,
+      taskQualifiedLevel1Members: taskQualifiedLevelOneRows.length,
       totalRewardsUgx: levels.reduce((total, item) => total + item.rewardsUgx, 0),
       levels,
     }));
