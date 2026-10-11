@@ -1183,7 +1183,7 @@ components:
     AdminOverview:
       type: object
       additionalProperties: false
-      required: [totalUsers, referredUsers, financialRecordsAvailable]
+      required: [totalUsers, referredUsers, activeUsers, walletBalanceUgx, totalDepositedUgx, totalProductPurchases, productPurchaseTotalUgx, paidWithdrawalsUgx, pendingWithdrawalsCount, pendingWithdrawalsUgx, referralCommissionsUgx, checkinRewardsUgx, financialRecordsAvailable]
       properties:
         totalUsers:
           type: integer
@@ -1191,13 +1191,23 @@ components:
         referredUsers:
           type: integer
           minimum: 0
+        activeUsers: { type: integer, minimum: 0 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        totalDepositedUgx: { type: integer, minimum: 0 }
+        totalProductPurchases: { type: integer, minimum: 0 }
+        productPurchaseTotalUgx: { type: integer, minimum: 0 }
+        paidWithdrawalsUgx: { type: integer, minimum: 0 }
+        pendingWithdrawalsCount: { type: integer, minimum: 0 }
+        pendingWithdrawalsUgx: { type: integer, minimum: 0 }
+        referralCommissionsUgx: { type: integer, minimum: 0 }
+        checkinRewardsUgx: { type: integer, minimum: 0 }
         financialRecordsAvailable:
           type: boolean
-          description: False until a verified payment provider and ledger exist
+          description: True when recorded financial totals are available from the platform database
     AdminMember:
       type: object
       additionalProperties: false
-      required: [id, phoneNumber, createdAt, referralCode, referredByAccountId, isActive]
+      required: [id, phoneNumber, createdAt, referralCode, referredByAccountId, isActive, walletBalanceUgx, depositBalanceUgx, totalDepositedUgx, payoutProvider, payoutHolderName, payoutPhone]
       properties:
         id:
           type: string
@@ -1213,6 +1223,12 @@ components:
         referredByAccountId:
           type: ["string", "null"]
         isActive: { type: boolean }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        depositBalanceUgx: { type: integer, minimum: 0 }
+        totalDepositedUgx: { type: integer, minimum: 0 }
+        payoutProvider: { type: ["string", "null"] }
+        payoutHolderName: { type: ["string", "null"] }
+        payoutPhone: { type: ["string", "null"] }
     AdminMembers:
       type: object
       additionalProperties: false
