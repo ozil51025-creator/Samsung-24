@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { reconcileExistingTeamDepositMilestones } from "./lib/reconcile-team-deposit-milestones";
 
 const rawPort = process.env["PORT"];
 
@@ -16,6 +17,9 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 async function startServer() {
+  const reconciliation = await reconcileExistingTeamDepositMilestones();
+  logger.info(reconciliation, "Reconciled existing level 1–3 team deposit milestones");
+
   app.listen(port, (err) => {
     if (err) {
       logger.error({ err }, "Error listening on port");
@@ -26,4 +30,7 @@ async function startServer() {
   });
 }
 
-void startServer();
+void startServer().catch((err: unknown) => {
+  logger.error({ err }, "Could not reconcile team deposit milestones at startup");
+  process.exit(1);
+});
