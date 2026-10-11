@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: samsung-platform
+    runtime: node
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && PORT=10000 BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/gadget-shop-signup run build && pnpm --filter @workspace/api-server run build
+    startCommand: pnpm --filter @workspace/api-server run start
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_USERNAME
+        value: Nakaliiba
+      - key: ADMIN_PHONE
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: PESAJET_API_KEY
+        sync: false
+      - key: PESAJET_WEBHOOK_SECRET
+        sync: false
