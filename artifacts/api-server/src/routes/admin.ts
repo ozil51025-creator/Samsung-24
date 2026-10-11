@@ -799,6 +799,7 @@ router.get("/admin/recharge-requests", async (req, res): Promise<void> => {
         id: rechargeRequestsTable.id,
         amountUgx: rechargeRequestsTable.amountUgx,
         payerPhone: rechargeRequestsTable.payerPhone,
+        provider: rechargeRequestsTable.provider,
         status: rechargeRequestsTable.status,
         createdAt: rechargeRequestsTable.createdAt,
         memberPhone: phoneAccountsTable.phoneNumber,

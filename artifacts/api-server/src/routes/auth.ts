@@ -1,6 +1,6 @@
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
-import { and, count, eq, gt, inArray, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, gt, inArray, sql, sum } from "drizzle-orm";
 import {
   db,
   phoneAccountsTable,
@@ -1046,6 +1046,7 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
     const accountId = await currentAccountId(req, res);
     if (!accountId) return;
     const amount = req.body?.amount;
+    const provider = req.body?.provider;
     const rawPhone = typeof req.body?.phone === "string" ? req.body.phone.trim().replace(/[\s().-]/g, "") : "";
     const nationalPhone = rawPhone.startsWith("+256") ? rawPhone.slice(4) : rawPhone.startsWith("256") ? rawPhone.slice(3) : rawPhone.startsWith("0") ? rawPhone.slice(1) : rawPhone;
     const settings = await readSiteSettings();
@@ -1053,15 +1054,63 @@ router.post("/recharge-requests", requireSameOrigin, async (req, res) => {
       res.status(503).json({ error: settings.maintenanceMessage });
       return;
     }
-    if (!Number.isSafeInteger(amount) || amount < settings.minimumDepositUgx || !/^7\d{8}$/.test(nationalPhone)) {
+    if (!Number.isSafeInteger(amount) || amount < settings.minimumDepositUgx || !/^7\d{8}$/.test(nationalPhone) || !["mtn", "airtel"].includes(provider)) {
       res.status(400).json({ error: `Enter a valid Ugandan mobile number and recharge amount of at least UGX ${settings.minimumDepositUgx.toLocaleString()}.` });
       return;
     }
-    const [request] = await db
-      .insert(rechargeRequestsTable)
-      .values({ accountId, amountUgx: amount, payerPhone: `+256${nationalPhone}` })
-      .returning({ id: rechargeRequestsTable.id });
-    res.status(201).json({ requestId: request.id, status: "pending" });
+    const apiKey = process.env.PESAJET_API_KEY;
+    if (!apiKey) {
+      res.status(503).json({ error: "PesaJet payments are not configured. Please contact support." });
+      return;
+    }
+    const payerPhone = `+256${nationalPhone}`;
+    const recentRequest = await db.select({ id: rechargeRequestsTable.id })
+      .from(rechargeRequestsTable)
+      .where(and(
+        eq(rechargeRequestsTable.accountId, accountId),
+        eq(rechargeRequestsTable.amountUgx, amount),
+        eq(rechargeRequestsTable.payerPhone, payerPhone),
+        eq(rechargeRequestsTable.provider, provider),
+        eq(rechargeRequestsTable.status, "pending"),
+        gte(rechargeRequestsTable.createdAt, new Date(Date.now() - 15 * 60 * 1000)),
+      ))
+      .orderBy(desc(rechargeRequestsTable.createdAt))
+      .limit(1);
+    const [request] = recentRequest.length > 0
+      ? recentRequest
+      : await db.insert(rechargeRequestsTable)
+        .values({ accountId, amountUgx: amount, payerPhone, provider })
+        .returning({ id: rechargeRequestsTable.id });
+    let paymentResponse: Response;
+    try {
+      paymentResponse = await fetch("https://payments.pesajet.com/api/v1/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+        body: JSON.stringify({
+          type: "COLLECTION",
+          amount,
+          currency: "UGX",
+          phoneNumber: payerPhone,
+          provider,
+          reference: request.id,
+          idempotencyKey: request.id,
+        }),
+        signal: AbortSignal.timeout(20_000),
+      });
+    } catch (error) {
+      req.log.warn({ error, route: "recharge-requests.pesajet", requestId: request.id }, "PesaJet response was not received; request remains pending for reconciliation");
+      res.status(202).json({ requestId: request.id, status: "pending", message: "Payment status is being checked. Approve any phone prompt and do not submit another request yet." });
+      return;
+    }
+    if (!paymentResponse.ok) {
+      await db.update(rechargeRequestsTable)
+        .set({ status: "failed" })
+        .where(and(eq(rechargeRequestsTable.id, request.id), eq(rechargeRequestsTable.status, "pending")));
+      req.log.warn({ route: "recharge-requests.pesajet", requestId: request.id, statusCode: paymentResponse.status }, "PesaJet rejected collection request");
+      res.status(502).json({ error: "PesaJet could not start this payment. Check the number and try again." });
+      return;
+    }
+    res.status(201).json({ requestId: request.id, status: "pending", message: "Approve the payment prompt on your phone. Your wallet will be credited after an administrator confirms receipt." });
   } catch (error) {
     req.log.error({ error, route: "recharge-requests.create" }, "Could not create manual recharge request");
     res.status(500).json({ error: "Could not create the recharge request." });
