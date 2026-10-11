@@ -1019,6 +1019,150 @@ router.post("/admin/withdrawals/:withdrawalId", async (req, res): Promise<void> 
   }
 });
 
+router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promise<void> => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const id = req.params.withdrawalId;
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) {
+    res.status(400).json({ error: "Choose a valid withdrawal request." });
+    return;
+  }
+  const apiKey = process.env.PESAJET_API_KEY;
+  if (!apiKey) {
+    res.status(503).json({ error: "PesaJet payouts are not configured." });
+    return;
+  }
+  try {
+    const row = await db.transaction(async (tx) => {
+      const [current] = await tx.select({
+        id: withdrawalRequestsTable.id,
+        accountId: withdrawalRequestsTable.accountId,
+        amountUgx: withdrawalRequestsTable.amountUgx,
+        feeUgx: withdrawalRequestsTable.feeUgx,
+        receivedUgx: withdrawalRequestsTable.receivedUgx,
+        payoutPhone: withdrawalRequestsTable.payoutPhone,
+        payoutProvider: withdrawalRequestsTable.payoutProvider,
+        payoutHolderName: withdrawalRequestsTable.payoutHolderName,
+        status: withdrawalRequestsTable.status,
+        createdAt: withdrawalRequestsTable.createdAt,
+        processedAt: withdrawalRequestsTable.processedAt,
+        resolutionNote: withdrawalRequestsTable.resolutionNote,
+        memberPhone: phoneAccountsTable.phoneNumber,
+      }).from(withdrawalRequestsTable)
+        .innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id))
+        .where(eq(withdrawalRequestsTable.id, id)).for("update").limit(1);
+      if (!current || current.status !== "pending") return { error: "This withdrawal is already processed." };
+      if (!["mtn", "airtel"].includes(current.payoutProvider)) return { error: "PesaJet requires a saved Airtel or MTN payout destination; registered numbers can still be paid manually." };
+      if (current.resolutionNote && !current.resolutionNote.startsWith("PesaJet payout ")) {
+        return { error: "This request is assigned to manual processing.", conflict: true };
+      }
+      if (!current.resolutionNote) {
+        await tx.update(withdrawalRequestsTable).set({
+          resolutionNote: "PesaJet payout starting",
+          processedByAccountId: admin.id,
+        }).where(eq(withdrawalRequestsTable.id, id));
+        await tx.insert(adminAuditLogsTable).values({
+          adminAccountId: admin.id,
+          targetAccountId: current.accountId,
+          action: "withdrawal.pesajet_started",
+          amountUgx: current.receivedUgx,
+          details: `Withdrawal ${id}; requested a PesaJet disbursement to ${current.payoutProvider} ${current.payoutPhone}.`,
+        });
+      }
+      return { current: { ...current, resolutionNote: current.resolutionNote ?? "PesaJet payout starting" } };
+    });
+    if ("error" in row) {
+      res.status(row.conflict ? 409 : 400).json({ error: row.error });
+      return;
+    }
+    const current = row.current;
+    const priorTransactionId = current.resolutionNote?.match(/^PesaJet payout pending \[([^\]]+)\]$/)?.[1];
+    const endpoint = "https://payments.pesajet.com/api/v1/payments";
+    let providerResponse: globalThis.Response;
+    try {
+      providerResponse = priorTransactionId
+        ? await fetch(`${endpoint}/${encodeURIComponent(priorTransactionId)}`, { headers: { "X-API-Key": apiKey }, signal: AbortSignal.timeout(15000) })
+        : await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+          body: JSON.stringify({
+            type: "DISBURSEMENT",
+            amount: current.receivedUgx,
+            currency: "UGX",
+            phoneNumber: current.payoutPhone.startsWith("+") ? current.payoutPhone : `+256${current.payoutPhone.replace(/^0/, "")}`,
+            provider: current.payoutProvider,
+            reference: current.id,
+            idempotencyKey: `withdrawal-${current.id}`,
+            description: `Member withdrawal ${current.id}`,
+          }),
+          signal: AbortSignal.timeout(20000),
+        });
+    } catch (error) {
+      req.log.warn({ error, withdrawalId: id }, "PesaJet payout response delayed; retry will reuse its idempotency key");
+      res.status(202).json(ProcessAdminWithdrawalResponse.parse({ ...current, resolutionNote: "PesaJet payout starting; status not confirmed yet.", memberPhone: current.memberPhone }));
+      return;
+    }
+    const body = await providerResponse.json().catch(() => null);
+    const record = body && typeof body === "object" && !Array.isArray(body) ? body as Record<string, unknown> : null;
+    const data = record?.data && typeof record.data === "object" && !Array.isArray(record.data) ? record.data as Record<string, unknown> : null;
+    if (!providerResponse.ok) {
+      if (!priorTransactionId) {
+        await db.update(withdrawalRequestsTable)
+          .set({ resolutionNote: null, processedByAccountId: null })
+          .where(and(eq(withdrawalRequestsTable.id, id), eq(withdrawalRequestsTable.status, "pending"), eq(withdrawalRequestsTable.resolutionNote, "PesaJet payout starting")));
+      }
+      res.status(502).json({ error: typeof record?.message === "string" ? record.message.slice(0, 180) : "PesaJet rejected the disbursement." });
+      return;
+    }
+    const transactionIdValue = record?.transactionId ?? data?.transactionId ?? record?.id ?? data?.id;
+    const transactionId = typeof transactionIdValue === "string" ? transactionIdValue : null;
+    const providerStatus = String(record?.status ?? data?.status ?? "").toUpperCase();
+    const completed = providerStatus === "COMPLETED";
+    const failed = providerStatus === "FAILED" || providerStatus === "EXPIRED";
+    const note = completed || failed
+      ? `PesaJet payout ${providerStatus.toLowerCase()}${transactionId ? ` [${transactionId}]` : ""}.`
+      : transactionId ? `PesaJet payout pending [${transactionId}]` : "PesaJet payout starting; status not confirmed yet.";
+
+    const saved = await db.transaction(async (tx) => {
+      const [locked] = await tx.select({
+        id: withdrawalRequestsTable.id,
+        accountId: withdrawalRequestsTable.accountId,
+        amountUgx: withdrawalRequestsTable.amountUgx,
+        status: withdrawalRequestsTable.status,
+      }).from(withdrawalRequestsTable).where(eq(withdrawalRequestsTable.id, id)).for("update").limit(1);
+      if (!locked || locked.status !== "pending") return null;
+      if (failed) {
+        await tx.update(phoneAccountsTable).set({
+          walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${locked.amountUgx}`,
+        }).where(eq(phoneAccountsTable.id, locked.accountId));
+      }
+      const [updated] = await tx.update(withdrawalRequestsTable).set({
+        status: completed ? "paid" : failed ? "failed" : "pending",
+        resolutionNote: note,
+        processedByAccountId: admin.id,
+        processedAt: completed || failed ? new Date() : null,
+      }).where(eq(withdrawalRequestsTable.id, id)).returning();
+      if (completed || failed) await tx.insert(adminAuditLogsTable).values({
+        adminAccountId: admin.id,
+        targetAccountId: locked.accountId,
+        action: completed ? "withdrawal.paid_pesajet" : "withdrawal.failed_pesajet_refunded",
+        amountUgx: locked.amountUgx,
+        reason: note,
+        details: `Withdrawal ${id}; PesaJet status ${providerStatus}${transactionId ? `, transaction ${transactionId}` : ""}.`,
+      });
+      return { ...updated, memberPhone: current.memberPhone };
+    });
+    if (!saved) {
+      res.status(409).json({ error: "This withdrawal changed while PesaJet was responding. Refresh the list." });
+      return;
+    }
+    res.status(completed || failed ? 200 : 202).json(ProcessAdminWithdrawalResponse.parse(saved));
+  } catch (error) {
+    req.log.error({ error, withdrawalId: id }, "Could not process PesaJet withdrawal");
+    res.status(500).json({ error: "Could not process this PesaJet withdrawal." });
+  }
+});
+
 router.get("/admin/settings", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
