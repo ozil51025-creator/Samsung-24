@@ -62,6 +62,17 @@ import {
 import { readSiteSettings } from "../lib/site-settings";
 
 const router: IRouter = Router();
+function resolveUgandanPayoutProvider(provider: string, phone: string): "mtn" | "airtel" | "registered" {
+  if (provider === "mtn" || provider === "airtel") return provider;
+  const compact = phone.replace(/[^\d+]/g, "");
+  const local = compact.startsWith("+256") ? `0${compact.slice(4)}`
+    : compact.startsWith("256") ? `0${compact.slice(3)}`
+      : compact.startsWith("0") ? compact : `0${compact}`;
+  const prefix = local.slice(0, 3);
+  if (["076", "077", "078", "079"].includes(prefix)) return "mtn";
+  if (["070", "074", "075"].includes(prefix)) return "airtel";
+  return "registered";
+}
 
 router.get("/admin/gift-codes", async (req, res): Promise<void> => {
   const admin = await requireAdmin(req, res);
@@ -938,7 +949,7 @@ router.get("/admin/transactions", async (req, res): Promise<void> => {
 router.get("/admin/withdrawals", async (req, res): Promise<void> => {
   if (!await requireAdmin(req, res)) return;
   try {
-    const withdrawals = await db.select({
+    const withdrawalRows = await db.select({
       id: withdrawalRequestsTable.id,
       amountUgx: withdrawalRequestsTable.amountUgx,
       feeUgx: withdrawalRequestsTable.feeUgx,
@@ -956,6 +967,10 @@ router.get("/admin/withdrawals", async (req, res): Promise<void> => {
       .leftJoin(payoutAccountsTable, eq(payoutAccountsTable.accountId, withdrawalRequestsTable.accountId))
       .orderBy(sql`${withdrawalRequestsTable.createdAt} DESC`)
       .limit(100);
+    const withdrawals = withdrawalRows.map((withdrawal) => ({
+      ...withdrawal,
+      payoutProvider: resolveUgandanPayoutProvider(withdrawal.payoutProvider, withdrawal.payoutPhone),
+    }));
     res.json(GetAdminWithdrawalsResponse.parse({ withdrawals }));
   } catch (error) {
     req.log.error({ error, route: "admin.withdrawals.get" }, "Could not load withdrawal requests");
@@ -1052,7 +1067,8 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
         .innerJoin(phoneAccountsTable, eq(withdrawalRequestsTable.accountId, phoneAccountsTable.id))
         .where(eq(withdrawalRequestsTable.id, id)).for("update").limit(1);
       if (!current || current.status !== "pending") return { error: "This withdrawal is already processed." };
-      if (!["mtn", "airtel"].includes(current.payoutProvider)) return { error: "PesaJet requires a saved Airtel or MTN payout destination; registered numbers can still be paid manually." };
+      const resolvedPayoutProvider = resolveUgandanPayoutProvider(current.payoutProvider, current.payoutPhone);
+      if (resolvedPayoutProvider === "registered") return { error: "PesaJet needs an Airtel or MTN number. This registered number has an ambiguous prefix; ask the member to save their payout network." };
       const compactPhone = current.payoutPhone.replace(/[^\d+]/g, "");
       const nationalPhone = compactPhone.startsWith("+256") ? compactPhone.slice(4)
         : compactPhone.startsWith("256") ? compactPhone.slice(3)
@@ -1071,10 +1087,10 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
           targetAccountId: current.accountId,
           action: "withdrawal.pesajet_started",
           amountUgx: current.receivedUgx,
-          details: `Withdrawal ${id}; requested a PesaJet disbursement to ${current.payoutProvider} ${current.payoutPhone}.`,
+          details: `Withdrawal ${id}; requested a PesaJet disbursement to ${resolvedPayoutProvider} ${current.payoutPhone}.`,
         });
       }
-      return { current: { ...current, payoutPhoneE164: `+256${nationalPhone}`, resolutionNote: current.resolutionNote ?? "PesaJet payout starting" } };
+      return { current: { ...current, resolvedPayoutProvider, payoutPhoneE164: `+256${nationalPhone}`, resolutionNote: current.resolutionNote ?? "PesaJet payout starting" } };
     });
     if ("error" in row) {
       res.status(row.conflict ? 409 : 400).json({ error: row.error });
@@ -1095,7 +1111,7 @@ router.post("/admin/withdrawals/:withdrawalId/pesajet", async (req, res): Promis
             amount: current.receivedUgx,
             currency: "UGX",
             phoneNumber: current.payoutPhoneE164,
-            provider: current.payoutProvider,
+            provider: current.resolvedPayoutProvider,
             reference: current.id,
             idempotencyKey: `withdrawal-${current.id}`,
             description: `Member withdrawal ${current.id}`,
