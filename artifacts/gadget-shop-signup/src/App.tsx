@@ -560,7 +560,7 @@ function TaskCenterPage() {
   const { user, status } = useAuth();
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [tasksStatus, setTasksStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [referralSummary, setReferralSummary] = useState<{ levels: { level: number; memberCount: number }[] } | null>(null);
+  const [referralSummary, setReferralSummary] = useState<{ taskQualifiedLevelOneMembers: number } | null>(null);
   const [referralSummaryStatus, setReferralSummaryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [depositMilestones, setDepositMilestones] = useState<{
     teamDepositsUgx: number;
@@ -629,7 +629,7 @@ function TaskCenterPage() {
       {tasksStatus === 'error' && <p className="task-center-message" role="alert">Tasks could not be loaded. Please try again later.</p>}
       {levelOneInviteTasks.map((task) => (
         (() => {
-          const current = referralSummary?.levels.find((level) => level.level === 1)?.memberCount;
+          const current = referralSummary?.taskQualifiedLevelOneMembers;
           const progress = current === undefined ? null : Math.min(current, task.objective);
           const statusLabel = !task.enabled
             ? 'Not active'

@@ -585,6 +585,8 @@ export const GetTeamDepositMilestonesResponse = zod.object({
  */
 export const getReferralSummaryResponseTotalMembersMin = 0;
 
+export const getReferralSummaryResponseTaskQualifiedLevel1MembersMin = 0;
+
 export const getReferralSummaryResponseTotalRewardsUgxMin = 0;
 
 export const getReferralSummaryResponseLevelsItemLevelMax = 3;
@@ -602,6 +604,7 @@ export const getReferralSummaryResponseLevelsItemEstimatedRewardsUgxMin = 0;
 
 export const GetReferralSummaryResponse = zod.object({
   "totalMembers": zod.number().int().min(getReferralSummaryResponseTotalMembersMin),
+  "taskQualifiedLevel1Members": zod.number().int().min(getReferralSummaryResponseTaskQualifiedLevel1MembersMin),
   "totalRewardsUgx": zod.number().int().min(getReferralSummaryResponseTotalRewardsUgxMin),
   "levels": zod.array(zod.object({
   "level": zod.number().int().min(1).max(getReferralSummaryResponseLevelsItemLevelMax),

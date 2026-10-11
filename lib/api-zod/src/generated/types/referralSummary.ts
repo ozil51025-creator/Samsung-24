@@ -11,6 +11,8 @@ export interface ReferralSummary {
   /** @minimum 0 */
   totalMembers: number;
   /** @minimum 0 */
+  taskQualifiedLevel1Members: number;
+  /** @minimum 0 */
   totalRewardsUgx: number;
   levels: ReferralLevelSummary[];
 }
