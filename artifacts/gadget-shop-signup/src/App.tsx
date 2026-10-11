@@ -1315,6 +1315,7 @@ function AdminTaskCenterPage() {
       if (!response.ok) throw new Error(data.error ?? 'Could not process withdrawal.');
       loadWithdrawalRequests();
       loadAdminDirectory();
+      loadAdminTransactions();
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Could not process withdrawal.');
     }
@@ -1324,7 +1325,7 @@ function AdminTaskCenterPage() {
       method: 'POST',
       credentials: 'include',
     });
-    if (response.ok) loadRechargeRequests();
+    if (response.ok) { loadRechargeRequests(); loadAdminDirectory(); loadAdminTransactions(); }
   };
   const addAdmin = async (event: FormEvent) => {
     event.preventDefault();
@@ -1392,6 +1393,7 @@ function AdminTaskCenterPage() {
       if (!response.ok) throw new Error(data.error ?? 'Could not adjust wallet.');
       window.alert(`Wallet balance updated to UGX ${money.format(data.walletBalanceUgx)}.`);
       loadAdminDirectory();
+      loadAdminTransactions();
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Could not adjust wallet.');
     }
@@ -1445,7 +1447,7 @@ function AdminTaskCenterPage() {
     <header className="admin-dashboard-header">
       <Link href="/home" className="admin-dashboard-brand"><Brand small /><span><strong>Samsung</strong><small>ADMIN</small></span></Link>
       <span className="admin-live-badge"><i />Live</span>
-       <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminProducts(); loadRechargeRequests(); loadWithdrawalRequests(); loadTasks(); }}><Bell /></button>
+       <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminTransactions(); loadAdminProducts(); loadRechargeRequests(); loadWithdrawalRequests(); loadTasks(); }}><Bell /></button>
       <Link href="/home" className="admin-exit-button" aria-label="Return to member portal"><ArrowRight /></Link>
     </header>
     <div className="admin-task-body">
