@@ -557,6 +557,35 @@ export const GetTaskCenterSettingsResponse = zod.object({
 
 
 /**
+ * @summary Get the signed-in member's claimed invite tasks
+ */
+export const GetTaskCenterClaimsResponse = zod.object({
+  "claimedTaskIds": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Claim an eligible invite task reward
+ */
+export const ClaimTaskCenterTaskParams = zod.object({
+  "taskId": zod.coerce.string()
+})
+
+export const claimTaskCenterTaskResponseRewardUgxMin = 0;
+
+export const claimTaskCenterTaskResponseWalletBalanceUgxMin = 0;
+
+
+
+export const ClaimTaskCenterTaskResponse = zod.object({
+  "taskId": zod.string(),
+  "rewardUgx": zod.number().int().min(claimTaskCenterTaskResponseRewardUgxMin),
+  "walletBalanceUgx": zod.number().int().min(claimTaskCenterTaskResponseWalletBalanceUgxMin),
+  "wasNewClaim": zod.boolean()
+})
+
+
+/**
  * @summary Get direct-referral deposit milestone progress
  */
 export const getTeamDepositMilestonesResponseTeamDepositsUgxMin = 0;

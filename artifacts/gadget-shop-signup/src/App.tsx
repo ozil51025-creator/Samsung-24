@@ -568,6 +568,9 @@ function TaskCenterPage() {
     milestones: { id: string; thresholdUgx: number; rewardUgx: number; received: boolean }[];
   } | null>(null);
   const [depositMilestonesStatus, setDepositMilestonesStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [claimedTaskIds, setClaimedTaskIds] = useState<string[] | null>(null);
+  const [claimingTaskId, setClaimingTaskId] = useState<string | null>(null);
+  const [claimMessage, setClaimMessage] = useState('');
   const levelOneInviteTasks = tasks.filter((task) =>
     task.id.toLowerCase().startsWith('invite-') || /invite.*(?:level\s*1|level\s*one|niveau\s*1)/i.test(task.title),
   );
@@ -602,7 +605,40 @@ function TaskCenterPage() {
         setReferralSummaryStatus('ready');
       })
       .catch(() => setReferralSummaryStatus('error'));
+    fetch('/api/task-center/claims', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Could not load claimed tasks.');
+        const data = await response.json() as { claimedTaskIds: string[] };
+        setClaimedTaskIds(data.claimedTaskIds);
+      })
+      .catch(() => setClaimMessage('Could not check your claim status. Refresh the page before claiming.'));
   }, [user]);
+
+  const claimInviteTask = async (taskId: string) => {
+    if (claimingTaskId || claimedTaskIds === null) return;
+    setClaimingTaskId(taskId);
+    setClaimMessage('');
+    try {
+      const response = await fetch(`/api/task-center/${encodeURIComponent(taskId)}/claim`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await response.json() as { taskId?: string; rewardUgx?: number; walletBalanceUgx?: number; error?: string };
+      if (!response.ok || data.taskId !== taskId || typeof data.rewardUgx !== 'number') {
+        throw new Error(data.error ?? 'Could not claim this reward.');
+      }
+      setClaimedTaskIds((current) => [...new Set([...(current ?? []), taskId])]);
+      setDepositMilestones((current) => current ? {
+        ...current,
+        totalRewardsUgx: current.totalRewardsUgx + data.rewardUgx!,
+      } : current);
+      setClaimMessage(`UGX ${money.format(data.rewardUgx)} has been added to your wallet.`);
+    } catch (error) {
+      setClaimMessage(error instanceof Error ? error.message : 'Could not claim this reward.');
+    } finally {
+      setClaimingTaskId(null);
+    }
+  };
 
   if (status === 'loading') {
     return <main className="task-center-shell" role="status">Checking your account…</main>;
@@ -631,12 +667,16 @@ function TaskCenterPage() {
         (() => {
           const current = referralSummary?.taskQualifiedLevel1Members;
           const progress = current === undefined ? null : Math.min(current, task.objective);
+          const claimed = claimedTaskIds?.includes(task.id) ?? false;
+          const eligible = task.enabled && current !== undefined && current >= task.objective && !claimed;
           const statusLabel = !task.enabled
             ? 'Not active'
             : referralSummaryStatus === 'loading'
               ? 'Loading progress…'
               : referralSummaryStatus === 'error'
                 ? 'Progress unavailable'
+                : claimed
+                  ? 'Claimed'
                 : current !== undefined && current >= task.objective
                   ? 'Goal reached'
                   : 'In progress';
@@ -650,10 +690,17 @@ function TaskCenterPage() {
             <div><strong>{task.objective.toLocaleString()} {task.objectiveUnit}</strong><span>Objective</span></div>
             <div><strong>{progress === null ? '—' : `${progress}/${task.objective}`}</strong><span>Progress</span></div>
           </div>
-          <button type="button" disabled>{statusLabel}</button>
+          <button
+            type="button"
+            disabled={!eligible || claimedTaskIds === null || claimingTaskId !== null}
+            onClick={() => void claimInviteTask(task.id)}
+          >
+            {claimingTaskId === task.id ? 'Claiming…' : eligible ? `Claim UGX ${money.format(task.rewardUgx ?? 0)}` : statusLabel}
+          </button>
         </article>;
         })()
       ))}
+      {claimMessage && <p className="task-center-message" role="status">{claimMessage}</p>}
       {depositMilestonesStatus === 'loading' && <p className="task-center-message">Loading deposit milestones…</p>}
       {depositMilestonesStatus === 'error' && <p className="task-center-message" role="alert">Deposit milestones could not be loaded.</p>}
       {depositMilestones?.milestones.map((milestone) => {

@@ -57,8 +57,10 @@ import type {
   ReferralDetails,
   ReferralSummary,
   RegisterPhoneAccountInput,
+  TaskCenterClaims,
   TaskCenterSettings,
   TaskCenterSettingsInput,
+  TaskRewardClaim,
   TeamDepositMilestones,
   WithdrawalHistoryResponse,
   WithdrawalRequestInput
@@ -1463,6 +1465,157 @@ export function useGetTaskCenterSettings<TData = Awaited<ReturnType<typeof getTa
 
 
 
+
+export const getGetTaskCenterClaimsUrl = () => {
+
+
+
+
+  return `/api/task-center/claims`
+}
+
+/**
+ * @summary Get the signed-in member's claimed invite tasks
+ */
+export const getTaskCenterClaims = async ( options?: Parameters<typeof customFetch>[1]): Promise<TaskCenterClaims> => {
+
+  return customFetch<TaskCenterClaims>(getGetTaskCenterClaimsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTaskCenterClaimsQueryKey = () => {
+    return [
+    `/api/task-center/claims`
+    ] as const;
+    }
+
+
+export const getGetTaskCenterClaimsQueryOptions = <TData = Awaited<ReturnType<typeof getTaskCenterClaims>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterClaims>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTaskCenterClaimsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTaskCenterClaims>>> = ({ signal }) => getTaskCenterClaims({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterClaims>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTaskCenterClaimsQueryResult = NonNullable<Awaited<ReturnType<typeof getTaskCenterClaims>>>
+export type GetTaskCenterClaimsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the signed-in member's claimed invite tasks
+ */
+
+export function useGetTaskCenterClaims<TData = Awaited<ReturnType<typeof getTaskCenterClaims>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTaskCenterClaims>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTaskCenterClaimsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getClaimTaskCenterTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/task-center/${taskId}/claim`
+}
+
+/**
+ * @summary Claim an eligible invite task reward
+ */
+export const claimTaskCenterTask = async (taskId: string, options?: Parameters<typeof customFetch>[1]): Promise<TaskRewardClaim> => {
+
+  return customFetch<TaskRewardClaim>(getClaimTaskCenterTaskUrl(taskId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getClaimTaskCenterTaskMutationKey = () => ['claimTaskCenterTask'] as const;
+
+export const getClaimTaskCenterTaskMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimTaskCenterTask>>, TError,ClaimTaskCenterTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimTaskCenterTask>>, TError,ClaimTaskCenterTaskMutationVariables, TContext> => {
+
+const mutationKey = getClaimTaskCenterTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimTaskCenterTask>>, ClaimTaskCenterTaskMutationVariables> = (props) => {
+          const {taskId} = props ?? {};
+
+          return  claimTaskCenterTask(taskId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimTaskCenterTaskMutationResult = NonNullable<Awaited<ReturnType<typeof claimTaskCenterTask>>>
+
+    export type ClaimTaskCenterTaskMutationError = ErrorType<void>
+    export type ClaimTaskCenterTaskMutationVariables = {taskId: string}
+
+    /**
+ * @summary Claim an eligible invite task reward
+ */
+export const useClaimTaskCenterTask = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimTaskCenterTask>>, TError,ClaimTaskCenterTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof claimTaskCenterTask>>,
+        TError,
+        ClaimTaskCenterTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getClaimTaskCenterTaskMutationOptions(options));
+    }
 
 export const getGetTeamDepositMilestonesUrl = () => {
 

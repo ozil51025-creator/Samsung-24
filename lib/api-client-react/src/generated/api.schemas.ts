@@ -667,6 +667,19 @@ export interface TaskCenterSettings {
   tasks: TaskCenterTask[];
 }
 
+export interface TaskCenterClaims {
+  claimedTaskIds: string[];
+}
+
+export interface TaskRewardClaim {
+  taskId: string;
+  /** @minimum 0 */
+  rewardUgx: number;
+  /** @minimum 0 */
+  walletBalanceUgx: number;
+  wasNewClaim: boolean;
+}
+
 export interface TeamDepositMilestone {
   id: string;
   /** @minimum 1 */

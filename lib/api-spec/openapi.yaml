@@ -500,7 +500,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ClaimTaskCenterTaskResponse"
+                $ref: "#/components/schemas/TaskRewardClaim"
         "400":
           description: Task is not yet eligible
         "401":
@@ -1521,7 +1521,7 @@ components:
         claimedTaskIds:
           type: array
           items: { type: string }
-    ClaimTaskCenterTaskResponse:
+    TaskRewardClaim:
       type: object
       additionalProperties: false
       required: [taskId, rewardUgx, walletBalanceUgx, wasNewClaim]

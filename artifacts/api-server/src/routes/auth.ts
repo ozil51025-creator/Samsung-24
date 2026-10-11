@@ -27,6 +27,9 @@ import {
   GetCurrentPhoneAccountResponse,
   GetMyProductOrdersResponse,
   GetTeamDepositMilestonesResponse,
+  GetTaskCenterClaimsResponse,
+  GetTaskCenterSettingsResponse,
+  ClaimTaskCenterTaskResponse,
   LoginPhoneAccountBody,
   LoginPhoneAccountResponse,
   RegisterPhoneAccountBody,
@@ -568,6 +571,90 @@ router.get("/team-deposit-milestones", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error, route: "team-deposit-milestones.get" }, "Could not load deposit milestones");
     res.status(500).json({ error: "Could not load deposit milestones." });
+  }
+});
+
+function isClaimableInviteTask(task: { id: string; title: string }) {
+  return task.id.toLowerCase().startsWith("invite-")
+    || /invite.*(?:level\s*1|level\s*one|niveau\s*1)/i.test(task.title);
+}
+
+router.get("/task-center/claims", async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  try {
+    const [stored] = await db.select({ tasks: taskCenterSettingsTable.tasks })
+      .from(taskCenterSettingsTable).where(eq(taskCenterSettingsTable.id, "default")).limit(1);
+    const taskIds = GetTaskCenterSettingsResponse.parse({ tasks: stored?.tasks ?? [] }).tasks
+      .filter((task) => task.enabled && isClaimableInviteTask(task))
+      .map((task) => `task-center:${task.id}`);
+    const claims = await db.select({ milestoneId: teamDepositMilestoneClaimsTable.milestoneId })
+      .from(teamDepositMilestoneClaimsTable)
+      .where(eq(teamDepositMilestoneClaimsTable.accountId, accountId));
+    const claimedTaskIds = claims.flatMap(({ milestoneId }) => {
+      if (!taskIds.includes(milestoneId)) return [];
+      return [milestoneId.slice("task-center:".length)];
+    });
+    res.setHeader("Cache-Control", "no-store");
+    res.json(GetTaskCenterClaimsResponse.parse({ claimedTaskIds }));
+  } catch (error) {
+    req.log.error({ error, route: "task-center.claims.get" }, "Could not load claimed tasks");
+    res.status(500).json({ error: "Could not load claimed tasks." });
+  }
+});
+
+router.post("/task-center/:taskId/claim", requireSameOrigin, async (req, res): Promise<void> => {
+  const accountId = await currentAccountId(req, res);
+  if (!accountId) return;
+  const taskId = req.params.taskId;
+  if (typeof taskId !== "string" || !taskId || taskId.length > 120) {
+    res.status(400).json({ error: "Invalid task." });
+    return;
+  }
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [stored] = await tx.select({ tasks: taskCenterSettingsTable.tasks })
+        .from(taskCenterSettingsTable).where(eq(taskCenterSettingsTable.id, "default")).limit(1);
+      const tasks = GetTaskCenterSettingsResponse.parse({ tasks: stored?.tasks ?? [] }).tasks;
+      const task = tasks.find((item) => item.id === taskId);
+      if (!task || !task.enabled || !isClaimableInviteTask(task) || task.rewardUgx === null) {
+        return { status: 404 as const, error: "This task is not available to claim." };
+      }
+      const eligibleMembers = await tx.select({ accountId: phoneAccountsTable.id })
+        .from(phoneAccountsTable)
+        .innerJoin(phoneReferralCodesTable, eq(phoneReferralCodesTable.accountId, phoneAccountsTable.id))
+        .innerJoin(productOrdersTable, eq(productOrdersTable.buyerAccountId, phoneAccountsTable.id))
+        .where(and(
+          eq(phoneReferralCodesTable.referredByAccountId, accountId),
+          sql`${phoneAccountsTable.totalDepositedUgx} > 0`,
+        ))
+        .groupBy(phoneAccountsTable.id);
+      if (eligibleMembers.length < task.objective) {
+        return { status: 400 as const, error: "Complete the task requirements before claiming." };
+      }
+      const [claim] = await tx.insert(teamDepositMilestoneClaimsTable)
+        .values({ accountId, milestoneId: `task-center:${task.id}`, rewardUgx: task.rewardUgx })
+        .onConflictDoNothing()
+        .returning({ id: teamDepositMilestoneClaimsTable.id });
+      if (!claim) return { status: 409 as const, error: "This task reward has already been claimed." };
+      const [account] = await tx.update(phoneAccountsTable)
+        .set({
+          walletBalanceUgx: sql`${phoneAccountsTable.walletBalanceUgx} + ${task.rewardUgx}`,
+          totalAccumulatedUgx: sql`${phoneAccountsTable.totalAccumulatedUgx} + ${task.rewardUgx}`,
+        })
+        .where(eq(phoneAccountsTable.id, accountId))
+        .returning({ walletBalanceUgx: phoneAccountsTable.walletBalanceUgx });
+      if (!account) throw new Error("Claiming account no longer exists.");
+      return { status: 200 as const, taskId: task.id, rewardUgx: task.rewardUgx, walletBalanceUgx: account.walletBalanceUgx, wasNewClaim: true };
+    });
+    if (result.status !== 200) {
+      res.status(result.status).json({ error: result.error });
+      return;
+    }
+    res.json(ClaimTaskCenterTaskResponse.parse(result));
+  } catch (error) {
+    req.log.error({ error, route: "task-center.claim.post" }, "Could not claim task reward");
+    res.status(500).json({ error: "Could not claim this reward right now." });
   }
 });
 
