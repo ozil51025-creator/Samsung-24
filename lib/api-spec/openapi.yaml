@@ -470,6 +470,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaskCenterSettings"
+  /task-center/claims:
+    get:
+      operationId: getTaskCenterClaims
+      tags: [task-center]
+      summary: Get the signed-in member's claimed invite tasks
+      responses:
+        "200":
+          description: Claimed task IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterClaims"
+        "401":
+          description: Member sign in required
+  /task-center/{taskId}/claim:
+    post:
+      operationId: claimTaskCenterTask
+      tags: [task-center]
+      summary: Claim an eligible invite task reward
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Reward credited to the member wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimTaskCenterTaskResponse"
+        "400":
+          description: Task is not yet eligible
+        "401":
+          description: Member sign in required
+        "404":
+          description: Task not found or inactive
+        "409":
+          description: Task reward already claimed
   /team-deposit-milestones:
     get:
       operationId: getTeamDepositMilestones
@@ -1474,6 +1513,23 @@ components:
           maxItems: 30
           items:
             $ref: "#/components/schemas/TaskCenterTask"
+    TaskCenterClaims:
+      type: object
+      additionalProperties: false
+      required: [claimedTaskIds]
+      properties:
+        claimedTaskIds:
+          type: array
+          items: { type: string }
+    ClaimTaskCenterTaskResponse:
+      type: object
+      additionalProperties: false
+      required: [taskId, rewardUgx, walletBalanceUgx, wasNewClaim]
+      properties:
+        taskId: { type: string }
+        rewardUgx: { type: integer, minimum: 0 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        wasNewClaim: { type: boolean }
     TeamDepositMilestone:
       type: object
       additionalProperties: false
