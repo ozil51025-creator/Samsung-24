@@ -1252,6 +1252,7 @@ function AdminTransactionsSection() {
 }
 
 function AdminTaskCenterPage() {
+  const [, navigate] = useLocation();
   const [activeSection, setActiveSection] = useState<AdminSectionId>('dashboard');
   const [tasks, setTasks] = useState<TaskDefinition[]>([]);
   const [rechargeRequests, setRechargeRequests] = useState<Array<{ id: string; amountUgx: number; payerPhone: string; provider: 'mtn' | 'airtel' | null; status: string; createdAt: string; memberPhone: string }>>([]);
@@ -1658,7 +1659,9 @@ function AdminTaskCenterPage() {
       <Link href="/home" className="admin-dashboard-brand"><Brand small /><span><strong>Samsung</strong><small>ADMIN</small></span></Link>
       <span className="admin-live-badge"><i />Live</span>
        <button type="button" className="admin-refresh-button" aria-label="Refresh admin data" onClick={() => { loadAdminDirectory(); loadAdminTransactions(); loadAdminProducts(); loadRechargeRequests(); loadWithdrawalRequests(); loadTasks(); }}><Bell /></button>
-      <Link href="/home" className="admin-exit-button" aria-label="Return to member portal"><ArrowRight /></Link>
+       <button type="button" className="admin-exit-button" aria-label="Sign out of admin panel" title="Sign out" onClick={() => {
+         void fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }).finally(() => navigate('/admin/sign-in'));
+       }}><ArrowRight /></button>
     </header>
     <div className="admin-task-body">
       <nav className="admin-module-grid" aria-label="Admin panel sections">
