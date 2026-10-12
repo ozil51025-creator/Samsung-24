@@ -1,0 +1,1720 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Phone number and password account operations
+  - name: admin
+    description: Server-authorized administration operations
+paths:
+  /site-settings:
+    get:
+      operationId: getPublicSiteSettings
+      tags: [auth]
+      summary: Get member-visible business settings and access state
+      responses:
+        "200":
+          description: Public settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: registerPhoneAccount
+      tags: [auth]
+      summary: Register a Ugandan phone-number account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/RegisterPhoneAccountInput"
+      responses:
+        "201":
+          description: Account created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "400":
+          description: Invalid registration details or referral code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Account could not be created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many registration attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: loginPhoneAccount
+      tags: [auth]
+      summary: Sign in with a Ugandan phone number and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhonePasswordInput"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Phone number or password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many sign-in attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logoutPhoneAccount
+      tags: [auth]
+      summary: Sign out and revoke the current session
+      responses:
+        "204":
+          description: Session revoked
+        "403":
+          description: Request origin was not accepted
+  /auth/me:
+    get:
+      operationId: getCurrentPhoneAccount
+      tags: [auth]
+      summary: Get the current signed-in account
+      responses:
+        "200":
+          description: Current account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhoneAccountResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get live administrative totals
+      responses:
+        "200":
+          description: Counts derived from existing account and referral records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members:
+    get:
+      operationId: getAdminMembers
+      tags: [admin]
+      summary: List or search member accounts for administrators
+      parameters:
+        - in: query
+          name: search
+          required: false
+          description: Search all member phone numbers and referral codes, including locally formatted Ugandan phone numbers.
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: Most recent member accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMembers"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/details:
+    get:
+      operationId: getAdminMemberDetails
+      tags: [admin]
+      summary: Get a member profile, referral tree, products, and account history
+      parameters:
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Member profile and history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMemberDetails"
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/product-grants:
+    post:
+      operationId: grantAdminMemberProduct
+      tags: [admin]
+      summary: Give a product to a member as a free admin gift
+      parameters:
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMemberProductGrant"
+      responses:
+        "201":
+          description: Free grant recorded in the admin audit trail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message: { type: string }
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/password-reset:
+    post:
+      operationId: resetAdminMemberPassword
+      tags: [admin]
+      summary: Set a one-time temporary password for a member
+      parameters:
+        - { name: memberId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Temporary password (shown once)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPasswordReset"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/status:
+    patch:
+      operationId: updateAdminMemberStatus
+      tags: [admin]
+      summary: Activate or deactivate a member account
+      parameters:
+        - { name: memberId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMemberStatusInput"
+      responses:
+        "200":
+          description: Updated member status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMemberStatus"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/members/{memberId}/wallet-adjustments:
+    post:
+      operationId: createAdminWalletAdjustment
+      tags: [admin]
+      summary: Make a reasoned credit or debit to a member wallet
+      parameters:
+        - { name: memberId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminWalletAdjustmentInput"
+      responses:
+        "200":
+          description: Updated wallet balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWalletAdjustment"
+        "400":
+          description: Invalid amount or reason
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/audit-logs:
+    get:
+      operationId: getAdminAuditLogs
+      tags: [admin]
+      summary: Review recent administrator actions
+      responses:
+        "200":
+          description: Recent audited actions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAuditLogs"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/admins:
+    get:
+      operationId: getAdminAccounts
+      tags: [admin]
+      summary: List additional administrator accounts
+      responses:
+        "200":
+          description: Administrator accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccounts"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: addAdminAccount
+      tags: [admin]
+      summary: Grant administrator access to an existing account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminAccountInput"
+      responses:
+        "201":
+          description: Administrator access granted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccount"
+        "400":
+          description: Invalid phone number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The phone number does not belong to an existing member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Account is already an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /task-center:
+    get:
+      operationId: getTaskCenterSettings
+      tags: [task-center]
+      summary: Get public task definitions
+      responses:
+        "200":
+          description: Current task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+  /task-center/claims:
+    get:
+      operationId: getTaskCenterClaims
+      tags: [task-center]
+      summary: Get the signed-in member's claimed invite tasks
+      responses:
+        "200":
+          description: Claimed task IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterClaims"
+        "401":
+          description: Member sign in required
+  /task-center/{taskId}/claim:
+    post:
+      operationId: claimTaskCenterTask
+      tags: [task-center]
+      summary: Claim an eligible invite task reward
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Reward credited to the member wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskRewardClaim"
+        "400":
+          description: Task is not yet eligible
+        "401":
+          description: Member sign in required
+        "404":
+          description: Task not found or inactive
+        "409":
+          description: Task reward already claimed
+  /team-deposit-milestones:
+    get:
+      operationId: getTeamDepositMilestones
+      tags: [task-center]
+      summary: Get direct-referral deposit milestone progress
+      responses:
+        "200":
+          description: Direct team deposit totals and rewards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDepositMilestones"
+  /referral/summary:
+    get:
+      operationId: getReferralSummary
+      tags: [auth]
+      summary: Get referral team counts and recorded commissions for the signed-in member
+      responses:
+        "200":
+          description: Referral summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralSummary"
+        "401":
+          description: Member sign in required
+  /referral/details:
+    get:
+      operationId: getReferralDetails
+      tags: [auth]
+      summary: Get the signed-in member's downline and recorded referral rewards
+      responses:
+        "200":
+          description: Downline members and recorded referral commissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralDetails"
+        "401":
+          description: Member sign in required
+  /admin/task-center:
+    get:
+      operationId: getAdminTaskCenterSettings
+      tags: [admin]
+      summary: Get task definitions for administrators
+      responses:
+        "200":
+          description: Current task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAdminTaskCenterSettings
+      tags: [admin]
+      summary: Save editable task definitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCenterSettingsInput"
+      responses:
+        "200":
+          description: Saved task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCenterSettings"
+        "400":
+          description: Invalid task definitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Admin account is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /products/catalog:
+    get:
+      operationId: getProductCatalog
+      tags: [products]
+      summary: Get active Samsung catalog items and listed prices
+      responses:
+        "200":
+          description: Active product catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+  /products/{productId}/purchase:
+    post:
+      operationId: purchaseProduct
+      tags: [products]
+      summary: Buy an active product using the signed-in member's wallet
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: string, pattern: "^[a-z0-9-]+$", maxLength: 60 }
+      responses:
+        "200":
+          description: Purchase recorded and wallet updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPurchaseResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Insufficient wallet balance or product is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /products/orders:
+    get:
+      operationId: getMyProductOrders
+      tags: [products]
+      summary: Get the signed-in member's product orders
+      responses:
+        "200":
+          description: Member product orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductOrdersResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /withdrawals/summary:
+    get:
+      operationId: getMyWithdrawalSummary
+      tags: [wallet]
+      summary: Get the total value of the signed-in member's successful withdrawals
+      responses:
+        "200":
+          description: Total amount successfully withdrawn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalSummaryResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /withdrawals:
+    get:
+      operationId: getMyWithdrawals
+      tags: [wallet]
+      summary: Get the signed-in member's withdrawal requests
+      responses:
+        "200":
+          description: Member withdrawal history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalHistoryResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /payout-account:
+    get:
+      operationId: getMyPayoutAccount
+      tags: [wallet]
+      summary: Get the signed-in member's saved mobile-money payout destination
+      responses:
+        "200":
+          description: Saved destination, if one exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutAccountResponse"
+    put:
+      operationId: saveMyPayoutAccount
+      tags: [wallet]
+      summary: Save or update the signed-in member's manual payout destination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayoutAccountInput"
+      responses:
+        "200":
+          description: Saved payout destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutAccountResponse"
+        "400":
+          description: Invalid destination details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createWithdrawal
+      tags: [wallet]
+      summary: Submit a manual withdrawal request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalRequestInput"
+      responses:
+        "201":
+          description: Withdrawal request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalHistoryResponse"
+        "400":
+          description: Invalid amount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Member has no product order, has insufficient balance, or has reached the daily withdrawal limit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: List withdrawal requests for manual payout
+      responses:
+        "200":
+          description: Withdrawal requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalListResponse"
+  /admin/transactions:
+    get:
+      operationId: getAdminTransactions
+      tags: [admin]
+      summary: List wallet activity recorded by the platform
+      responses:
+        "200":
+          description: Recent transaction events
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactions]
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, type, member, amountUgx, status, createdAt]
+                      properties:
+                        id: { type: string }
+                        type: { type: string }
+                        member: { type: string }
+                        amountUgx: { type: integer }
+                        status: { type: string }
+                        createdAt: { type: string, format: date-time }
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/withdrawals/{withdrawalId}:
+    post:
+      operationId: processAdminWithdrawal
+      tags: [admin]
+      summary: Record a manual payout or fail and refund a request
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminProcessWithdrawalInput"
+      responses:
+        "200":
+          description: Updated withdrawal request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalRecord"
+        "401":
+          description: Admin sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request has already been processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/withdrawals/{withdrawalId}/pesajet:
+    post:
+      operationId: payAdminWithdrawalWithPesaJet
+      tags: [admin]
+      summary: Send or check a pending withdrawal using the merchant's PesaJet balance
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: PesaJet confirmed the payout or returned its current status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalRecord"
+        "202":
+          description: PesaJet is still processing; repeat the request to check status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawalRecord"
+        "400":
+          description: Payout details cannot be used with PesaJet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request has already been processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/products:
+    get:
+      operationId: getAdminProducts
+      tags: [admin]
+      summary: Get all editable catalog products
+      responses:
+        "200":
+          description: Products including inactive items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+        "401":
+          description: No valid administrator session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateAdminProducts
+      tags: [admin]
+      summary: Update catalog names, listed prices, and visibility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCatalogInput"
+      responses:
+        "200":
+          description: Updated product catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductCatalogResponse"
+        "400":
+          description: Invalid product values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: No valid administrator session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/gift-codes:
+    get:
+      operationId: getAdminGiftCodes
+      tags: [admin]
+      summary: List issued gift codes and their redemption status
+      responses:
+        "200":
+          description: Gift-code inventory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCodes"
+        "401":
+          description: Administrator sign in required
+    post:
+      operationId: createAdminGiftCode
+      tags: [admin]
+      summary: Create a manually named wallet-credit gift code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminGiftCodeInput"
+      responses:
+        "201":
+          description: Issued gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCode"
+        "400":
+          description: Invalid gift-code value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Administrator sign in required
+  /admin/gift-codes/{giftCodeId}/disable:
+    post:
+      operationId: disableAdminGiftCode
+      tags: [admin]
+      summary: Disable a gift code so it cannot be redeemed further
+      parameters:
+        - name: giftCodeId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Disabled gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGiftCodeDisableResult"
+        "401":
+          description: Administrator sign in required
+        "404":
+          description: Gift code not found
+  /admin/settings:
+    get:
+      operationId: getAdminSiteSettings
+      tags: [admin]
+      summary: Get editable site-wide business and access settings
+      responses:
+        "200":
+          description: Current site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
+        "401":
+          description: Administrator sign in required
+    put:
+      operationId: updateAdminSiteSettings
+      tags: [admin]
+      summary: Save site-wide business and access settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSiteSettings"
+      responses:
+        "200":
+          description: Saved settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSiteSettings"
+        "400":
+          description: Invalid settings values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Administrator sign in required
+  /gift-codes/redeem:
+    post:
+      operationId: redeemGiftCode
+      tags: [auth]
+      summary: Redeem a single-use gift code into the signed-in member wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedeemGiftCodeInput"
+      responses:
+        "200":
+          description: Gift code redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCodeRedemptionResult"
+        "400":
+          description: Invalid or already redeemed gift code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Sign in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    AdminSiteSettings:
+      type: object
+      additionalProperties: false
+      required: [brandName, currencyCode, mtnMobileMoneyNumber, airtelMobileMoneyNumber, payeeName, supportHandle, telegramUrl, termsAndConditions, minimumDepositUgx, minimumWithdrawalUgx, signupBonusUgx, dailyCheckinBonusUgx, withdrawalFeePercent, referralCommissionLevel1Percent, referralCommissionLevel2Percent, referralCommissionLevel3Percent, maximumPlanReturnMultiple, maximumWithdrawalsPerMemberPerDay, limitWithdrawalsToHours, withdrawalWindowStart, withdrawalWindowEnd, requireReferralCode, allowedWebsiteDomains, maintenanceMode, maintenanceMessage, showOpeningCountdown, openingDateTime, showAnnouncement, announcementTitle, announcementMessage]
+      properties:
+        brandName: { type: string, minLength: 1, maxLength: 80 }
+        currencyCode: { type: string, pattern: "^[A-Z]{3}$" }
+        mtnMobileMoneyNumber: { type: string, maxLength: 32 }
+        airtelMobileMoneyNumber: { type: string, maxLength: 32 }
+        payeeName: { type: string, maxLength: 100 }
+        supportHandle: { type: string, maxLength: 100 }
+        telegramUrl: { type: string, maxLength: 300 }
+        termsAndConditions: { type: string, maxLength: 20000 }
+        minimumDepositUgx: { type: integer, minimum: 0, maximum: 1000000000 }
+        minimumWithdrawalUgx: { type: integer, minimum: 0, maximum: 1000000000 }
+        signupBonusUgx: { type: integer, minimum: 0, maximum: 100000000 }
+        dailyCheckinBonusUgx: { type: integer, minimum: 0, maximum: 100000000 }
+        withdrawalFeePercent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel1Percent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel2Percent: { type: number, minimum: 0, maximum: 100 }
+        referralCommissionLevel3Percent: { type: number, minimum: 0, maximum: 100 }
+        maximumPlanReturnMultiple: { type: number, minimum: 0, maximum: 100 }
+        maximumWithdrawalsPerMemberPerDay: { type: integer, minimum: 0, maximum: 1000 }
+        limitWithdrawalsToHours: { type: boolean }
+        withdrawalWindowStart: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$" }
+        withdrawalWindowEnd: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$" }
+        requireReferralCode: { type: boolean }
+        allowedWebsiteDomains: { type: string, maxLength: 4000 }
+        maintenanceMode: { type: boolean }
+        maintenanceMessage: { type: string, maxLength: 2000 }
+        showOpeningCountdown: { type: boolean }
+        openingDateTime: { type: ["string", "null"], format: date-time }
+        showAnnouncement: { type: boolean }
+        announcementTitle: { type: string, maxLength: 120 }
+        announcementMessage: { type: string, maxLength: 2000 }
+    AdminGiftCode:
+      type: object
+      additionalProperties: false
+      required: [id, code, amountUgx, maxRedemptions, redeemedCount, expiresAt, disabledAt, createdAt, redeemedAt, redeemedByPhone]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, minLength: 4, maxLength: 32, pattern: "^[A-Z0-9-]+$" }
+        amountUgx: { type: integer, minimum: 1, maximum: 100000000 }
+        maxRedemptions: { type: integer, minimum: 1, maximum: 1000000 }
+        redeemedCount: { type: integer, minimum: 0 }
+        expiresAt: { type: ["string", "null"], format: date-time }
+        disabledAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        redeemedAt: { type: ["string", "null"], format: date-time }
+        redeemedByPhone: { type: ["string", "null"] }
+    AdminGiftCodeDisableResult:
+      type: object
+      additionalProperties: false
+      required: [disabledAt]
+      properties:
+        disabledAt: { type: string, format: date-time }
+    AdminGiftCodes:
+      type: object
+      additionalProperties: false
+      required: [codes]
+      properties:
+        codes:
+          type: array
+          items: { $ref: "#/components/schemas/AdminGiftCode" }
+    AdminGiftCodeInput:
+      type: object
+      additionalProperties: false
+      required: [code, amountUgx, maxRedemptions, expiresAt]
+      properties:
+        code: { type: string, minLength: 4, maxLength: 32, pattern: "^[A-Za-z0-9-]+$" }
+        amountUgx: { type: integer, minimum: 1, maximum: 100000000 }
+        maxRedemptions: { type: integer, minimum: 1, maximum: 1000000 }
+        expiresAt: { type: ["string", "null"], format: date-time }
+    RedeemGiftCodeInput:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code: { type: string, minLength: 4, maxLength: 32, pattern: "^[A-Za-z0-9-]+$" }
+    GiftCodeRedemptionResult:
+      type: object
+      additionalProperties: false
+      required: [amountUgx, walletBalanceUgx]
+      properties:
+        amountUgx: { type: integer, minimum: 1 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+    ProductCatalogItem:
+      type: object
+      additionalProperties: false
+      required: [id, name, priceUgx, illustration, isActive]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 60, pattern: "^[a-z0-9-]+$" }
+        name: { type: string, minLength: 2, maxLength: 100 }
+        priceUgx: { type: integer, minimum: 1, maximum: 1000000000 }
+        illustration:
+          type: string
+          enum: [cable, charger, earphones, tag, buds, band, phone, phone5g, tablet, sfe, ultra, fold]
+        isActive: { type: boolean }
+    ProductCatalogResponse:
+      type: object
+      additionalProperties: false
+      required: [products]
+      properties:
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/ProductCatalogItem" }
+        purchasedCount: { type: integer, minimum: 0 }
+        totalCollectedUgx: { type: integer, minimum: 0 }
+    ProductCatalogInput:
+      type: object
+      additionalProperties: false
+      required: [products]
+      properties:
+        products:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ProductCatalogItem" }
+    ProductPurchaseResponse:
+      type: object
+      additionalProperties: false
+      required: [orderId, productName, priceUgx, walletBalanceUgx, isFirstPurchase, commissions]
+      properties:
+        orderId: { type: string, format: uuid }
+        productName: { type: string }
+        priceUgx: { type: integer }
+        walletBalanceUgx: { type: integer }
+        isFirstPurchase: { type: boolean }
+        commissions:
+          type: array
+          items:
+            type: object
+            required: [level, amountUgx]
+            properties:
+              level: { type: integer, minimum: 1, maximum: 3 }
+              amountUgx: { type: integer }
+    ProductOrder:
+      type: object
+      additionalProperties: false
+      required: [id, productName, priceUgx, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        productName: { type: string }
+        priceUgx: { type: integer }
+        status: { type: string, enum: [pending_fulfillment] }
+        createdAt: { type: string, format: date-time }
+    ProductOrdersResponse:
+      type: object
+      additionalProperties: false
+      required: [orders]
+      properties:
+        orders:
+          type: array
+          items: { $ref: "#/components/schemas/ProductOrder" }
+    WithdrawalRecord:
+      type: object
+      additionalProperties: false
+      required: [id, amountUgx, feeUgx, receivedUgx, payoutPhone, payoutProvider, payoutHolderName, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        amountUgx: { type: integer }
+        feeUgx: { type: integer }
+        receivedUgx: { type: integer }
+        payoutPhone: { type: string }
+        payoutProvider: { type: string, enum: [airtel, mtn, registered] }
+        payoutHolderName: { type: ["string", "null"] }
+        status: { type: string, enum: [pending, paid, failed] }
+        createdAt: { type: string, format: date-time }
+        processedAt: { type: [string, "null"], format: date-time }
+        resolutionNote: { type: [string, "null"] }
+    WithdrawalHistoryResponse:
+      type: object
+      additionalProperties: false
+      required: [withdrawals]
+      properties:
+        withdrawals:
+          type: array
+          items: { $ref: "#/components/schemas/WithdrawalRecord" }
+    WithdrawalSummaryResponse:
+      type: object
+      additionalProperties: false
+      required: [successfulWithdrawalsUgx]
+      properties:
+        successfulWithdrawalsUgx: { type: integer, minimum: 0 }
+    AdminWithdrawalRecord:
+      allOf:
+        - $ref: "#/components/schemas/WithdrawalRecord"
+        - type: object
+          required: [memberPhone]
+          properties:
+            memberPhone: { type: string }
+    AdminWithdrawalListResponse:
+      type: object
+      additionalProperties: false
+      required: [withdrawals]
+      properties:
+        withdrawals:
+          type: array
+          items: { $ref: "#/components/schemas/AdminWithdrawalRecord" }
+    WithdrawalRequestInput:
+      type: object
+      additionalProperties: false
+      required: [amountUgx]
+      properties:
+        amountUgx: { type: integer, minimum: 1, maximum: 1000000000 }
+    PayoutAccount:
+      type: object
+      additionalProperties: false
+      required: [provider, holderName, phoneNumber, updatedAt]
+      properties:
+        provider: { type: string, enum: [airtel, mtn] }
+        holderName: { type: string }
+        phoneNumber: { type: string }
+        updatedAt: { type: string, format: date-time }
+    PayoutAccountResponse:
+      type: object
+      additionalProperties: false
+      required: [payoutAccount]
+      properties:
+        payoutAccount:
+          oneOf:
+            - $ref: "#/components/schemas/PayoutAccount"
+            - type: "null"
+    PayoutAccountInput:
+      type: object
+      additionalProperties: false
+      required: [provider, holderName, phoneNumber]
+      properties:
+        provider: { type: string, enum: [airtel, mtn] }
+        holderName: { type: string, minLength: 2, maxLength: 100 }
+        phoneNumber: { type: string, minLength: 9, maxLength: 18 }
+    AdminProcessWithdrawalInput:
+      type: object
+      additionalProperties: false
+      required: [status, resolutionNote]
+      properties:
+        status: { type: string, enum: [paid, failed] }
+        resolutionNote: { type: string, minLength: 3, maxLength: 200 }
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    PhonePasswordInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber, password]
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 8
+          maxLength: 32
+          description: Ugandan mobile number in local or international format
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          description: Account password; never returned by the API
+    RegisterPhoneAccountInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber, password]
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 8
+          maxLength: 32
+          description: Ugandan mobile number in local or international format
+        password:
+          type: string
+          minLength: 12
+          maxLength: 128
+          description: Account password; never returned by the API
+        referralCode:
+          type: string
+          minLength: 10
+          maxLength: 10
+          pattern: "^[A-Z2-9]{10}$"
+          description: Optional referral code from the signup link
+    PhoneAccount:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt, referralCode, walletBalanceUgx, totalAccumulatedUgx]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          pattern: "^\\+2567[0-9]{8}$"
+        createdAt:
+          type: string
+          format: date-time
+        referralCode:
+          type: string
+          minLength: 10
+          maxLength: 10
+          pattern: "^[A-Z2-9]{10}$"
+          description: Unique, persistent referral code for this account
+        walletBalanceUgx:
+          type: integer
+          minimum: 0
+          description: Current wallet balance in UGX
+        totalAccumulatedUgx:
+          type: integer
+          minimum: 0
+          description: Total accumulated rewards in UGX
+    PhoneAccountResponse:
+      type: object
+      additionalProperties: false
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/PhoneAccount"
+    AdminOverview:
+      type: object
+      additionalProperties: false
+      required: [totalUsers, referredUsers, activeUsers, walletBalanceUgx, totalDepositedUgx, totalProductPurchases, productPurchaseTotalUgx, paidWithdrawalsUgx, pendingWithdrawalsCount, pendingWithdrawalsUgx, referralCommissionsUgx, checkinRewardsUgx, financialRecordsAvailable]
+      properties:
+        totalUsers:
+          type: integer
+          minimum: 0
+        referredUsers:
+          type: integer
+          minimum: 0
+        activeUsers: { type: integer, minimum: 0 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        totalDepositedUgx: { type: integer, minimum: 0 }
+        totalProductPurchases: { type: integer, minimum: 0 }
+        productPurchaseTotalUgx: { type: integer, minimum: 0 }
+        paidWithdrawalsUgx: { type: integer, minimum: 0 }
+        pendingWithdrawalsCount: { type: integer, minimum: 0 }
+        pendingWithdrawalsUgx: { type: integer, minimum: 0 }
+        referralCommissionsUgx: { type: integer, minimum: 0 }
+        checkinRewardsUgx: { type: integer, minimum: 0 }
+        financialRecordsAvailable:
+          type: boolean
+          description: True when recorded financial totals are available from the platform database
+    AdminMember:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt, referralCode, referredByAccountId, isActive, walletBalanceUgx, depositBalanceUgx, totalDepositedUgx, payoutProvider, payoutHolderName, payoutPhone]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+          pattern: "^\\+2567[0-9]{8}$"
+        createdAt:
+          type: string
+          format: date-time
+        referralCode:
+          type: ["string", "null"]
+        referredByAccountId:
+          type: ["string", "null"]
+        isActive: { type: boolean }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        depositBalanceUgx: { type: integer, minimum: 0 }
+        totalDepositedUgx: { type: integer, minimum: 0 }
+        payoutProvider: { type: ["string", "null"] }
+        payoutHolderName: { type: ["string", "null"] }
+        payoutPhone: { type: ["string", "null"] }
+    AdminMembers:
+      type: object
+      additionalProperties: false
+      required: [members, ownerActionsAllowed]
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMember"
+        ownerActionsAllowed: { type: boolean }
+    AdminMemberDetails:
+      type: object
+      additionalProperties: false
+      required: [member, invitedByPhone, referrals, productOrders, activity, referralCountsByLevel, checkinStreak]
+      properties:
+        member:
+          $ref: "#/components/schemas/AdminMember"
+        invitedByPhone: { type: ["string", "null"] }
+        referrals:
+          type: array
+          items:
+            type: object
+            required: [level, phoneNumber, referralCode, referredByPhone, createdAt, isActive]
+            properties:
+              level: { type: integer, minimum: 1, maximum: 3 }
+              phoneNumber: { type: string }
+              referralCode: { type: ["string", "null"] }
+              referredByPhone: { type: ["string", "null"] }
+              createdAt: { type: string, format: date-time }
+              isActive: { type: boolean }
+        productOrders:
+          type: array
+          items:
+            type: object
+            required: [id, productName, priceUgx, status, createdAt]
+            properties:
+              id: { type: string }
+              productName: { type: string }
+              priceUgx: { type: integer }
+              status: { type: string }
+              createdAt: { type: string, format: date-time }
+        activity:
+          type: array
+          items:
+            type: object
+            required: [id, type, amountUgx, status, createdAt]
+            properties:
+              id: { type: string }
+              type: { type: string }
+              amountUgx: { type: integer }
+              status: { type: string }
+              createdAt: { type: string, format: date-time }
+        referralCountsByLevel:
+          type: object
+          additionalProperties: false
+          required: [level1, level2, level3]
+          properties:
+            level1: { type: integer, minimum: 0 }
+            level2: { type: integer, minimum: 0 }
+            level3: { type: integer, minimum: 0 }
+        checkinStreak: { type: integer, minimum: 0 }
+    AdminMemberProductGrant:
+      type: object
+      additionalProperties: false
+      required: [productId]
+      properties:
+        productId: { type: string, minLength: 1, maxLength: 80 }
+    AdminAccount:
+      type: object
+      additionalProperties: false
+      required: [id, phoneNumber, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        phoneNumber: { type: string, pattern: "^\\+2567[0-9]{8}$" }
+        createdAt: { type: string, format: date-time }
+    AdminAccounts:
+      type: object
+      additionalProperties: false
+      required: [admins]
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAccount"
+    AdminAccountInput:
+      type: object
+      additionalProperties: false
+      required: [phoneNumber]
+      properties:
+        phoneNumber: { type: string, minLength: 9, maxLength: 16 }
+    AdminPasswordReset:
+      type: object
+      additionalProperties: false
+      required: [memberId, temporaryPassword]
+      properties:
+        memberId: { type: string, format: uuid }
+        temporaryPassword: { type: string, minLength: 20, maxLength: 40 }
+    AdminMemberStatusInput:
+      type: object
+      additionalProperties: false
+      required: [isActive, reason]
+      properties:
+        isActive: { type: boolean }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    AdminMemberStatus:
+      type: object
+      additionalProperties: false
+      required: [memberId, isActive]
+      properties:
+        memberId: { type: string, format: uuid }
+        isActive: { type: boolean }
+    AdminWalletAdjustmentInput:
+      type: object
+      additionalProperties: false
+      required: [direction, amountUgx, reason]
+      properties:
+        direction: { type: string, enum: [credit, debit] }
+        amountUgx: { type: integer, minimum: 1, maximum: 100000000 }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    AdminWalletAdjustment:
+      type: object
+      additionalProperties: false
+      required: [memberId, walletBalanceUgx]
+      properties:
+        memberId: { type: string, format: uuid }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+    AdminAuditLog:
+      type: object
+      additionalProperties: false
+      required: [id, action, performedByPhone, targetPhone, amountUgx, reason, details, createdAt]
+      properties:
+        id: { type: integer }
+        action: { type: string }
+        performedByPhone: { type: string }
+        targetPhone: { type: ["string", "null"] }
+        amountUgx: { type: ["integer", "null"] }
+        reason: { type: ["string", "null"] }
+        details: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    AdminAuditLogs:
+      type: object
+      additionalProperties: false
+      required: [logs]
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAuditLog"
+    TaskCenterTask:
+      type: object
+      additionalProperties: false
+      required: [id, title, objective, objectiveUnit, rewardUgx, rewardFrequency, enabled]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        objective: { type: integer, minimum: 1, maximum: 1000000000 }
+        objectiveUnit: { type: string, minLength: 1, maxLength: 40 }
+        rewardUgx: { type: ["integer", "null"], minimum: 0, maximum: 1000000000 }
+        rewardFrequency: { type: string, enum: [once, daily] }
+        enabled: { type: boolean }
+    TaskCenterSettings:
+      type: object
+      additionalProperties: false
+      required: [tasks]
+      properties:
+        tasks:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/TaskCenterTask"
+    TaskCenterClaims:
+      type: object
+      additionalProperties: false
+      required: [claimedTaskIds]
+      properties:
+        claimedTaskIds:
+          type: array
+          items: { type: string }
+    TaskRewardClaim:
+      type: object
+      additionalProperties: false
+      required: [taskId, rewardUgx, walletBalanceUgx, wasNewClaim]
+      properties:
+        taskId: { type: string }
+        rewardUgx: { type: integer, minimum: 0 }
+        walletBalanceUgx: { type: integer, minimum: 0 }
+        wasNewClaim: { type: boolean }
+    TeamDepositMilestone:
+      type: object
+      additionalProperties: false
+      required: [id, thresholdUgx, rewardUgx, received]
+      properties:
+        id: { type: string }
+        thresholdUgx: { type: integer, minimum: 1 }
+        rewardUgx: { type: integer, minimum: 0 }
+        received: { type: boolean }
+    TeamDepositMilestones:
+      type: object
+      additionalProperties: false
+      required: [teamDepositsUgx, totalRewardsUgx, milestones]
+      properties:
+        teamDepositsUgx: { type: integer, minimum: 0 }
+        totalRewardsUgx: { type: integer, minimum: 0 }
+        milestones:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamDepositMilestone"
+    ReferralLevelSummary:
+      type: object
+      additionalProperties: false
+      required: [level, commissionPercent, memberCount, rewardsUgx, estimatedRewardsUgx]
+      properties:
+        level: { type: integer, minimum: 1, maximum: 3 }
+        commissionPercent: { type: integer, minimum: 0, maximum: 100 }
+        memberCount: { type: integer, minimum: 0 }
+        rewardsUgx: { type: integer, minimum: 0 }
+        estimatedRewardsUgx: { type: integer, minimum: 0 }
+    ReferralSummary:
+      type: object
+      additionalProperties: false
+      required: [totalMembers, taskQualifiedLevel1Members, totalRewardsUgx, levels]
+      properties:
+        totalMembers: { type: integer, minimum: 0 }
+        taskQualifiedLevel1Members: { type: integer, minimum: 0 }
+        totalRewardsUgx: { type: integer, minimum: 0 }
+        levels:
+          type: array
+          items: { $ref: "#/components/schemas/ReferralLevelSummary" }
+    ReferralDetails:
+      type: object
+      additionalProperties: false
+      required: [members, rewards]
+      properties:
+        members:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, phoneNumber, level, joinedAt]
+            properties:
+              id: { type: string, format: uuid }
+              phoneNumber: { type: string }
+              level: { type: integer, minimum: 1, maximum: 3 }
+              joinedAt: { type: string, format: date-time }
+        rewards:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, memberPhoneNumber, level, amountUgx, createdAt]
+            properties:
+              id: { type: string, format: uuid }
+              memberPhoneNumber: { type: string }
+              level: { type: integer, minimum: 1, maximum: 3 }
+              amountUgx: { type: integer, minimum: 0 }
+              createdAt: { type: string, format: date-time }
+    TaskCenterSettingsInput:
+      type: object
+      additionalProperties: false
+      required: [tasks]
+      properties:
+        tasks:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/TaskCenterTask"
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+
