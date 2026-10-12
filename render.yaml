@@ -2,7 +2,7 @@ services:
   - type: web
     name: samsung-platform
     runtime: node
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && PORT=10000 BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/gadget-shop-signup run build && pnpm --filter @workspace/api-server run build
+    buildCommand: pnpm install --frozen-lockfile && PORT=10000 BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/gadget-shop-signup run build && pnpm --filter @workspace/api-server run build
     startCommand: pnpm --filter @workspace/api-server run start
     healthCheckPath: /api/healthz
     envVars:
