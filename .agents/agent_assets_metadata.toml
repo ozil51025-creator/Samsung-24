@@ -154,3 +154,17 @@ mtime_ms = 1791736710817
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/c2ec9556-db9d-4fbe-a0ba-d2aef15961de/e51cb409-6ab5-4340-878a-45ac13c33056"
 storage_version_token = "1791771243921665"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "hEC85E57aQvap6hf_GNcb"
+uri = "file://generated-artifacts/samsung-platform-source-phone.zip"
+type = "unspecified"
+title = "Phone-friendly Samsung source ZIP (1.5 MB)"
+description = "Smaller complete app source and deployment files, with the image the app uses included. Unused uploaded reference screenshots were excluded to make it easier to download on a phone. Extract after downloading."
+logical_id = "9542c6bb-ba40-4fda-b595-dacc91557b64"
+content_hash = "sha256:6299fadd0fe45a51e3b453605e0fbaa606662334c096b2566044884c10d44f48"
+size = 1540297
+mtime_ms = 1791775945593
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/9542c6bb-ba40-4fda-b595-dacc91557b64/cb7dfa36-3da6-4981-acee-a9f780add329"
+storage_version_token = "1791775951128108"
+content_type = "application/octet-stream"
