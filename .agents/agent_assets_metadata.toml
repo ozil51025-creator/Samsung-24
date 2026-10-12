@@ -182,3 +182,17 @@ mtime_ms = 1791776159335
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/0906f336-c456-4a80-a94a-706d7e167472/74bb8f2f-52d2-400d-bd30-94443225f51c"
 storage_version_token = "1791776170902374"
 content_type = "text/html"
+
+[[outputs]]
+id = "mXnB_cXdVMWv2Pxk8JRl5"
+uri = "file://generated-artifacts/samsung-full-platform-source.zip"
+type = "unspecified"
+title = "Samsung — full platform source ZIP"
+description = "Complete tracked project monorepo: website, API server, shared libraries, lockfiles, Render configuration, and app-required image. To deploy on Render, provide your own DATABASE_URL and required secret values in Render’s environment settings; these are intentionally not inside the ZIP."
+logical_id = "ae95fd4a-658f-4d2f-8d82-8522dc459b1a"
+content_hash = "sha256:6299fadd0fe45a51e3b453605e0fbaa606662334c096b2566044884c10d44f48"
+size = 1540297
+mtime_ms = 1791790453842
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/ae95fd4a-658f-4d2f-8d82-8522dc459b1a/d8d11a2e-534c-437c-b040-fcfe157ad5d9"
+storage_version_token = "1791790458953740"
+content_type = "application/octet-stream"
