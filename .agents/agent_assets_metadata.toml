@@ -168,3 +168,17 @@ mtime_ms = 1791775945593
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/9542c6bb-ba40-4fda-b595-dacc91557b64/cb7dfa36-3da6-4981-acee-a9f780add329"
 storage_version_token = "1791775951128108"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "zlaBW26qjRxRE_aczSuFL"
+uri = "file://generated-artifacts/samsung-platform-download.html"
+type = "html"
+title = "Open Samsung ZIP downloader"
+description = "Open this small page and tap Download ZIP. It saves the verified 1.5 MB source ZIP to your phone’s Downloads folder."
+logical_id = "0906f336-c456-4a80-a94a-706d7e167472"
+content_hash = "sha256:c97b6d04b992deac8e8f6b1c0a84a7abd74d927182f8ab3d1971c8eff3ff0a06"
+size = 2055450
+mtime_ms = 1791776159335
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:051f6829-b29a-4436-a121-7de0768aa003/0906f336-c456-4a80-a94a-706d7e167472/74bb8f2f-52d2-400d-bd30-94443225f51c"
+storage_version_token = "1791776170902374"
+content_type = "text/html"
