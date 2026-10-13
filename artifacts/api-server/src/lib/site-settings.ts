@@ -9,7 +9,7 @@ export const defaultSiteSettings = {
   withdrawalFeePercent: 0, referralCommissionLevel1Percent: 35, referralCommissionLevel2Percent: 2,
   referralCommissionLevel3Percent: 1, maximumPlanReturnMultiple: 4, maximumWithdrawalsPerMemberPerDay: 0,
   limitWithdrawalsToHours: false, withdrawalWindowStart: "08:00", withdrawalWindowEnd: "17:00",
-  requireReferralCode: false, allowedWebsiteDomains: "samsung-24.onrender.com", maintenanceMode: false,
+  requireReferralCode: false, allowedWebsiteDomains samnshfjfhddkagv.it.com: "samsung-24.onrender.com", maintenanceMode: false,
   maintenanceMessage: "We’re performing maintenance. Please check back shortly.",
   showOpeningCountdown: false, openingDateTime: null, showAnnouncement: false,
   announcementTitle: "", announcementMessage: "",
