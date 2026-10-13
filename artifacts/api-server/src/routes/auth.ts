@@ -324,6 +324,22 @@ async function requireSameOrigin(
 
   next();
 }
+    async function createSession(accountId: string, res: Response) {
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + SESSION_LIFETIME_MS);
+  await db.insert(phoneSessionsTable).values({
+    tokenHash: hashSessionToken(token),
+    accountId,
+    expiresAt,
+  });
+  res.cookie(sessionCookieName(), token, sessionCookieOptions());
+}
+
+function publicAccount(
+  account: {
+    id: string;
+    phoneNumber: string;
+    createdAt: Date;
     walletBalanceUgx: number;
     totalAccumulatedUgx: number;
   },
