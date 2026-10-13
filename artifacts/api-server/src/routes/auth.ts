@@ -274,19 +274,22 @@ async function requireSameOrigin(
   next: NextFunction,
 ) {
   const origin = req.get("origin");
-  const forwardedHost = req.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const requestHost = (forwardedHost || req.get("host"))?.split(",")[0]?.trim();
+  const requestHosts = [req.get("host"), req.get("x-forwarded-host")]
+    .filter((value): value is string => Boolean(value))
+    .flatMap((value) => value.split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
 
+  let originUrl: URL;
   try {
-    if (!origin || !requestHost || new URL(origin).host.toLowerCase() !== requestHost.toLowerCase()) {
+    if (!origin || requestHosts.length === 0) {
       res.status(403).json({ error: "Request origin was not accepted." });
       return;
     }
-    const allowed = (await readSiteSettings()).allowedWebsiteDomains
-      .split(/[\n,]/).map((domain) => domain.trim().toLowerCase()).filter(Boolean);
-    const originHost = new URL(origin).hostname.toLowerCase();
-    if (allowed.length && !allowed.includes(originHost)) {
-      res.status(403).json({ error: "This website domain is not allowed." });
+
+    originUrl = new URL(origin);
+    if (!requestHosts.includes(originUrl.host.toLowerCase())) {
+      res.status(403).json({ error: "Request origin was not accepted." });
       return;
     }
   } catch {
@@ -294,25 +297,33 @@ async function requireSameOrigin(
     return;
   }
 
+  let allowedWebsiteDomains: string;
+  try {
+    allowedWebsiteDomains = (await readSiteSettings()).allowedWebsiteDomains;
+  } catch (error) {
+    req.log.error(
+      { error, route: "auth.origin-check" },
+      "Could not load website settings while validating request origin",
+    );
+    res.status(503).json({
+      error: "Website settings are unavailable. Please try again later.",
+    });
+    return;
+  }
+
+  const allowed = allowedWebsiteDomains
+    .split(/[\n,]/)
+    .map((domain) => domain.trim().toLowerCase())
+    .filter(Boolean);
+
+  const originHost = originUrl.hostname.toLowerCase();
+  if (allowed.length && !allowed.includes(originHost)) {
+    res.status(403).json({ error: "This website domain is not allowed." });
+    return;
+  }
+
   next();
 }
-
-async function createSession(accountId: string, res: Response) {
-  const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_LIFETIME_MS);
-  await db.insert(phoneSessionsTable).values({
-    tokenHash: hashSessionToken(token),
-    accountId,
-    expiresAt,
-  });
-  res.cookie(sessionCookieName(), token, sessionCookieOptions());
-}
-
-function publicAccount(
-  account: {
-    id: string;
-    phoneNumber: string;
-    createdAt: Date;
     walletBalanceUgx: number;
     totalAccumulatedUgx: number;
   },
