@@ -20,3 +20,4 @@ export async function readSiteSettings() {
   const settings = GetAdminSiteSettingsResponse.parse(row?.settings?? defaultSiteSettings);
 settings.allowedWebsiteDomains = [...new Set([...settings.allowedWebsiteDomains, "samnshfjfhddkagv.it.com", "www.samnshfjfhddkagv.it.com", "samsung-24.onrender.com"])];
 return settings;
+}
