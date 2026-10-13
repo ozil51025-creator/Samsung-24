@@ -26,18 +26,21 @@ export async function readSiteSettings() {
   const storedSettings = row?.settings;
   const mergedSettings =
     storedSettings && typeof storedSettings === "object" && !Array.isArray(storedSettings)
-      ? { ...defaultSiteSettings, ...storedSettings }
-      : defaultSiteSettings;
-
-  const configuredDomains = mergedSettings.allowedWebsiteDomains;
+        const configuredDomains = mergedSettings.allowedWebsiteDomains;
+  const normalizeDomains = (value: unknown): string[] => {
+    const domains = Array.isArray(value)
+      ? value.filter((domain): domain is string => typeof domain === "string")
+      : typeof value === "string" ? value.split(/[\n,]/) : [];
+    return domains.map((domain) => domain.trim().toLowerCase()).filter(Boolean);
+  };
   const normalizedSettings = {
     ...mergedSettings,
-    allowedWebsiteDomains: Array.isArray(configuredDomains)
-      ? configuredDomains
-          .filter((domain): domain is string => typeof domain === "string")
-          .join("\n")
-      : typeof configuredDomains === "string"
-        ? configuredDomains
+    allowedWebsiteDomains: [...new Set([
+      ...normalizeDomains(defaultSiteSettings.allowedWebsiteDomains),
+      ...normalizeDomains(configuredDomains),
+    ])].join("\n"),
+  };
+  return GetAdminSiteSettingsResponse.parse(normalizedSettings);
         : defaultSiteSettings.allowedWebsiteDomains,
   };
 
