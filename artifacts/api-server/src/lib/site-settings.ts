@@ -9,15 +9,37 @@ export const defaultSiteSettings = {
   withdrawalFeePercent: 0, referralCommissionLevel1Percent: 35, referralCommissionLevel2Percent: 2,
   referralCommissionLevel3Percent: 1, maximumPlanReturnMultiple: 4, maximumWithdrawalsPerMemberPerDay: 0,
   limitWithdrawalsToHours: false, withdrawalWindowStart: "08:00", withdrawalWindowEnd: "17:00",
-  requireReferralCode: false,allowedWebsiteDomains: ["samsung-24.onrender.com", "samnshfjfhddkagv.it.com", "www.samnshfjfhddkagv.it.com"], maintenanceMode: false,
+  requireReferralCode: false,
+  allowedWebsiteDomains: "samsung-24.onrender.com\nsamnshfjfhddkagv.it.com\nwww.samnshfjfhddkagv.it.com",
+  maintenanceMode: false,
   maintenanceMessage: "We’re performing maintenance. Please check back shortly.",
   showOpeningCountdown: false, openingDateTime: null, showAnnouncement: false,
   announcementTitle: "", announcementMessage: "",
 };
+
 export async function readSiteSettings() {
   const [row] = await db.select({ settings: adminSiteSettingsTable.settings })
-    .from(adminSiteSettingsTable).where(eq(adminSiteSettingsTable.id, "default")).limit(1);
-  const settings = GetAdminSiteSettingsResponse.parse(row?.settings?? defaultSiteSettings);
-settings.allowedWebsiteDomains = [...new Set([...settings.allowedWebsiteDomains, "samnshfjfhddkagv.it.com", "www.samnshfjfhddkagv.it.com", "samsung-24.onrender.com"])];
-return settings;
+    .from(adminSiteSettingsTable)
+    .where(eq(adminSiteSettingsTable.id, "default"))
+    .limit(1);
+
+  const storedSettings = row?.settings;
+  const mergedSettings =
+    storedSettings && typeof storedSettings === "object" && !Array.isArray(storedSettings)
+      ? { ...defaultSiteSettings, ...storedSettings }
+      : defaultSiteSettings;
+
+  const configuredDomains = mergedSettings.allowedWebsiteDomains;
+  const normalizedSettings = {
+    ...mergedSettings,
+    allowedWebsiteDomains: Array.isArray(configuredDomains)
+      ? configuredDomains
+          .filter((domain): domain is string => typeof domain === "string")
+          .join("\n")
+      : typeof configuredDomains === "string"
+        ? configuredDomains
+        : defaultSiteSettings.allowedWebsiteDomains,
+  };
+
+  return GetAdminSiteSettingsResponse.parse(normalizedSettings);
 }
