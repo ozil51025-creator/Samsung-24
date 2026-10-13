@@ -23,10 +23,7 @@ export async function readSiteSettings() {
     .where(eq(adminSiteSettingsTable.id, "default"))
     .limit(1);
 
-  const storedSettings = row?.settings;
-  const mergedSettings =
-    storedSettings && typeof storedSettings === "object" && !Array.isArray(storedSettings)
-        const configuredDomains = mergedSettings.allowedWebsiteDomains;
+  const configuredDomains = mergedSettings.allowedWebsiteDomains;
   const normalizeDomains = (value: unknown): string[] => {
     const domains = Array.isArray(value)
       ? value.filter((domain): domain is string => typeof domain === "string")
